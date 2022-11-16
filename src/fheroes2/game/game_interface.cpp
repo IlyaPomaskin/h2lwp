@@ -114,14 +114,15 @@ void Interface::Basic::Redraw( const uint32_t force /* = 0 */ )
 {
     const Settings & conf = Settings::Get();
 
-    const uint32_t combinedRedraw = redraw | force;
+    const uint32_t disabled = REDRAW_ICONS & REDRAW_BUTTONS & REDRAW_STATUS & REDRAW_BORDER;
+    const uint32_t combinedRedraw = (redraw | force) & ~disabled;
     const bool hideInterface = conf.ExtGameHideInterface();
 
     if ( combinedRedraw & REDRAW_GAMEAREA ) {
         gameArea.Redraw( fheroes2::Display::instance(), LEVEL_ALL );
 
-        if ( hideInterface && conf.ShowControlPanel() ) {
-            controlPanel.Redraw();
+        if ( hideInterface && conf.ShowControlPanel()) {
+//            controlPanel.Redraw();
         }
     }
 
