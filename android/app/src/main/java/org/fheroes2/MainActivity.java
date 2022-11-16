@@ -20,6 +20,8 @@
 
 package org.fheroes2;
 
+import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import java.io.File;
@@ -44,6 +46,12 @@ public class MainActivity extends SDLActivity
         extractAssets( "timidity.cfg", getFilesDir() );
 
         super.onCreate( savedInstanceState );
+    }
+
+    @SuppressLint("SourceLockedOrientationActivity")
+    @Override
+    public void setOrientationBis(int w, int h, boolean resizable, String hint) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     @Override
