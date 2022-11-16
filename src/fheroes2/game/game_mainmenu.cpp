@@ -27,6 +27,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <world.h>
 
 #include "agg_image.h"
 #include "audio.h"
@@ -90,9 +91,27 @@ namespace
     }
 }
 
+void loadFirstMap() {
+    Settings & conf = Settings::Get();
+
+    conf.SetGameType( Game::TYPE_STANDARD );
+    conf.SetHideInterface(true);
+    conf.SetShowRadar(true);
+    conf.SetShowButtons(false);
+    conf.SetShowIcons(false);
+    conf.SetShowPanel(false);
+    conf.SetShowStatus(false);
+
+    const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList( Settings::Get().IsGameType( Game::TYPE_MULTI ) );
+    conf.SetCurrentFileInfo( lists.front() );
+    conf.GetPlayers().SetStartGame();
+    world.LoadMapMP2( conf.MapsFile() );
+}
+
 void Game::mainGameLoop( bool isFirstGameRun )
 {
-    fheroes2::GameMode result = fheroes2::GameMode::MAIN_MENU;
+    loadFirstMap();
+    fheroes2::GameMode result = fheroes2::GameMode::START_GAME;
 
     while ( result != fheroes2::GameMode::QUIT_GAME ) {
         switch ( result ) {
