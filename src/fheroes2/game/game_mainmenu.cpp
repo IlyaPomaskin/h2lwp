@@ -91,7 +91,26 @@ namespace
     }
 }
 
+void resizeDisplay() {
+    float ddpi, hdpi, vdpi;
+    if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
+        ERROR_LOG("Failed to obtain DPI information for display 0");
+        ERROR_LOG(SDL_GetError());
+        exit(1);
+    }
+    float defaultDpi = 160;
+    float dpiScaling = defaultDpi / ddpi;
+
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+
+    fheroes2::Display & display = fheroes2::Display::instance();
+    display.resize(uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
+}
+
 void loadFirstMap() {
+    resizeDisplay();
+
     Settings & conf = Settings::Get();
 
     conf.SetGameType( Game::TYPE_STANDARD );

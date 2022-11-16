@@ -59,6 +59,8 @@ namespace
     // Returns nearest screen supported resolution
     fheroes2::Size GetNearestResolution( int width, int height, const std::vector<fheroes2::Size> & resolutions )
     {
+        return { width, height };
+
         if ( resolutions.empty() )
             return { width, height };
 
