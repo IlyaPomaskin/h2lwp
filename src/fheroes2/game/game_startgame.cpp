@@ -661,7 +661,6 @@ fheroes2::GameMode Interface::Basic::StartGame()
                     conf.SetCurrentColor( player->GetColor() );
 
                     world.ClearFog( player->GetColor() );
-                    Maps::ClearFog(0, 200, player->GetColor());
 
                     kingdom.ActionBeforeTurn();
 

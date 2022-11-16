@@ -453,11 +453,7 @@ void Interface::GameArea::Redraw( fheroes2::Image & dst, int flag, bool isPuzzle
 
     const bool drawHeroes = ( flag & LEVEL_HEROES ) == LEVEL_HEROES;
 
-#ifdef WITH_DEBUG
-    const bool drawFog = ( ( flag & LEVEL_FOG ) == LEVEL_FOG ) && !IS_DEVEL();
-#else
-    const bool drawFog = ( flag & LEVEL_FOG ) == LEVEL_FOG;
-#endif
+    const bool drawFog = false;
 
     const int friendColors = Players::FriendColors();
 

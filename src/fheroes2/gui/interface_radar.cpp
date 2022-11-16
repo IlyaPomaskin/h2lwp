@@ -279,11 +279,7 @@ void Interface::Radar::RedrawForViewWorld( const ViewWorld::ZoomROIs & roi, cons
 
 void Interface::Radar::RedrawObjects( int color, ViewWorldMode flags ) const
 {
-#ifdef WITH_DEBUG
-    const bool revealAll = ( flags == ViewWorldMode::ViewAll ) || IS_DEVEL();
-#else
-    const bool revealAll = flags == ViewWorldMode::ViewAll;
-#endif
+    const bool revealAll = true;
 
     const bool revealMines = revealAll || ( flags == ViewWorldMode::ViewMines );
     const bool revealHeroes = revealAll || ( flags == ViewWorldMode::ViewHeroes );
