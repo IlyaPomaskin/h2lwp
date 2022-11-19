@@ -216,7 +216,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     protected static DummyEdit mTextEdit;
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
-    protected static SDLClipboardHandler mClipboardHandler;
     protected static Hashtable<Integer, PointerIcon> mCursors;
     protected static int mLastCursorID;
     protected static SDLGenericMotionListener_API12 mMotionListener;
@@ -305,7 +304,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         mSurface = null;
         mTextEdit = null;
         mLayout = null;
-        mClipboardHandler = null;
         mCursors = new Hashtable<Integer, PointerIcon>();
         mLastCursorID = 0;
         mSDLThread = null;
@@ -390,8 +388,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         // So we can call stuff from static callbacks
         mSingleton = this;
         SDL.setContext(this);
-
-        mClipboardHandler = new SDLClipboardHandler();
 
         mHIDDeviceManager = HIDDeviceManager.acquire(this);
 
@@ -1828,22 +1824,20 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static boolean clipboardHasText() {
-        return mClipboardHandler.clipboardHasText();
+        return false;
     }
 
     /**
      * This method is called by SDL using JNI.
      */
     public static String clipboardGetText() {
-        return mClipboardHandler.clipboardGetText();
+        return "";
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    public static void clipboardSetText(String string) {
-        mClipboardHandler.clipboardSetText(string);
-    }
+    public static void clipboardSetText(String string) {}
 
     /**
      * This method is called by SDL using JNI.
@@ -2240,45 +2234,3 @@ class SDLInputConnection extends BaseInputConnection {
 
     public static native void nativeGenerateScancodeForUnichar(char c);
 }
-
-class SDLClipboardHandler implements
-    ClipboardManager.OnPrimaryClipChangedListener {
-
-    protected ClipboardManager mClipMgr;
-
-    SDLClipboardHandler() {
-       mClipMgr = (ClipboardManager) SDL.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-       mClipMgr.addPrimaryClipChangedListener(this);
-    }
-
-    public boolean clipboardHasText() {
-       return mClipMgr.hasPrimaryClip();
-    }
-
-    public String clipboardGetText() {
-        ClipData clip = mClipMgr.getPrimaryClip();
-        if (clip != null) {
-            ClipData.Item item = clip.getItemAt(0);
-            if (item != null) {
-                CharSequence text = item.getText();
-                if (text != null) {
-                    return text.toString();
-                }
-            }
-        }
-        return null;
-    }
-
-    public void clipboardSetText(String string) {
-       mClipMgr.removePrimaryClipChangedListener(this);
-       ClipData clip = ClipData.newPlainText(null, string);
-       mClipMgr.setPrimaryClip(clip);
-       mClipMgr.addPrimaryClipChangedListener(this);
-    }
-
-    @Override
-    public void onPrimaryClipChanged() {
-        SDLActivity.onNativeClipboardChanged();
-    }
-}
-
