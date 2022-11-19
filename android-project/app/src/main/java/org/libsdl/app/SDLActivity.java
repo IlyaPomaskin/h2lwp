@@ -620,6 +620,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         super.onDestroy();
     }
+
     public static int activityCounter = 0;
     public static int engineCounter = 0;
     private static SDLEngine mEngine;
@@ -654,27 +655,28 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             Log.v(TAG, "Engine onCreate");
         }
 
-//        @Override
-//        public SurfaceHolder getSurfaceHolder() {
-//            Log.v(TAG, "Engine getSurfaceHolder");
-//            return mHolder;
-//        }
+        @Override
+        public SurfaceHolder getSurfaceHolder() {
+            Log.v(TAG, "Engine getSurfaceHolder");
+            return mHolder;
+        }
 
-//        @Override
-//        public void onSurfaceCreated(SurfaceHolder holder) {
-//            Log.v(TAG, "Engine onSurfaceCreated");
-//            if (mHolder == null) {
-//                mHolder = holder;
-//            }
-//        }
+        @Override
+        public void onSurfaceCreated(SurfaceHolder holder) {
+            Log.v(TAG, "Engine onSurfaceCreated");
+            if (mHolder == null) {
+                mHolder = holder;
+            }
+        }
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             Log.v(TAG, "Engine onSurfaceChanged");
 
-//            if (mHolder != holder) {
-//                return;
-//            }
+            if (mHolder != holder) {
+                Log.v(TAG, "onSurfaceChanged no mHolder");
+                return;
+            }
 
             super.onSurfaceCreated(holder);
 
@@ -749,9 +751,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             }
             if (holder == SDLActivity.mEngine.mHolder) {
                 Log.v(TAG, "destroyed SDLActivity.mEngine.mHolder");
-//                super.onSurfaceDestroyed(holder);
-//                SDLActivity.nativePause();
-//                SDLActivity.onNativeSurfaceDestroyed();
+                super.onSurfaceDestroyed(holder);
+                SDLActivity.nativePause();
+                SDLActivity.onNativeSurfaceDestroyed();
             } else {
                 Log.v(TAG, "Wrong destroyed");
             }
@@ -926,7 +928,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         public void handleMessage(Message msg) {
             Context context = SDL.getContext();
             if (context == null) {
-                Log.e(TAG, "error handling message, getContext() returned null");
+                Log.e(TAG, "No context error handling message, getContext() returned null");
                 return;
             }
             switch (msg.arg1) {
@@ -934,7 +936,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
                 if (context instanceof Activity) {
                     ((Activity) context).setTitle((String)msg.obj);
                 } else {
-                    Log.e(TAG, "error handling message, getContext() returned no Activity");
+                    Log.e(TAG, "COMMAND_CHANGE_TITLE error handling message, getContext() returned no Activity");
                 }
                 break;
             case COMMAND_CHANGE_WINDOW_STYLE:
@@ -962,7 +964,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
                             }
                         }
                     } else {
-                        Log.e(TAG, "error handling message, getContext() returned no Activity");
+                        Log.e(TAG, "COMMAND_CHANGE_WINDOW_STYLE error handling message, getContext() returned no Activity");
                     }
                 }
                 break;
@@ -997,7 +999,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             }
             default:
                 if ((context instanceof SDLActivity) && !((SDLActivity) context).onUnhandledMessage(msg.arg1, msg.obj)) {
-                    Log.e(TAG, "error handling message, command is " + msg.arg1);
+                    Log.e(TAG, "default error handling message, command is " + msg.arg1);
                 }
             }
         }
@@ -1551,9 +1553,11 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      */
     public static Surface getNativeSurface() {
         if (mEngine.mHolder == null) {
+            Log.v(TAG, "getNativeSurface null");
             return null;
         }
 
+        Log.v(TAG, "getNativeSurface");
         return mEngine.mHolder.getSurface();
 
 //        if (SDLActivity.mSurface == null) {
