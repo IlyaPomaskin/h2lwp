@@ -138,17 +138,17 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Prevent a screen distortion glitch,
         // for instance when the device is in Landscape and a Portrait App is resumed.
         boolean skip = false;
-        int requestedOrientation = SDLActivity.mSingleton.getRequestedOrientation();
-
-        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
-            if (mWidth > mHeight) {
-               skip = true;
-            }
-        } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
-            if (mWidth < mHeight) {
-               skip = true;
-            }
-        }
+//        int requestedOrientation = SDLActivity.mSingleton.getRequestedOrientation();
+//
+//        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
+//            if (mWidth > mHeight) {
+//               skip = true;
+//            }
+//        } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+//            if (mWidth < mHeight) {
+//               skip = true;
+//            }
+//        }
 
         // Special Patch for Square Resolution: Black Berry Passport
         if (skip) {
@@ -164,10 +164,10 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Don't skip in MultiWindow.
         if (skip) {
             if (Build.VERSION.SDK_INT >= 24) {
-                if (SDLActivity.mSingleton.isInMultiWindowMode()) {
-                    Log.v("SDL", "Don't skip in Multi-Window");
-                    skip = false;
-                }
+//                if (SDLActivity.mSingleton.isInMultiWindowMode()) {
+//                    Log.v("SDL", "Don't skip in Multi-Window");
+//                    skip = false;
+//                }
             }
         }
 
