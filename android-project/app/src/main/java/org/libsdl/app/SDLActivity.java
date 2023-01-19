@@ -609,7 +609,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         if (SDLActivity.mSDLThread != null) {
 
             // Send Quit event to "SDLThread" thread
-            SDLActivity.nativeSendQuit();
+            SDLActivity.nativeQuit();
 
             // Wait for "SDLThread" thread to end
             try {
@@ -622,6 +622,8 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         SDLActivity.nativeQuit();
 
         super.onDestroy();
+
+        SDLActivity.initialize();
     }
 
     public static int activityCounter = 0;
@@ -753,13 +755,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
                 SDLActivity.onNativeSurfaceDestroyed();
                 SDLActivity.nativeSendQuit();
                 SDLActivity.nativeQuit();
-
-                // FIXME find way to correctly close prev thread and start new one
-                // tid 19982: swapBuffers(681): error 0x300d (EGL_BAD_SURFACE)
-                // egl_window_surface_t::swapBuffers called with NULL buffer
-
-                // TODO crash can cause restart?
-                Process.killProcess(Process.myPid());
                 super.onSurfaceDestroyed(holder);
             } else {
                 Log.v(TAG, "Wrong destroyed");
@@ -775,6 +770,14 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             Log.v(TAG, "Waiting for SDL thread");
             if (mEngine.mSDLThread != null) {
                 SDLActivity.nativeQuit();
+
+                // FIXME find way to correctly close prev thread and start new one
+                // tid 19982: swapBuffers(681): error 0x300d (EGL_BAD_SURFACE)
+                // egl_window_surface_t::swapBuffers called with NULL buffer
+
+                // TODO crash can cause restart?
+                Process.killProcess(Process.myPid());
+
                 try {
                     mEngine.mSDLThread.join();
                 } catch (Exception e) {
