@@ -28,6 +28,7 @@ android {
             path 'jni/Android.mk'
         }
     }
+    sourceSets.main.jni.srcDirs += ['/Users/ipomaskin/work/fheroes2/src']
 
     signingConfigs {
         release {
