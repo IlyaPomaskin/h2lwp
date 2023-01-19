@@ -64,10 +64,12 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void handlePause() {
+        Log.v("SDL", "handlePause()");
         enableSensor(Sensor.TYPE_ACCELEROMETER, false);
     }
 
     public void handleResume() {
+        Log.v("SDL", "handleResume()");
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
@@ -77,6 +79,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public Surface getNativeSurface() {
+        Log.v("SDL", "getNativeSurface()");
         return getHolder().getSurface();
     }
 
