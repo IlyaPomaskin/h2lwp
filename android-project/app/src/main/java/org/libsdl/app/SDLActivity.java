@@ -66,112 +66,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     private static final int SDL_MAJOR_VERSION = 2;
     private static final int SDL_MINOR_VERSION = 25;
     private static final int SDL_MICRO_VERSION = 0;
-/*
-    // Display InputType.SOURCE/CLASS of events and devices
-    //
-    // SDLActivity.debugSource(device.getSources(), "device[" + device.getName() + "]");
-    // SDLActivity.debugSource(event.getSource(), "event");
-    public static void debugSource(int sources, String prefix) {
-        int s = sources;
-        int s_copy = sources;
-        String cls = "";
-        String src = "";
-        int tst = 0;
-        int FLAG_TAINTED = 0x80000000;
-
-        if ((s & InputDevice.SOURCE_CLASS_BUTTON) != 0)     cls += " BUTTON";
-        if ((s & InputDevice.SOURCE_CLASS_JOYSTICK) != 0)   cls += " JOYSTICK";
-        if ((s & InputDevice.SOURCE_CLASS_POINTER) != 0)    cls += " POINTER";
-        if ((s & InputDevice.SOURCE_CLASS_POSITION) != 0)   cls += " POSITION";
-        if ((s & InputDevice.SOURCE_CLASS_TRACKBALL) != 0)  cls += " TRACKBALL";
-
-
-        int s2 = s_copy & ~InputDevice.SOURCE_ANY; // keep class bits
-        s2 &= ~(  InputDevice.SOURCE_CLASS_BUTTON
-                | InputDevice.SOURCE_CLASS_JOYSTICK
-                | InputDevice.SOURCE_CLASS_POINTER
-                | InputDevice.SOURCE_CLASS_POSITION
-                | InputDevice.SOURCE_CLASS_TRACKBALL);
-
-        if (s2 != 0) cls += "Some_Unkown";
-
-        s2 = s_copy & InputDevice.SOURCE_ANY; // keep source only, no class;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            tst = InputDevice.SOURCE_BLUETOOTH_STYLUS;
-            if ((s & tst) == tst) src += " BLUETOOTH_STYLUS";
-            s2 &= ~tst;
-        }
-
-        tst = InputDevice.SOURCE_DPAD;
-        if ((s & tst) == tst) src += " DPAD";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_GAMEPAD;
-        if ((s & tst) == tst) src += " GAMEPAD";
-        s2 &= ~tst;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tst = InputDevice.SOURCE_HDMI;
-            if ((s & tst) == tst) src += " HDMI";
-            s2 &= ~tst;
-        }
-
-        tst = InputDevice.SOURCE_JOYSTICK;
-        if ((s & tst) == tst) src += " JOYSTICK";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_KEYBOARD;
-        if ((s & tst) == tst) src += " KEYBOARD";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_MOUSE;
-        if ((s & tst) == tst) src += " MOUSE";
-        s2 &= ~tst;
-
-        if (Build.VERSION.SDK_INT >= 26) {
-            tst = InputDevice.SOURCE_MOUSE_RELATIVE;
-            if ((s & tst) == tst) src += " MOUSE_RELATIVE";
-            s2 &= ~tst;
-
-            tst = InputDevice.SOURCE_ROTARY_ENCODER;
-            if ((s & tst) == tst) src += " ROTARY_ENCODER";
-            s2 &= ~tst;
-        }
-        tst = InputDevice.SOURCE_STYLUS;
-        if ((s & tst) == tst) src += " STYLUS";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_TOUCHPAD;
-        if ((s & tst) == tst) src += " TOUCHPAD";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_TOUCHSCREEN;
-        if ((s & tst) == tst) src += " TOUCHSCREEN";
-        s2 &= ~tst;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            tst = InputDevice.SOURCE_TOUCH_NAVIGATION;
-            if ((s & tst) == tst) src += " TOUCH_NAVIGATION";
-            s2 &= ~tst;
-        }
-
-        tst = InputDevice.SOURCE_TRACKBALL;
-        if ((s & tst) == tst) src += " TRACKBALL";
-        s2 &= ~tst;
-
-        tst = InputDevice.SOURCE_ANY;
-        if ((s & tst) == tst) src += " ANY";
-        s2 &= ~tst;
-
-        if (s == FLAG_TAINTED) src += " FLAG_TAINTED";
-        s2 &= ~FLAG_TAINTED;
-
-        if (s2 != 0) src += " Some_Unkown";
-
-        Log.v(TAG, prefix + "int=" + s_copy + " CLASS={" + cls + " } source(s):" + src);
-    }
-*/
 
     public static boolean mIsResumedCalled, mHasFocus;
     public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);
@@ -276,10 +170,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     protected String[] getLibraries() {
         return new String[]{
             "SDL2",
-            // "SDL2_image",
-            // "SDL2_mixer",
-            // "SDL2_net",
-            // "SDL2_ttf",
             "main"
         };
     }
@@ -668,6 +558,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
+            super.onSurfaceCreated(holder);
             Log.v(TAG, "Engine onSurfaceCreated");
             if (mHolder == null) {
                 mHolder = holder;
@@ -679,56 +570,11 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             Log.v(TAG, "Engine onSurfaceChanged");
 
             if (mHolder != holder) {
-                Log.v(TAG, "onSurfaceChanged no mHolder");
                 return;
             }
 
-            super.onSurfaceCreated(holder);
-
-            int sdlFormat = 0x15151002; // SDL_PIXELFORMAT_RGB565 by default
-            switch (format) {
-                case PixelFormat.A_8:
-                    Log.v(TAG, "pixel format A_8");
-                    break;
-                case PixelFormat.LA_88:
-                    Log.v(TAG, "pixel format LA_88");
-                    break;
-                case PixelFormat.L_8:
-                    Log.v(TAG, "pixel format L_8");
-                    break;
-                case PixelFormat.RGBA_4444:
-                    Log.v(TAG, "pixel format RGBA_4444");
-                    sdlFormat = 0x15421002; // SDL_PIXELFORMAT_RGBA4444
-                    break;
-                case PixelFormat.RGBA_5551:
-                    Log.v(TAG, "pixel format RGBA_5551");
-                    sdlFormat = 0x15441002; // SDL_PIXELFORMAT_RGBA5551
-                    break;
-                case PixelFormat.RGBA_8888:
-                    Log.v(TAG, "pixel format RGBA_8888");
-                    sdlFormat = 0x16462004; // SDL_PIXELFORMAT_RGBA8888
-                    break;
-                case PixelFormat.RGBX_8888:
-                    Log.v(TAG, "pixel format RGBX_8888");
-                    sdlFormat = 0x16261804; // SDL_PIXELFORMAT_RGBX8888
-                    break;
-                case PixelFormat.RGB_332:
-                    Log.v(TAG, "pixel format RGB_332");
-                    sdlFormat = 0x14110801; // SDL_PIXELFORMAT_RGB332
-                    break;
-                case PixelFormat.RGB_565:
-                    Log.v(TAG, "pixel format RGB_565");
-                    sdlFormat = 0x15151002; // SDL_PIXELFORMAT_RGB565
-                    break;
-                case PixelFormat.RGB_888:
-                    Log.v(TAG, "pixel format RGB_888");
-                    // Not sure this is right, maybe SDL_PIXELFORMAT_RGB24 instead?
-                    sdlFormat = 0x16161804; // SDL_PIXELFORMAT_RGB888
-                    break;
-                default:
-                    Log.v(TAG, "pixel format unknown " + format);
-                    break;
-            }
+//            super.onSurfaceCreated(holder);
+            super.onSurfaceChanged(holder, format, width, height);
 
             SDLActivity.nativeSetScreenResolution(width, height, width, height, mDisplay.getRefreshRate());
 //            SDLActivity.onNativeResize(width, height, sdlFormat, mDisplay.getRefreshRate());
@@ -886,14 +732,17 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
+            Log.v("SDL", "NativeState.RESUMED");
             if (mSurface.mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
+                Log.v("SDL", "NativeState.RESUMED 1");
                 if (mSDLThread == null) {
+                    Log.v("SDL", "NativeState.RESUMED 2");
                     // This is the entry point to the C app.
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
-                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+//                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem
@@ -944,69 +793,13 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             }
             switch (msg.arg1) {
                 case COMMAND_CHANGE_TITLE:
-                    if (context instanceof Activity) {
-                        ((Activity) context).setTitle((String) msg.obj);
-                    } else {
-                        Log.e(TAG, "COMMAND_CHANGE_TITLE error handling message, getContext() returned no Activity");
-                    }
                     break;
                 case COMMAND_CHANGE_WINDOW_STYLE:
-                    if (Build.VERSION.SDK_INT >= 19) {
-                        if (context instanceof Activity) {
-                            Window window = ((Activity) context).getWindow();
-                            if (window != null) {
-                                if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
-                                    int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
-                                    window.getDecorView().setSystemUiVisibility(flags);
-                                    window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                                    window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                                    SDLActivity.mFullscreenModeActive = true;
-                                } else {
-                                    int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
-                                    window.getDecorView().setSystemUiVisibility(flags);
-                                    window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                                    window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                                    SDLActivity.mFullscreenModeActive = false;
-                                }
-                            }
-                        } else {
-                            Log.e(TAG, "COMMAND_CHANGE_WINDOW_STYLE error handling message, getContext() returned no Activity");
-                        }
-                    }
                     break;
                 case COMMAND_TEXTEDIT_HIDE:
-                    if (mTextEdit != null) {
-                        // Note: On some devices setting view to GONE creates a flicker in landscape.
-                        // Setting the View's sizes to 0 is similar to GONE but without the flicker.
-                        // The sizes will be set to useful values when the keyboard is shown again.
-                        mTextEdit.setLayoutParams(new RelativeLayout.LayoutParams(0, 0));
-
-                        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
-
-                        mScreenKeyboardShown = false;
-
-                        mSurface.requestFocus();
-                    }
                     break;
-                case COMMAND_SET_KEEP_SCREEN_ON: {
-                    if (context instanceof Activity) {
-                        Window window = ((Activity) context).getWindow();
-                        if (window != null) {
-                            if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
-                                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                            } else {
-                                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                            }
-                        }
-                    }
+                case COMMAND_SET_KEEP_SCREEN_ON:
                     break;
-                }
                 default:
                     if ((context instanceof SDLActivity) && !((SDLActivity) context).onUnhandledMessage(msg.arg1, msg.obj)) {
                         Log.e(TAG, "default error handling message, command is " + msg.arg1);
@@ -1236,7 +1029,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static void minimizeWindow() {
-
+        Log.v("SDL", "minimizeWindow");
         if (mSingleton == null) {
             return;
         }
@@ -1331,7 +1124,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static Context getContext() {
-        Log.v("SDL", "getContext()");
         return SDL.getContext();
     }
 
@@ -1441,7 +1233,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     // This method is called by SDLControllerManager's API 26 Generic Motion Handler.
     public static View getContentView() {
-        Log.v("SDL", "getContentViewƒ()");
+        Log.v("SDL", "getContentView()");
         return mLayout;
     }
 
@@ -1513,73 +1305,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     }
 
     public static boolean handleKeyEvent(View v, int keyCode, KeyEvent event, InputConnection ic) {
-        int deviceId = event.getDeviceId();
-        int source = event.getSource();
-
-        if (source == InputDevice.SOURCE_UNKNOWN) {
-            InputDevice device = InputDevice.getDevice(deviceId);
-            if (device != null) {
-                source = device.getSources();
-            }
-        }
-
-//        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-//            Log.v("SDL", "key down: " + keyCode + ", deviceId = " + deviceId + ", source = " + source);
-//        } else if (event.getAction() == KeyEvent.ACTION_UP) {
-//            Log.v("SDL", "key up: " + keyCode + ", deviceId = " + deviceId + ", source = " + source);
-//        }
-
-        // Dispatch the different events depending on where they come from
-        // Some SOURCE_JOYSTICK, SOURCE_DPAD or SOURCE_GAMEPAD are also SOURCE_KEYBOARD
-        // So, we try to process them as JOYSTICK/DPAD/GAMEPAD events first, if that fails we try them as KEYBOARD
-        //
-        // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
-        // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
-        // So, retrieve the device itself and check all of its sources
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            // Note that we process events with specific key codes here
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (SDLControllerManager.onNativePadDown(deviceId, keyCode) == 0) {
-                    return true;
-                }
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                if (SDLControllerManager.onNativePadUp(deviceId, keyCode) == 0) {
-                    return true;
-                }
-            }
-        }
-
-        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (isTextInputEvent(event)) {
-                    if (ic != null) {
-                        ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
-                    } else {
-                        SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
-                    }
-                }
-                onNativeKeyDown(keyCode);
-                return true;
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                onNativeKeyUp(keyCode);
-                return true;
-            }
-        }
-
-        if ((source & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
-            // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
-            // they are ignored here because sending them as mouse input to SDL is messy
-            if ((keyCode == KeyEvent.KEYCODE_BACK) || (keyCode == KeyEvent.KEYCODE_FORWARD)) {
-                switch (event.getAction()) {
-                    case KeyEvent.ACTION_DOWN:
-                    case KeyEvent.ACTION_UP:
-                        // mark the event as handled or it will be handled by system
-                        // handling KEYCODE_BACK by system will call onBackPressed()
-                        return true;
-                }
-            }
-        }
-
         return false;
     }
 
@@ -1594,7 +1319,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             return null;
         }
 
-        Log.v(TAG, "getNativeSurface");
+        Log.v(TAG, "getNativeSurface. exists: " + (mEngine.mHolder.getSurface() != null));
         return mEngine.mHolder.getSurface();
 
 //        if (SDLActivity.mSurface == null) {
