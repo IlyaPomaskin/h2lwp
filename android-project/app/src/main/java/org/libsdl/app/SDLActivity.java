@@ -551,7 +551,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            Log.v(TAG, "Engine onSurfaceChanged");
+            Log.v(TAG, String.format("Engine onSurfaceChanged format %d, width %d, height %d", format, width, height));
 
             if (mHolder != holder) {
                 return;
@@ -697,6 +697,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         // Try a transition to init state
         if (mNextNativeState == NativeState.INIT) {
+            Log.v("SDL", "NativeState.INIT");
 
             mCurrentNativeState = mNextNativeState;
             return;
@@ -704,6 +705,8 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         // Try a transition to paused state
         if (mNextNativeState == NativeState.PAUSED) {
+            Log.v("SDL", "NativeState.PAUSED");
+
             if (mSDLThread != null) {
                 nativePause();
             }
@@ -754,8 +757,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL if SDL did not handle a message itself.
      * This happens if a received message contains an unsupported command.
      * Method can be overwritten to handle Messages in a different class.
+     *
      * @param command the command of the message.
-     * @param param the parameter of the message. May be null.
+     * @param param   the parameter of the message. May be null.
      * @return if the message was handled in overridden method.
      */
     protected boolean onUnhandledMessage(int command, Object param) {
@@ -942,6 +946,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * so that is can be overridden
      */
     public static void setOrientation(int w, int h, boolean resizable, String hint) {
+        Log.v("SDL", String.format("setOrientation w: %d h: %d resizable: %s hint: %s", w, h, resizable ? "true" : "false", hint));
         if (mSingleton != null) {
             mSingleton.setOrientationBis(w, h, resizable, hint);
         }
