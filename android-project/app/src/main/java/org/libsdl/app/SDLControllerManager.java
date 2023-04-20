@@ -425,7 +425,6 @@ class SDLHapticHandler_API26 extends SDLHapticHandler {
                 return;
             }
             try {
-                haptic.vib.vibrate(VibrationEffect.createOneShot(length, vibeValue));
             }
             catch (Exception e) {
                 // Fall back to the generic method, which uses DEFAULT_AMPLITUDE, but works even if
@@ -753,26 +752,11 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean setRelativeMouseEnabled(boolean enabled) {
-        if (!SDLActivity.isDeXMode() || (Build.VERSION.SDK_INT >= 27)) {
-            if (enabled) {
-                SDLActivity.getContentView().requestPointerCapture();
-            } else {
-                SDLActivity.getContentView().releasePointerCapture();
-            }
-            mRelativeModeEnabled = enabled;
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     @Override
-    public void reclaimRelativeMouseModeIfNeeded()
-    {
-        if (mRelativeModeEnabled && !SDLActivity.isDeXMode()) {
-            SDLActivity.getContentView().requestPointerCapture();
-        }
-    }
+    public void reclaimRelativeMouseModeIfNeeded() {}
 
     @Override
     public float getEventX(MotionEvent event) {

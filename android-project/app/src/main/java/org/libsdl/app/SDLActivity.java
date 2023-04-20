@@ -72,7 +72,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
     protected static boolean mScreenKeyboardShown;
-    protected static ViewGroup mLayout;
     protected static SDLGenericMotionListener_API12 mMotionListener;
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
@@ -154,7 +153,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
         mSingleton = null;
         mSurface = null;
-        mLayout = null;
         mSDLThread = null;
         mIsResumedCalled = false;
         mHasFocus = true;
@@ -240,9 +238,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         // Set up the surface
         mSurface = createSDLSurface(getApplication());
-
-        mLayout = new RelativeLayout(this);
-        mLayout.addView(mSurface);
 
         // Get our current screen orientation and pass it down.
         mCurrentOrientation = SDLActivity.getCurrentOrientation();
@@ -1097,12 +1092,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             Log.v(TAG, "exception " + e.toString());
         }
         return false;
-    }
-
-    // This method is called by SDLControllerManager's API 26 Generic Motion Handler.
-    public static View getContentView() {
-        Log.v("SDL", "getContentView()");
-        return mLayout;
     }
 
     /**
