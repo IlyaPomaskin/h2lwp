@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <android/log.h>
+
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -145,8 +147,9 @@ namespace
                 fheroes2::engine().toggleFullScreen();
             }
 
-            display.resize( conf.VideoMode().width, conf.VideoMode().height );
-            display.fill( 0 ); // start from a black screen
+            resizeDisplay();
+
+            __android_log_print(ANDROID_LOG_INFO, "SDL", "DisplayInitializer w: %d h: %d", conf.VideoMode().width, conf.VideoMode().height);
 
             fheroes2::engine().setTitle( GetCaption() );
 
@@ -170,6 +173,27 @@ namespace
         ~DisplayInitializer()
         {
             fheroes2::Display::instance().release();
+        }
+
+        void resizeDisplay() {
+            float ddpi, hdpi, vdpi;
+            if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
+                ERROR_LOG("Failed to obtain DPI information for display 0");
+                ERROR_LOG(SDL_GetError());
+                exit(1);
+            }
+            float defaultDpi = 160;
+            float dpiScaling = defaultDpi / ddpi;
+
+            SDL_DisplayMode displayMode;
+            SDL_GetCurrentDisplayMode(0, &displayMode);
+
+            fheroes2::Display & display = fheroes2::Display::instance();
+
+            __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
+
+            display.resize(uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
+            display.fill( 0 ); // start from a black screen
         }
     };
 
@@ -317,13 +341,13 @@ int main( int argc, char ** argv )
 
         conf.setGameLanguage( conf.getGameLanguage() );
 
-        if ( conf.isShowIntro() ) {
-            fheroes2::showTeamInfo();
+        // if ( conf.isShowIntro() ) {
+        //     fheroes2::showTeamInfo();
 
-            Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-            Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-            Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-        }
+        //     Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+        //     Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+        //     Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+        // }
 
         // init cursor
         const CursorRestorer cursorRestorer( true, Cursor::POINTER );

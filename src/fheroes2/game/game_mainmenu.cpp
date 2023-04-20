@@ -20,7 +20,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
+#include <android/log.h>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -91,26 +91,7 @@ namespace
     }
 }
 
-void resizeDisplay() {
-    float ddpi, hdpi, vdpi;
-    if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-        ERROR_LOG("Failed to obtain DPI information for display 0");
-        ERROR_LOG(SDL_GetError());
-        exit(1);
-    }
-    float defaultDpi = 160;
-    float dpiScaling = defaultDpi / ddpi;
-
-    SDL_DisplayMode displayMode;
-    SDL_GetCurrentDisplayMode(0, &displayMode);
-
-    fheroes2::Display & display = fheroes2::Display::instance();
-    display.resize(uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
-}
-
 void loadFirstMap() {
-    resizeDisplay();
-
     Settings & conf = Settings::Get();
 
     conf.SetGameType( Game::TYPE_STANDARD );
@@ -121,8 +102,13 @@ void loadFirstMap() {
     conf.SetShowPanel(false);
     conf.SetShowStatus(false);
 
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap");
+
     const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList( Settings::Get().IsGameType( Game::TYPE_MULTI ) );
     conf.SetCurrentFileInfo( lists.front() );
+    
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s", lists.front().file.c_str(), lists.front().name.c_str());
+
     conf.GetPlayers().SetStartGame();
     world.LoadMapMP2( conf.MapsFile() );
 }
