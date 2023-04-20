@@ -116,7 +116,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     protected static Hashtable<Integer, PointerIcon> mCursors;
     protected static int mLastCursorID;
     protected static SDLGenericMotionListener_API12 mMotionListener;
-    protected static HIDDeviceManager mHIDDeviceManager;
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
@@ -284,8 +283,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         mSingleton = this;
         SDL.setContext(this);
 
-        mHIDDeviceManager = HIDDeviceManager.acquire(this);
-
         // Set up the surface
         mSurface = createSDLSurface(getApplication());
 
@@ -355,9 +352,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 //        Log.v(TAG, "onPause()");
 //        super.onPause();
 //
-//        if (mHIDDeviceManager != null) {
-//            mHIDDeviceManager.setFrozen(true);
-//        }
 //        if (!mHasMultiWindow) {
 //            pauseNativeThread();
 //        }
@@ -369,9 +363,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 //        Log.v(TAG, "onResume()");
 //        super.onResume();
 //
-//        if (mHIDDeviceManager != null) {
-//            mHIDDeviceManager.setFrozen(false);
-//        }
 //        if (!mHasMultiWindow) {
 //            resumeNativeThread();
 //        }
@@ -485,11 +476,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     @Override
     public void onDestroy() {
         Log.v(TAG, "onDestroy()");
-
-        if (mHIDDeviceManager != null) {
-            HIDDeviceManager.release(mHIDDeviceManager);
-            mHIDDeviceManager = null;
-        }
 
         if (SDLActivity.mBrokenLibraries) {
             super.onDestroy();
