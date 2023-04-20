@@ -1643,3 +1643,14 @@ class SDLMain implements Runnable {
 
     }
 }
+
+
+class SDLInputConnection extends BaseInputConnection {
+    public SDLInputConnection(View targetView, boolean fullEditor) {
+        super(targetView, fullEditor);
+    }
+
+    public static native void nativeCommitText(String text, int newCursorPosition);
+
+    public static native void nativeGenerateScancodeForUnichar(char c);
+}
