@@ -96,7 +96,7 @@ void loadFirstMap() {
 
     conf.SetGameType( Game::TYPE_STANDARD );
     conf.SetHideInterface(true);
-    conf.SetShowRadar(true);
+    conf.SetShowRadar(false);
     conf.SetShowButtons(false);
     conf.SetShowIcons(false);
     conf.SetShowPanel(false);
