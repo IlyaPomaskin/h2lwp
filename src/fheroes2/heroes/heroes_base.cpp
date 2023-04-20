@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "heroes_base.h"
+
 #include <algorithm>
 #include <cassert>
 #include <vector>
@@ -28,11 +30,10 @@
 #include "army.h"
 #include "artifact_info.h"
 #include "castle.h"
-#include "castle_heroes.h"
 #include "gamedefs.h"
 #include "heroes.h"
-#include "heroes_base.h"
 #include "kingdom.h"
+#include "maps.h"
 #include "race.h"
 #include "serialize.h"
 #include "spell_info.h"
@@ -393,9 +394,26 @@ bool HeroBase::CanCastSpell( const Spell & spell, std::string * res /* = nullptr
             return false;
         }
 
+        if ( ( spell == Spell::SUMMONBOAT || spell == Spell::TOWNGATE || spell == Spell::TOWNPORTAL ) && hero->isShipMaster() ) {
+            if ( res != nullptr ) {
+                *res = _( "This spell cannot be used on a boat." );
+            }
+            return false;
+        }
+
+        if ( spell == Spell::SUMMONBOAT ) {
+            const int32_t boatDestination = fheroes2::getPossibleBoatPosition( *hero );
+            if ( !Maps::isValidAbsIndex( boatDestination ) ) {
+                if ( res != nullptr ) {
+                    *res = _( "This spell can be casted only nearby water." );
+                }
+                return false;
+            }
+        }
+
         if ( spell == Spell::TOWNGATE || spell == Spell::TOWNPORTAL ) {
             const KingdomCastles & castles = hero->GetKingdom().GetCastles();
-            bool hasCastles = std::any_of( castles.begin(), castles.end(), []( const Castle * castle ) { return castle && !castle->GetHeroes().Guest(); } );
+            bool hasCastles = std::any_of( castles.begin(), castles.end(), []( const Castle * castle ) { return castle && castle->GetHero() == nullptr; } );
             if ( !hasCastles ) {
                 if ( res != nullptr ) {
                     *res = _( "You do not currently own any town or castle, so you can't cast the spell." );
@@ -415,12 +433,12 @@ bool HeroBase::CanCastSpell( const Spell & spell, std::string * res /* = nullptr
                 return false;
             }
 
-            const Heroes * townGuest = castle->GetHeroes().Guest();
-            if ( townGuest != nullptr ) {
+            const Heroes * townHero = castle->GetHero();
+            if ( townHero != nullptr ) {
                 if ( res != nullptr ) {
                     *res = _( "The nearest town is %{town}.\n \nThis town is occupied by your hero %{hero}." );
                     StringReplace( *res, "%{town}", castle->GetName() );
-                    StringReplace( *res, "%{hero}", townGuest->GetName() );
+                    StringReplace( *res, "%{hero}", townHero->GetName() );
                 }
                 return false;
             }

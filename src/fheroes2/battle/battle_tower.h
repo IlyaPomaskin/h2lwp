@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -39,25 +39,24 @@ class Castle;
 
 namespace Battle
 {
-    enum
+    enum class TowerType : uint8_t
     {
-        TWR_LEFT = 0x01,
-        TWR_CENTER = 0x02,
-        TWR_RIGHT = 0x04
+        TWR_LEFT,
+        TWR_CENTER,
+        TWR_RIGHT
     };
 
     class Tower : public Unit
     {
     public:
-        Tower( const Castle &, int, const Rand::DeterministicRandomGenerator & randomGenerator, const uint32_t );
+        Tower( const Castle & castle, const TowerType type, const Rand::DeterministicRandomGenerator & randomGenerator, const uint32_t uid );
         Tower( const Tower & ) = delete;
 
         Tower & operator=( const Tower & ) = delete;
 
         bool isValid() const override;
-        int GetColor() const override;
-        uint32_t GetType() const;
-        uint32_t GetBonus() const;
+        TowerType GetType() const;
+        uint32_t GetAttackBonus() const;
         uint32_t GetAttack() const override;
 
         const char * GetName() const;
@@ -65,13 +64,15 @@ namespace Battle
         void SetDestroy();
         fheroes2::Point GetPortPosition() const;
 
-        static std::string GetInfo( const Castle & );
+        // Returns a text description of the parameters of the towers of a given castle. Can be
+        // called both during combat and outside of it. In the former case, the current state of
+        // the towers destroyed during the siege will be reflected.
+        static std::string GetInfo( const Castle & castle );
 
     private:
-        int type;
-        int color;
-        uint32_t bonus;
-        bool valid;
+        TowerType _towerType;
+        uint32_t _attackBonus;
+        bool _isValid;
     };
 }
 

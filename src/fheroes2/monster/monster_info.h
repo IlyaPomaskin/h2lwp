@@ -21,7 +21,6 @@
 #ifndef H2MONSTER_INFO_H
 #define H2MONSTER_INFO_H
 
-#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>

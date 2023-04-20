@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -36,11 +36,6 @@ class Castle;
 namespace Game
 {
     void Init();
-
-    const std::string & GetLastSavename();
-    void SetLastSavename( const std::string & );
-    void SetLoadVersion( uint16_t ver );
-    uint16_t GetLoadVersion();
 
     // type_t
     enum
@@ -97,7 +92,11 @@ namespace Game
     int GetKingdomColors();
     int GetActualKingdomColors();
     void DialogPlayers( int color, std::string );
-    uint32_t & MapsAnimationFrame();
+
+    uint32_t getAdventureMapAnimationIndex();
+
+    void updateAdventureMapAnimationIndex();
+
     uint32_t GetRating();
     uint32_t GetGameOverScores();
     uint32_t GetLostTownDays();
@@ -112,17 +111,11 @@ namespace Game
     void saveDifficulty( const int difficulty );
     void SavePlayers( const std::string & mapFileName, const Players & players );
 
-    std::string GetSaveDir();
-    std::string GetSaveFileBaseName();
-    std::string GetSaveFileExtension();
-    std::string GetSaveFileExtension( const int gameType );
-
     int32_t GetStep4Player( const int32_t currentId, const int32_t width, const int32_t totalCount );
-    std::string CountThievesGuild( uint32_t monsterCount, int guildCount );
 
-    // Returns the string representation of the monster count, formatted according to the scouting level (possibly in
-    // abbreviated form), suitable for use with the WORLD_SCOUTING_EXTENDED option. See the implementation for details.
-    std::string formatMonsterCount( const uint32_t count, const int scoutingLevel, const bool abbreviateNumber = false );
+    // Returns the string representation of the monster count. If a detailed view is requested, the exact number is returned
+    // (unless the abbreviated number is requested), otherwise, a qualitative estimate is returned (Few, Several, etc).
+    std::string formatMonsterCount( const uint32_t count, const bool isDetailedView, const bool abbreviateNumber = false );
 }
 
 #endif

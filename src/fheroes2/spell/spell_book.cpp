@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "spell_book.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <functional>
@@ -32,14 +34,12 @@
 #include "dialog.h"
 #include "dialog_selectitems.h"
 #include "game_hotkeys.h"
-#include "heroes.h"
 #include "heroes_base.h"
 #include "icn.h"
 #include "image.h"
 #include "localevent.h"
 #include "math_base.h"
 #include "screen.h"
-#include "spell_book.h"
 #include "text.h"
 #include "tools.h"
 #include "translations.h"
@@ -238,11 +238,11 @@ Spell SpellBook::Open( const HeroBase & hero, const Filter displayableSpells, co
 
     // message loop
     while ( le.HandleEvents() ) {
-        if ( ( le.MouseClickLeft( prev_list ) || HotKeyPressEvent( Game::HotKeyEvent::MOVE_LEFT ) ) && _startSpellIndex > 0 ) {
+        if ( ( le.MouseClickLeft( prev_list ) || HotKeyPressEvent( Game::HotKeyEvent::DEFAULT_LEFT ) ) && _startSpellIndex > 0 ) {
             _startSpellIndex -= spellsPerPage * 2;
             redraw = true;
         }
-        else if ( ( le.MouseClickLeft( next_list ) || HotKeyPressEvent( Game::HotKeyEvent::MOVE_RIGHT ) )
+        else if ( ( le.MouseClickLeft( next_list ) || HotKeyPressEvent( Game::HotKeyEvent::DEFAULT_RIGHT ) )
                   && displayedSpells.size() > ( _startSpellIndex + ( spellsPerPage * 2 ) ) ) {
             _startSpellIndex += spellsPerPage * 2;
             redraw = true;
@@ -493,15 +493,6 @@ SpellStorage SpellBook::SetFilter( const Filter filter, const HeroBase * hero ) 
         res.resize( std::distance( res.begin(), std::remove_if( res.begin(), res.end(), [filter]( const Spell & s ) {
                                        return ( ( SpellBook::Filter::ADVN == filter ) && s.isCombat() ) || ( ( SpellBook::Filter::CMBT == filter ) && !s.isCombat() );
                                    } ) ) );
-    }
-
-    // check on water: disable portal spells
-    if ( hero != nullptr && hero->Modes( Heroes::SHIPMASTER ) ) {
-        SpellStorage::iterator itend = res.end();
-        itend = std::remove( res.begin(), itend, Spell( Spell::TOWNGATE ) );
-        itend = std::remove( res.begin(), itend, Spell( Spell::TOWNPORTAL ) );
-        if ( res.end() != itend )
-            res.resize( std::distance( res.begin(), itend ) );
     }
 
     // sorting results

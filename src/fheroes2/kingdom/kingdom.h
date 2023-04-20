@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -24,6 +24,7 @@
 #define H2KINGDOM_H
 
 #include <cstdint>
+#include <functional>
 #include <list>
 #include <set>
 
@@ -41,12 +42,12 @@
 
 class StreamBase;
 
+struct EventDate;
+
 namespace Maps
 {
     class Tiles;
 }
-
-struct CapturedObjects;
 
 struct KingdomCastles : public VecCastles
 {};
@@ -93,7 +94,7 @@ public:
 
     void appendSurrenderedHero( Heroes & hero );
 
-    Heroes * GetBestHero();
+    Heroes * GetBestHero() const;
 
     Monster GetStrongestMonster() const;
 
@@ -163,6 +164,7 @@ public:
     void ActionNewDay();
     void ActionNewWeek();
     void ActionNewMonth();
+    void ActionNewDayResourceUpdate( const std::function<void( const EventDate & event, const Funds & funds )> & displayEventDialog );
 
     void SetVisited( int32_t index, const MP2::MapObjectType objectType );
     uint32_t CountVisitedObjects( const MP2::MapObjectType objectType ) const;
@@ -236,8 +238,6 @@ public:
 
     void AddHeroes( const AllHeroes & );
     void AddCastles( const AllCastles & );
-
-    void AddTributeEvents( CapturedObjects & captureobj, const uint32_t day, const MP2::MapObjectType objectType );
 
     // Resets recruits in all kingdoms and returns a set of heroes that are still available for recruitment
     // in the kingdoms

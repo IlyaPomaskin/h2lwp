@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -24,9 +24,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -59,7 +59,7 @@
 namespace Battle
 {
     void EagleEyeSkillAction( HeroBase &, const SpellStorage &, bool, const Rand::DeterministicRandomGenerator & randomGenerator );
-    void NecromancySkillAction( HeroBase & hero, const uint32_t, const bool isControlHuman, const Battle::Arena & arena );
+    void NecromancySkillAction( HeroBase & hero, const uint32_t enemyTroopsKilled, const bool isControlHuman );
 }
 
 namespace
@@ -233,8 +233,7 @@ Battle::Result Battle::Loader( Army & army1, Army & army2, int32_t mapsindex )
         }
     }
 
-    const uint32_t battleSeed = Settings::Get().ExtBattleDeterministicResult() ? computeBattleSeed( mapsindex, world.GetMapSeed(), army1, army2 )
-                                                                               : Rand::Get( std::numeric_limits<uint32_t>::max() );
+    const uint32_t battleSeed = computeBattleSeed( mapsindex, world.GetMapSeed(), army1, army2 );
 
     bool isBattleOver = false;
     while ( !isBattleOver ) {
@@ -287,7 +286,15 @@ Battle::Result Battle::Loader( Army & army1, Army & army2, int32_t mapsindex )
 
             // if the other army also had a hero, some artifacts may be captured by them
             if ( winnerHero != nullptr ) {
-                transferArtifacts( winnerHero->GetBagArtifacts(), artifactsToTransfer );
+                BagArtifacts & bag = winnerHero->GetBagArtifacts();
+
+                transferArtifacts( bag, artifactsToTransfer );
+
+                const auto assembledArtifacts = bag.assembleArtifactSetIfPossible();
+
+                if ( winnerHero->isControlHuman() ) {
+                    std::for_each( assembledArtifacts.begin(), assembledArtifacts.end(), Dialog::ArtifactSetAssembled );
+                }
             }
         }
 
@@ -317,7 +324,7 @@ Battle::Result Battle::Loader( Army & army1, Army & army2, int32_t mapsindex )
 
         // necromancy capability
         if ( winnerHero && winnerHero->GetLevelSkill( Skill::Secondary::NECROMANCY ) )
-            NecromancySkillAction( *winnerHero, result.killed, winnerHero->isControlHuman(), arena );
+            NecromancySkillAction( *winnerHero, result.killed, winnerHero->isControlHuman() );
 
         if ( winnerHero ) {
             const Heroes * kingdomHero = dynamic_cast<const Heroes *>( winnerHero );
@@ -401,7 +408,7 @@ void Battle::EagleEyeSkillAction( HeroBase & hero, const SpellStorage & spells, 
     hero.AppendSpellsToBook( new_spells, true );
 }
 
-void Battle::NecromancySkillAction( HeroBase & hero, const uint32_t enemyTroopsKilled, const bool isControlHuman, const Battle::Arena & arena )
+void Battle::NecromancySkillAction( HeroBase & hero, const uint32_t enemyTroopsKilled, const bool isControlHuman )
 {
     Army & army = hero.GetArmy();
 
@@ -409,18 +416,14 @@ void Battle::NecromancySkillAction( HeroBase & hero, const uint32_t enemyTroopsK
         return;
 
     const uint32_t necromancyPercent = GetNecromancyPercent( hero );
-    const uint32_t raisedMonsterType = Monster::SKELETON;
 
-    const Monster mons( Monster::SKELETON );
-    uint32_t raiseCount = Monster::GetCountFromHitPoints( raisedMonsterType, mons.GetHitPoints() * enemyTroopsKilled * necromancyPercent / 100 );
-    if ( raiseCount == 0u )
-        raiseCount = 1;
-    army.JoinTroop( mons, raiseCount, false );
+    uint32_t raiseCount = std::max( enemyTroopsKilled * necromancyPercent / 100, 1U );
+    army.JoinTroop( Monster::SKELETON, raiseCount, false );
 
     if ( isControlHuman )
-        arena.DialogBattleNecromancy( raiseCount, raisedMonsterType );
+        Arena::DialogBattleNecromancy( raiseCount );
 
-    DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "raise: " << raiseCount << mons.GetMultiName() )
+    DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "raise: " << raiseCount << " skeletons" )
 }
 
 uint32_t Battle::Result::AttackerResult() const

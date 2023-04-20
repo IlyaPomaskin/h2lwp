@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -28,7 +28,6 @@
 
 #include "agg_image.h"
 #include "castle.h"
-#include "castle_heroes.h"
 #include "cursor.h"
 #include "dialog.h"
 #include "game_hotkeys.h"
@@ -145,14 +144,13 @@ bool RowSpells::QueueEventProcessing()
 
         if ( spell != Spell::NONE ) {
             fheroes2::SpellDialogElement( spell, nullptr ).showPopup( le.MousePressRight() ? Dialog::ZERO : Dialog::OK );
-            fheroes2::Display::instance().render();
         }
     }
 
     return 0 <= index;
 }
 
-void Castle::OpenMageGuild( const CastleHeroes & heroes ) const
+void Castle::OpenMageGuild( const Heroes * hero ) const
 {
     fheroes2::Display & display = fheroes2::Display::instance();
 
@@ -166,11 +164,11 @@ void Castle::OpenMageGuild( const CastleHeroes & heroes ) const
     const fheroes2::Point cur_pt( restorer.x(), restorer.y() );
     fheroes2::Point dst_pt( cur_pt.x, cur_pt.y );
 
-    const bool isEvilInterface = Settings::Get().ExtGameEvilInterface();
+    const bool isEvilInterface = Settings::Get().isEvilInterfaceEnabled();
 
     fheroes2::Blit( fheroes2::AGG::GetICN( isEvilInterface ? ICN::STONEBAK_EVIL : ICN::STONEBAK, 0 ), display, cur_pt.x, cur_pt.y );
 
-    // The original ICN::WELLEXTRA image does not have a yellow outer frame.
+    // The original ICN::WELLXTRA image does not have a yellow outer frame.
     const int32_t allowedBottomBarWidth = exitButtonOffsetX;
     const fheroes2::Sprite & bottomBar = fheroes2::AGG::GetICN( ICN::SMALLBAR, 0 );
 
@@ -181,10 +179,12 @@ void Castle::OpenMageGuild( const CastleHeroes & heroes ) const
 
     // text bar
     Text text;
-    if ( ( !heroes.Guard() || !heroes.Guard()->HaveSpellBook() ) && ( !heroes.Guest() || !heroes.Guest()->HaveSpellBook() ) )
+    if ( hero == nullptr || !hero->HaveSpellBook() ) {
         text.Set( _( "The above spells are available here." ), Font::BIG );
-    else
+    }
+    else {
         text.Set( _( "The above spells have been added to your book." ), Font::BIG );
+    }
     text.Blit( cur_pt.x + 280 - text.w() / 2, cur_pt.y + 463 );
 
     const int level = GetLevelMageGuild();
@@ -235,7 +235,7 @@ void Castle::OpenMageGuild( const CastleHeroes & heroes ) const
     spells4.Redraw( display );
     spells5.Redraw( display );
 
-    fheroes2::Button buttonExit( cur_pt.x + exitButtonOffsetX, cur_pt.y + bottomBarOffsetY, ICN::WELLXTRA, 0, 1 );
+    fheroes2::Button buttonExit( cur_pt.x + exitButtonOffsetX, cur_pt.y + bottomBarOffsetY, ICN::BUTTON_GUILDWELL_EXIT, 0, 1 );
     buttonExit.draw();
 
     display.render();

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2021 - 2022                                             *
+ *   Copyright (C) 2021 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -108,7 +108,7 @@ namespace AI
                 checkSelectBestSpell( spell, spellDamageValue( spell, arena, currentUnit, friendly, enemies, retreating ) );
             }
             else if ( spell.isEffectDispel() ) {
-                checkSelectBestSpell( spell, spellDispellValue( spell, friendly, enemies ) );
+                checkSelectBestSpell( spell, spellDispelValue( spell, friendly, enemies ) );
             }
             else if ( spell.isSummon() ) {
                 checkSelectBestSpell( spell, spellSummonValue( spell, arena, _commander->GetColor() ) );
@@ -306,12 +306,12 @@ namespace AI
         return ratio;
     }
 
-    double BattlePlanner::spellEffectValue( const Spell & spell, const Battle::Unit & target, bool targetIsLast, bool forDispell ) const
+    double BattlePlanner::spellEffectValue( const Spell & spell, const Battle::Unit & target, bool targetIsLast, bool forDispel ) const
     {
         const int spellID = spell.GetID();
 
-        // Make sure this spell can be applied to the current unit (skip check for dispell estimation)
-        if ( !forDispell
+        // Make sure this spell can be applied to the current unit (skip check for dispel estimation)
+        if ( !forDispel
              && ( ( target.Modes( SP_BLIND | SP_PARALYZE | SP_STONE ) && spellID != Spell::ANTIMAGIC ) || target.isUnderSpellEffect( spell )
                   || !target.AllowApplySpell( spell, _commander ) ) ) {
             return 0.0;
@@ -374,7 +374,7 @@ namespace AI
         case Spell::STEELSKIN:
             ratio = 0.2;
             break;
-        // Following spell usefullness is conditional; ratio will be determined later
+        // Following spell usefulness is conditional; ratio will be determined later
         case Spell::DRAGONSLAYER:
         case Spell::ANTIMAGIC:
         case Spell::MIRRORIMAGE:
@@ -445,7 +445,7 @@ namespace AI
         return bestOutcome;
     }
 
-    SpellcastOutcome BattlePlanner::spellDispellValue( const Spell & spell, const Battle::Units & friendly, const Units & enemies ) const
+    SpellcastOutcome BattlePlanner::spellDispelValue( const Spell & spell, const Battle::Units & friendly, const Units & enemies ) const
     {
         SpellcastOutcome bestOutcome;
 
@@ -506,17 +506,7 @@ namespace AI
             hpRestored = hpRestored * ( 100 + value ) / 100;
         }
 
-        // Get friendly units list including the invalid and dead ones
-        const Force & friendlyForce = arena.getForce( _myColor );
-
-        for ( const Unit * unit : friendlyForce ) {
-            if ( !unit || !unit->AllowApplySpell( spell, _commander ) )
-                continue;
-
-            // For dead units: skip if there's another unit standing on top
-            if ( !unit->isValid() && Board::GetCell( unit->GetHeadIndex() )->GetUnit() )
-                continue;
-
+        auto updateBestOutcome = [this, &spell, &bestOutcome, hpRestored]( const Unit * unit ) {
             uint32_t missingHP = unit->GetMissingHitPoints();
             missingHP = ( missingHP < hpRestored ) ? missingHP : hpRestored;
 
@@ -528,6 +518,33 @@ namespace AI
             }
 
             bestOutcome.updateOutcome( spellValue, unit->GetHeadIndex() );
+        };
+
+        // First consider the still alive stacks
+        for ( const Unit * unit : arena.getForce( _myColor ) ) {
+            assert( unit != nullptr );
+
+            if ( !unit->isValid() ) {
+                continue;
+            }
+
+            if ( !unit->AllowApplySpell( spell, _commander ) ) {
+                continue;
+            }
+
+            updateBestOutcome( unit );
+        }
+
+        // Then consider the stacks from the graveyard
+        for ( const int32_t idx : arena.GraveyardOccupiedCells() ) {
+            if ( !arena.GraveyardAllowResurrect( idx, spell ) ) {
+                continue;
+            }
+
+            const Unit * unit = arena.GraveyardLastTroop( idx );
+            assert( unit != nullptr && !unit->isValid() );
+
+            updateBestOutcome( unit );
         }
 
         return bestOutcome;

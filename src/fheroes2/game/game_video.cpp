@@ -18,6 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <ostream>
@@ -42,7 +43,7 @@
 namespace
 {
     // Anim2 directory is used in Russian Buka version of the game.
-    std::array<std::string, 4> videoDir = { "anim", "anim2", System::ConcatePath( "heroes2", "anim" ), "data" };
+    std::array<std::string, 4> videoDir = { "anim", "anim2", System::concatPath( "heroes2", "anim" ), "data" };
 
     void playAudio( const std::vector<std::vector<uint8_t>> & audioChannels )
     {
@@ -62,7 +63,7 @@ namespace Video
     {
         for ( const std::string & rootDir : Settings::GetRootDirs() ) {
             for ( size_t dirIdx = 0; dirIdx < videoDir.size(); ++dirIdx ) {
-                const std::string fullDirPath = System::ConcatePath( rootDir, videoDir[dirIdx] );
+                const std::string fullDirPath = System::concatPath( rootDir, videoDir[dirIdx] );
 
                 if ( System::IsDirectory( fullDirPath ) ) {
                     ListFiles videoFiles;
@@ -120,6 +121,7 @@ namespace Video
 
         fheroes2::Display & display = fheroes2::Display::instance();
         display.fill( 0 );
+        display.updateNextRenderRoi( { 0, 0, display.width(), display.height() } );
 
         unsigned int currentFrame = 0;
         fheroes2::Rect frameRoi( ( display.width() - video.width() ) / 2, ( display.height() - video.height() ) / 2, 0, 0 );
@@ -131,7 +133,9 @@ namespace Video
 
         bool isFrameReady = false;
 
-        Game::passAnimationDelay( Game::CUSTOM_DELAY );
+        Game::passCustomAnimationDelay( delay );
+        // Make sure that the first run is passed immediately.
+        assert( !Game::isCustomDelayNeeded( delay ) );
 
         bool userMadeAction = false;
 
@@ -207,6 +211,7 @@ namespace Video
         }
 
         display.fill( 0 );
+        display.updateNextRenderRoi( { 0, 0, display.width(), display.height() } );
 
         return true;
     }

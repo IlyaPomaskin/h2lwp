@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -167,7 +167,8 @@ void Battle::Arena::BattleProcess( Unit & attacker, Unit & defender, int32_t dst
     }
     // This is a shot, update the direction for the attacker only
     else {
-        attacker.UpdateDirection( board[dst].GetPos() );
+        // For shooters we get the target position (not the 'dst') to take into account the wide units.
+        attacker.UpdateDirection( defender.GetRectPosition() );
     }
 
     // Update the attacker's luck right before the attack
@@ -180,10 +181,11 @@ void Battle::Arena::BattleProcess( Unit & attacker, Unit & defender, int32_t dst
         _interface->RedrawActionAttackPart1( attacker, defender, attackTargets );
     }
 
-    TargetsApplyDamage( attacker, attackTargets );
+    uint32_t resurrected = 0;
+    TargetsApplyDamage( attacker, attackTargets, resurrected );
 
     if ( _interface ) {
-        _interface->RedrawActionAttackPart2( attacker, attackTargets );
+        _interface->RedrawActionAttackPart2( attacker, defender, attackTargets, resurrected );
     }
 
     // Then apply the attacker's built-in spell
@@ -234,7 +236,7 @@ void Battle::Arena::BattleProcess( Unit & attacker, Unit & defender, int32_t dst
                 }
 
                 if ( spell.GetID() == Spell::DISPEL ) {
-                    spellTargetUnit->ResetModes( IS_GOOD_MAGIC );
+                    spellTargetUnit->removeAffection( IS_GOOD_MAGIC );
                 }
                 else {
                     // The unit's built-in spell efficiency does not depend on its commanding hero's skills
@@ -381,8 +383,15 @@ void Battle::Arena::ApplyActionAttack( Command & cmd )
                 }
             }
 
-            attacker->UpdateDirection();
-            defender->UpdateDirection();
+            // Reflect attacker only if he is alive.
+            if ( attacker->isValid() ) {
+                attacker->UpdateDirection();
+            }
+
+            // Reflect defender only if he is alive.
+            if ( defender->isValid() ) {
+                defender->UpdateDirection();
+            }
         }
         else {
             DEBUG_LOG( DBG_BATTLE, DBG_WARN, "incorrect param: " << attacker->String( true ) << " and " << defender->String( true ) )
@@ -404,7 +413,7 @@ void Battle::Arena::ApplyActionMove( Command & cmd )
     const Cell * cell = Board::GetCell( dst );
 
     if ( unit && unit->isValid() && cell && cell->isPassableForUnit( *unit ) ) {
-        const int32_t head = unit->GetHeadIndex();
+        const int32_t initialHead = unit->GetHeadIndex();
 
         Position pos = Position::GetPosition( *unit, dst );
         assert( pos.GetHead() != nullptr && ( !unit->isWide() || pos.GetTail() != nullptr ) );
@@ -417,8 +426,10 @@ void Battle::Arena::ApplyActionMove( Command & cmd )
 
         if ( unit->isFlying() ) {
             unit->UpdateDirection( pos.GetRect() );
-            if ( unit->isReflect() != pos.isReflect() )
+
+            if ( unit->isReflect() != pos.isReflect() ) {
                 pos.Swap();
+            }
 
             if ( _interface ) {
                 _interface->RedrawActionFly( *unit, pos );
@@ -427,19 +438,16 @@ void Battle::Arena::ApplyActionMove( Command & cmd )
                 const int32_t dstHead = pos.GetHead()->GetIndex();
                 const int32_t dstTail = unit->isWide() ? pos.GetTail()->GetIndex() : -1;
 
-                // open the bridge if the unit should land on it
-                if ( _bridge->NeedDown( *unit, dstHead ) ) {
-                    _bridge->Action( *unit, dstHead );
-                }
-                else if ( unit->isWide() && _bridge->NeedDown( *unit, dstTail ) ) {
-                    _bridge->Action( *unit, dstTail );
+                // Lower the bridge if the unit needs to land on it
+                if ( _bridge->NeedDown( *unit, dstHead ) || ( unit->isWide() && _bridge->NeedDown( *unit, dstTail ) ) ) {
+                    _bridge->ActionDown();
                 }
 
                 unit->SetPosition( pos );
 
-                // check for possible bridge close action, after unit's end of movement
+                // Raise the bridge if possible after the unit has completed its movement
                 if ( _bridge->AllowUp() ) {
-                    _bridge->Action( *unit, dstHead );
+                    _bridge->ActionUp();
                 }
             }
 
@@ -455,39 +463,33 @@ void Battle::Arena::ApplyActionMove( Command & cmd )
                 return;
             }
 
-            if ( _interface )
+            if ( _interface ) {
                 _interface->RedrawActionMove( *unit, path );
+            }
             else if ( _bridge ) {
-                for ( Indexes::const_iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt ) {
-                    bool doMovement = false;
+                for ( const int32_t idx : path ) {
+                    if ( _bridge->NeedDown( *unit, idx ) ) {
+                        _bridge->ActionDown();
+                    }
 
-                    if ( _bridge->NeedDown( *unit, *pathIt ) )
-                        _bridge->Action( *unit, *pathIt );
-
-                    if ( unit->isWide() ) {
-                        if ( unit->GetTailIndex() == *pathIt )
-                            unit->SetReflection( !unit->isReflect() );
-                        else
-                            doMovement = true;
+                    if ( unit->isWide() && unit->GetTailIndex() == idx ) {
+                        unit->SetReflection( !unit->isReflect() );
                     }
                     else {
-                        doMovement = true;
+                        unit->SetPosition( idx );
                     }
 
-                    if ( doMovement )
-                        unit->SetPosition( *pathIt );
-
-                    // check for possible bridge close action, after unit's end of movement
-                    if ( _bridge->AllowUp() )
-                        _bridge->Action( *unit, *pathIt );
+                    if ( _bridge->AllowUp() ) {
+                        _bridge->ActionUp();
+                    }
                 }
             }
 
             if ( unit->isWide() ) {
-                const int32_t dst1 = path.back();
-                const int32_t dst2 = 1 < path.size() ? path[path.size() - 2] : head;
+                const int32_t dstHead = path.back();
+                const int32_t dstTail = path.size() > 1 ? path[path.size() - 2] : initialHead;
 
-                finalPos.Set( dst1, unit->isWide(), ( RIGHT_SIDE & Board::GetDirection( dst1, dst2 ) ) != 0 );
+                finalPos.Set( dstHead, true, ( Board::GetDirection( dstHead, dstTail ) & RIGHT_SIDE ) != 0 );
             }
             else {
                 finalPos.Set( path.back(), false, unit->isReflect() );
@@ -507,21 +509,17 @@ void Battle::Arena::ApplyActionMove( Command & cmd )
 void Battle::Arena::ApplyActionSkip( Command & cmd )
 {
     const uint32_t uid = cmd.GetValue();
-    const int32_t hard = cmd.GetValue();
 
     Unit * unit = GetTroopUID( uid );
 
     if ( unit && unit->isValid() ) {
         if ( !unit->Modes( TR_MOVED ) ) {
-            if ( hard || unit->Modes( TR_SKIPMOVE ) ) {
-                unit->SetModes( TR_HARDSKIP );
-                unit->SetModes( TR_MOVED );
-            }
+            unit->SetModes( TR_SKIP );
+            unit->SetModes( TR_MOVED );
 
-            unit->SetModes( TR_SKIPMOVE );
-
-            if ( _interface )
+            if ( _interface ) {
                 _interface->RedrawActionSkipStatus( *unit );
+            }
 
             DEBUG_LOG( DBG_BATTLE, DBG_TRACE, unit->String() )
         }
@@ -545,9 +543,6 @@ void Battle::Arena::ApplyActionEnd( Command & cmd )
     if ( unit ) {
         if ( !unit->Modes( TR_MOVED ) ) {
             unit->SetModes( TR_MOVED );
-
-            if ( unit->Modes( TR_SKIPMOVE ) && _interface )
-                _interface->RedrawActionSkipStatus( *unit );
 
             DEBUG_LOG( DBG_BATTLE, DBG_TRACE, unit->String() )
         }
@@ -589,8 +584,7 @@ void Battle::Arena::ApplyActionMorale( Command & cmd )
     }
     // Bad morale
     else {
-        // A bad morale event cannot happen when a waiting unit gets its turn
-        if ( !unit->Modes( MORALE_BAD ) || unit->Modes( TR_MOVED | TR_SKIPMOVE ) ) {
+        if ( !unit->Modes( MORALE_BAD ) || unit->Modes( TR_MOVED ) ) {
             DEBUG_LOG( DBG_BATTLE, DBG_WARN, "unit is in an invalid state: " << unit->String( true ) )
 
             return;
@@ -652,12 +646,16 @@ void Battle::Arena::ApplyActionSurrender( const Command & /*cmd*/ )
     }
 }
 
-void Battle::Arena::TargetsApplyDamage( Unit & attacker, TargetsInfo & targets )
+void Battle::Arena::TargetsApplyDamage( Unit & attacker, TargetsInfo & targets, uint32_t & resurrected )
 {
-    for ( TargetInfo & target : targets ) {
-        assert( target.defender != nullptr && target.defender->isValid() );
+    DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "number of targets: " << targets.size() )
 
-        target.killed = target.defender->ApplyDamage( attacker, target.damage );
+    for ( TargetInfo & target : targets ) {
+        assert( target.defender != nullptr );
+
+        uint32_t resurrectIncrease = 0;
+        target.defender->ApplyDamage( attacker, target.damage, target.killed, &resurrectIncrease );
+        resurrected += resurrectIncrease;
     }
 }
 
@@ -744,7 +742,7 @@ Battle::TargetsInfo Battle::Arena::GetTargetsForDamage( const Unit & attacker, U
 
 void Battle::Arena::TargetsApplySpell( const HeroBase * hero, const Spell & spell, TargetsInfo & targets )
 {
-    DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "targets: " << targets.size() )
+    DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "number of targets: " << targets.size() )
 
     for ( TargetInfo & target : targets ) {
         assert( target.defender != nullptr );
@@ -811,6 +809,17 @@ Battle::TargetsInfo Battle::Arena::TargetsForChainLightning( const HeroBase * he
     }
 
     TargetsInfo targets;
+
+    const uint32_t firstUnitResist = unit->GetMagicResist( Spell::CHAINLIGHTNING, 0, hero );
+
+    if ( firstUnitResist >= _randomGenerator.Get( 1, 100 ) ) {
+        targets.emplace_back();
+        TargetInfo & res = targets.back();
+        res.defender = unit;
+        res.resist = true;
+        return targets;
+    }
+
     const std::vector<Unit *> targetUnits = FindChainLightningTargetIndexes( hero, unit );
     for ( size_t i = 0; i < targetUnits.size(); ++i ) {
         targets.emplace_back();
@@ -888,7 +897,7 @@ Battle::TargetsInfo Battle::Arena::GetTargetsForSpells( const HeroBase * hero, c
             ignoreMagicResistance = true;
 
             if ( playResistSound ) {
-                *playResistSound = false;
+                *playResistSound = true;
             }
             break;
         }
@@ -968,7 +977,7 @@ void Battle::Arena::ApplyActionTower( Command & cmd )
     const uint32_t type = cmd.GetValue();
     const uint32_t uid = cmd.GetValue();
 
-    Tower * tower = GetTower( type );
+    Tower * tower = GetTower( static_cast<TowerType>( type ) );
     Unit * unit = GetTroopUID( uid );
 
     if ( unit && unit->isValid() && tower ) {
@@ -980,7 +989,7 @@ void Battle::Arena::ApplyActionTower( Command & cmd )
 
         if ( _interface )
             _interface->RedrawActionTowerPart1( *tower, *unit );
-        target.killed = unit->ApplyDamage( *tower, target.damage );
+        unit->ApplyDamage( *tower, target.damage, target.killed, nullptr );
         if ( _interface )
             _interface->RedrawActionTowerPart2( *tower, target );
     }
@@ -1003,11 +1012,15 @@ void Battle::Arena::ApplyActionCatapult( Command & cmd )
 
             if ( target ) {
                 if ( _interface ) {
-                    _interface->RedrawActionCatapult( target, hit );
+                    _interface->RedrawActionCatapultPart1( target, hit );
                 }
 
                 if ( hit ) {
                     SetCastleTargetValue( target, GetCastleTargetValue( target ) - damage );
+                    if ( _interface ) {
+                        // Continue animating the smoke cloud after changing the "health" of the building.
+                        _interface->RedrawActionCatapultPart2( target );
+                    }
                 }
 
                 DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "target: " << target << ", damage: " << damage << ", hit: " << hit )
@@ -1223,6 +1236,19 @@ void Battle::Arena::ApplyActionSpellMirrorImage( Command & cmd )
 
         Indexes::const_iterator it = std::find_if( distances.begin(), distances.end(), [unit]( const int32_t v ) { return Board::isValidMirrorImageIndex( v, unit ); } );
         if ( it != distances.end() ) {
+            const HeroBase * commander = GetCurrentCommander();
+            assert( commander != nullptr );
+
+            const Spell mirrorImageSpell( Spell::MIRRORIMAGE );
+
+            TargetInfo targetInfo;
+            targetInfo.defender = unit;
+
+            TargetsInfo targetsInfo;
+            targetsInfo.push_back( targetInfo );
+
+            TargetsApplySpell( commander, mirrorImageSpell, targetsInfo );
+
             Unit * mirrorUnit = CreateMirrorImage( *unit );
             assert( mirrorUnit != nullptr );
 
@@ -1232,16 +1258,7 @@ void Battle::Arena::ApplyActionSpellMirrorImage( Command & cmd )
             DEBUG_LOG( DBG_BATTLE, DBG_TRACE, "set position: " << pos.GetHead()->GetIndex() )
 
             if ( _interface ) {
-                const HeroBase * commander = GetCurrentCommander();
-                assert( commander != nullptr );
-
-                TargetInfo targetInfo;
-                targetInfo.defender = unit;
-
-                TargetsInfo targetsInfo;
-                targetsInfo.push_back( targetInfo );
-
-                _interface->RedrawActionSpellCastStatus( Spell( Spell::MIRRORIMAGE ), who, commander->GetName(), targetsInfo );
+                _interface->RedrawActionSpellCastStatus( mirrorImageSpell, who, commander->GetName(), targetsInfo );
                 _interface->RedrawActionMirrorImageSpell( *unit, pos );
             }
 

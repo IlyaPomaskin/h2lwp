@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "world.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -39,13 +41,14 @@
 #include "color.h"
 #include "direction.h"
 #include "game.h"
+#include "game_io.h"
 #include "game_over.h"
 #include "gamedefs.h"
 #include "heroes.h"
 #include "logging.h"
-#include "maps_actions.h"
 #include "maps_fileinfo.h"
 #include "maps_objects.h"
+#include "maps_tiles_helper.h"
 #include "mp2.h"
 #include "pairs.h"
 #include "players.h"
@@ -53,12 +56,13 @@
 #include "rand.h"
 #include "resource.h"
 #include "route.h"
+#include "save_format_version.h"
 #include "serialize.h"
 #include "settings.h"
+#include "spell.h"
 #include "tools.h"
 #include "translations.h"
 #include "week.h"
-#include "world.h"
 
 namespace
 {
@@ -144,18 +148,6 @@ namespace
 namespace GameStatic
 {
     extern uint32_t uniq;
-}
-
-ListActions::~ListActions()
-{
-    clear();
-}
-
-void ListActions::clear()
-{
-    for ( iterator it = begin(); it != end(); ++it )
-        delete *it;
-    std::list<ActionSimple *>::clear();
 }
 
 MapObjects::~MapObjects()
@@ -282,21 +274,21 @@ void CapturedObjects::ClearFog( int colors )
         const ObjectColor & objcol = ( *it ).second.objcol;
 
         if ( objcol.isColor( colors ) ) {
-            int scoute = 0;
+            int scoutingDistance = 0;
 
             switch ( objcol.first ) {
             case MP2::OBJ_MINES:
-            case MP2::OBJ_ALCHEMYLAB:
+            case MP2::OBJ_ALCHEMIST_LAB:
             case MP2::OBJ_SAWMILL:
-                scoute = 2;
+                scoutingDistance = 2;
                 break;
 
             default:
                 break;
             }
 
-            if ( scoute )
-                Maps::ClearFog( ( *it ).first, scoute, colors );
+            if ( scoutingDistance )
+                Maps::ClearFog( ( *it ).first, scoutingDistance, colors );
         }
     }
 }
@@ -311,24 +303,6 @@ void CapturedObjects::ResetColor( int color )
 
             objcol.second = objectType == MP2::OBJ_CASTLE ? Color::UNUSED : Color::NONE;
             world.GetTiles( it->first ).setOwnershipFlag( objectType, objcol.second );
-        }
-    }
-}
-
-void CapturedObjects::tributeCapturedObjects( const int playerColorId, const MP2::MapObjectType objectType, Funds & funds, int & objectCount )
-{
-    funds = Funds();
-    objectCount = 0;
-
-    for ( iterator it = begin(); it != end(); ++it ) {
-        const ObjectColor & objcol = ( *it ).second.objcol;
-
-        if ( objcol.isObject( objectType ) && objcol.isColor( playerColorId ) ) {
-            Maps::Tiles & tile = world.GetTiles( ( *it ).first );
-
-            funds += Funds( tile.QuantityResourceCount() );
-            ++objectCount;
-            tile.QuantityReset();
         }
     }
 }
@@ -382,7 +356,6 @@ void World::Reset()
 
     // extra
     map_captureobj.clear();
-    map_actions.clear();
     map_objects.clear();
 
     ultimate_artifact.Reset();
@@ -407,13 +380,13 @@ void World::NewMaps( int32_t sw, int32_t sh )
 
     Maps::FileInfo fi;
 
-    fi.size_w = static_cast<uint16_t>( width );
-    fi.size_h = static_cast<uint16_t>( height );
+    fi.width = static_cast<uint16_t>( width );
+    fi.height = static_cast<uint16_t>( height );
 
     Settings & conf = Settings::Get();
 
     if ( conf.isPriceOfLoyaltySupported() ) {
-        fi._version = GameVersion::PRICE_OF_LOYALTY;
+        fi.version = GameVersion::PRICE_OF_LOYALTY;
     }
 
     conf.SetCurrentFileInfo( fi );
@@ -426,15 +399,15 @@ void World::NewMaps( int32_t sw, int32_t sh )
     for ( size_t i = 0; i < vec_tiles.size(); ++i ) {
         MP2::mp2tile_t mp2tile;
 
-        mp2tile.surfaceType = static_cast<uint16_t>( Rand::Get( 16, 19 ) ); // index sprite ground, see ground32.til
+        mp2tile.terrainImageIndex = static_cast<uint16_t>( Rand::Get( 16, 19 ) ); // index sprite ground, see ground32.til
         mp2tile.objectName1 = 0; // object sprite level 1
         mp2tile.level1IcnImageIndex = 0xff; // index sprite level 1
         mp2tile.quantity1 = 0;
         mp2tile.quantity2 = 0;
         mp2tile.objectName2 = 0; // object sprite level 2
         mp2tile.level2IcnImageIndex = 0xff; // index sprite level 2
-        mp2tile.flags = static_cast<uint8_t>( Rand::Get( 0, 3 ) ); // shape reflect % 4, 0 none, 1 vertical, 2 horizontal, 3 any
-        mp2tile.mapObjectType = MP2::OBJ_ZERO;
+        mp2tile.terrainFlags = static_cast<uint8_t>( Rand::Get( 0, 3 ) ); // shape reflect % 4, 0 none, 1 vertical, 2 horizontal, 3 any
+        mp2tile.mapObjectType = MP2::OBJ_NONE;
         mp2tile.nextAddonIndex = 0;
         mp2tile.level1ObjectUID = 0; // means that there's no object on this tile.
         mp2tile.level2ObjectUID = 0;
@@ -476,9 +449,9 @@ Heroes * World::FromJailHeroes( int32_t index )
     return vec_heroes.FromJail( index );
 }
 
-CastleHeroes World::GetHeroes( const Castle & castle ) const
+Heroes * World::GetHero( const Castle & castle ) const
 {
-    return CastleHeroes( vec_heroes.GetGuest( castle ), vec_heroes.GetGuard( castle ) );
+    return vec_heroes.GetHero( castle );
 }
 
 int World::GetDay() const
@@ -578,16 +551,9 @@ void World::NewWeek()
     if ( week > 1 ) {
         for ( Maps::Tiles & tile : vec_tiles ) {
             if ( MP2::isWeekLife( tile.GetObject( false ) ) || tile.GetObject() == MP2::OBJ_MONSTER ) {
-                tile.QuantityUpdate( false );
+                updateObjectInfoTile( tile, false );
             }
         }
-    }
-
-    // add events
-    if ( Settings::Get().ExtWorldExtObjectsCaptured() ) {
-        vec_kingdoms.AddTributeEvents( map_captureobj, day, MP2::OBJ_WATERWHEEL );
-        vec_kingdoms.AddTributeEvents( map_captureobj, day, MP2::OBJ_WINDMILL );
-        vec_kingdoms.AddTributeEvents( map_captureobj, day, MP2::OBJ_MAGICGARDEN );
     }
 
     // Reset RECRUIT mode for all heroes at once
@@ -710,7 +676,7 @@ void World::MonthOfMonstersAction( const Monster & mons )
     }
 
     for ( uint32_t i = 0; i < primaryTileCount; ++i ) {
-        Maps::Tiles::PlaceMonsterOnTile( vec_tiles[primaryTargetTiles[i]], mons, 0 /* random */ );
+        setMonsterOnTile( vec_tiles[primaryTargetTiles[i]], mons, 0 /* random */ );
     }
 
     uint32_t secondaryTileCount = monstersToBePlaced * 10 / 100;
@@ -719,7 +685,7 @@ void World::MonthOfMonstersAction( const Monster & mons )
     }
 
     for ( uint32_t i = 0; i < secondaryTileCount; ++i ) {
-        Maps::Tiles::PlaceMonsterOnTile( vec_tiles[secondaryTargetTiles[i]], mons, 0 /* random */ );
+        setMonsterOnTile( vec_tiles[secondaryTargetTiles[i]], mons, 0 /* random */ );
     }
 
     uint32_t tetriaryTileCount = monstersToBePlaced * 5 / 100;
@@ -728,7 +694,7 @@ void World::MonthOfMonstersAction( const Monster & mons )
     }
 
     for ( uint32_t i = 0; i < tetriaryTileCount; ++i ) {
-        Maps::Tiles::PlaceMonsterOnTile( vec_tiles[tetriaryTargetTiles[i]], mons, 0 /* random */ );
+        setMonsterOnTile( vec_tiles[tetriaryTargetTiles[i]], mons, 0 /* random */ );
     }
 }
 
@@ -812,7 +778,7 @@ MapsIndexes World::GetTeleportEndPoints( const int32_t index ) const
 
     const Maps::Tiles & entranceTile = GetTiles( index );
 
-    if ( entranceTile.GetObject( false ) != MP2::OBJ_STONELITHS ) {
+    if ( entranceTile.GetObject( false ) != MP2::OBJ_STONE_LITHS ) {
         return result;
     }
 
@@ -876,20 +842,18 @@ int32_t World::NextWhirlpool( const int32_t index ) const
     return Rand::Get( whilrpools );
 }
 
-/* return count captured object */
 uint32_t World::CountCapturedObject( int obj, int col ) const
 {
     return map_captureobj.GetCount( obj, col );
 }
 
-/* return count captured mines */
 uint32_t World::CountCapturedMines( int type, int color ) const
 {
     switch ( type ) {
     case Resource::WOOD:
         return CountCapturedObject( MP2::OBJ_SAWMILL, color );
     case Resource::MERCURY:
-        return CountCapturedObject( MP2::OBJ_ALCHEMYLAB, color );
+        return CountCapturedObject( MP2::OBJ_ALCHEMIST_LAB, color );
     default:
         break;
     }
@@ -897,30 +861,24 @@ uint32_t World::CountCapturedMines( int type, int color ) const
     return map_captureobj.GetCountMines( type, color );
 }
 
-/* capture object */
 void World::CaptureObject( int32_t index, int color )
 {
     const MP2::MapObjectType objectType = GetTiles( index ).GetObject( false );
     map_captureobj.Set( index, objectType, color );
 
     Castle * castle = getCastleEntrance( Maps::GetPoint( index ) );
-    if ( castle && castle->GetColor() != color )
+    if ( castle && castle->GetColor() != color ) {
         castle->ChangeColor( color );
+    }
 
-    if ( color & ( Color::ALL | Color::UNUSED ) )
+    if ( color & ( Color::ALL | Color::UNUSED ) ) {
         GetTiles( index ).setOwnershipFlag( objectType, color );
+    }
 }
 
-/* return color captured object */
 int World::ColorCapturedObject( int32_t index ) const
 {
     return map_captureobj.GetColor( index );
-}
-
-ListActions * World::GetListActions( int32_t index )
-{
-    MapActions::iterator it = map_actions.find( index );
-    return it != map_actions.end() ? &( *it ).second : nullptr;
 }
 
 CapturedObject & World::GetCapturedObject( int32_t index )
@@ -938,10 +896,10 @@ void World::ClearFog( int colors )
     colors = Players::GetPlayerFriends( colors );
 
     // clear abroad castles
-    vec_castles.Scoute( colors );
+    vec_castles.Scout( colors );
 
     // clear abroad heroes
-    vec_heroes.Scoute( colors );
+    vec_heroes.Scout( colors );
 
     map_captureobj.ClearFog( colors );
 }
@@ -956,19 +914,18 @@ bool World::DiggingForUltimateArtifact( const fheroes2::Point & center )
     Maps::Tiles & tile = GetTiles( center.x, center.y );
 
     // Get digging hole sprite.
-    uint8_t obj = 0;
-    uint32_t idx = 0;
+    MP2::ObjectIcnType objectIcnType = MP2::OBJ_ICN_TYPE_UNKNOWN;
+    uint8_t imageIndex = 0;
 
-    if ( !MP2::getDiggingHoleSprite( tile.GetGround(), obj, idx ) ) {
+    if ( !MP2::getDiggingHoleSprite( tile.GetGround(), objectIcnType, imageIndex ) ) {
         // Are you sure that you can dig here?
         assert( 0 );
 
         return false;
     }
 
-    tile.AddonsPushLevel1( Maps::TilesAddon( Maps::BACKGROUND_LAYER, GetUniq(), obj, idx ) );
+    tile.AddonsPushLevel1( Maps::TilesAddon( Maps::BACKGROUND_LAYER, GetUniq(), objectIcnType, imageIndex, false, false ) );
 
-    // reset
     if ( ultimate_artifact.isPosition( tile.GetIndex() ) && !ultimate_artifact.isFound() ) {
         ultimate_artifact.markAsFound();
         return true;
@@ -1173,7 +1130,7 @@ uint32_t World::CheckKingdomWins( const Kingdom & kingdom ) const
     if ( conf.isCampaignGameType() ) {
         const Campaign::ScenarioVictoryCondition victoryCondition = Campaign::getCurrentScenarioVictoryCondition();
         if ( victoryCondition == Campaign::ScenarioVictoryCondition::CAPTURE_DRAGON_CITY ) {
-            const bool visited = kingdom.isVisited( MP2::OBJ_DRAGONCITY ) || kingdom.isVisited( MP2::OBJN_DRAGONCITY );
+            const bool visited = kingdom.isVisited( MP2::OBJ_DRAGON_CITY );
             if ( visited ) {
                 return GameOver::WINS_SIDE;
             }
@@ -1286,7 +1243,7 @@ void World::PostLoad( const bool setTilePassabilities )
     // Cache all tiles that that contain stone liths of a certain type (depending on object sprite index).
     _allTeleports.clear();
 
-    for ( const int32_t index : Maps::GetObjectPositions( MP2::OBJ_STONELITHS, true ) ) {
+    for ( const int32_t index : Maps::GetObjectPositions( MP2::OBJ_STONE_LITHS, true ) ) {
         _allTeleports[GetTiles( index ).GetObjectSpriteIndex()].push_back( index );
     }
 
@@ -1329,12 +1286,12 @@ bool World::isAnyKingdomVisited( const MP2::MapObjectType objectType, const int3
 
 StreamBase & operator<<( StreamBase & msg, const CapturedObject & obj )
 {
-    return msg << obj.objcol << obj.guardians << obj.split;
+    return msg << obj.objcol << obj.guardians;
 }
 
 StreamBase & operator>>( StreamBase & msg, CapturedObject & obj )
 {
-    return msg >> obj.objcol >> obj.guardians >> obj.split;
+    return msg >> obj.objcol >> obj.guardians;
 }
 
 StreamBase & operator<<( StreamBase & msg, const MapObjects & objs )
@@ -1420,7 +1377,7 @@ StreamBase & operator<<( StreamBase & msg, const World & w )
     const uint16_t height = static_cast<uint16_t>( w.height );
 
     return msg << width << height << w.vec_tiles << w.vec_heroes << w.vec_castles << w.vec_kingdoms << w._rumors << w.vec_eventsday << w.map_captureobj
-               << w.ultimate_artifact << w.day << w.week << w.month << w.heroes_cond_wins << w.heroes_cond_loss << w.map_actions << w.map_objects << w._seed;
+               << w.ultimate_artifact << w.day << w.week << w.month << w.heroes_cond_wins << w.heroes_cond_loss << w.map_objects << w._seed;
 }
 
 StreamBase & operator>>( StreamBase & msg, World & w )
@@ -1434,88 +1391,217 @@ StreamBase & operator>>( StreamBase & msg, World & w )
     w.height = height;
 
     msg >> w.vec_tiles >> w.vec_heroes >> w.vec_castles >> w.vec_kingdoms >> w._rumors >> w.vec_eventsday >> w.map_captureobj >> w.ultimate_artifact >> w.day >> w.week
-        >> w.month >> w.heroes_cond_wins >> w.heroes_cond_loss >> w.map_actions >> w.map_objects >> w._seed;
+        >> w.month >> w.heroes_cond_wins >> w.heroes_cond_loss;
+
+    static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_PRE1_1002_RELEASE, "Remove the logic below." );
+    if ( Game::GetVersionOfCurrentSaveFile() < FORMAT_VERSION_PRE1_1002_RELEASE ) {
+        uint32_t dummy = 0xDEADBEEF;
+
+        msg >> dummy;
+
+        if ( dummy != 0 ) {
+            DEBUG_LOG( DBG_GAME, DBG_WARN, "Invalid number of MapActions items: " << dummy )
+        }
+    }
+
+    msg >> w.map_objects >> w._seed;
 
     w.PostLoad( false );
+
+    static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_1003_RELEASE, "Remove the logic below." );
+    if ( Game::GetVersionOfCurrentSaveFile() < FORMAT_VERSION_1003_RELEASE ) {
+        for ( Maps::Tiles & tile : w.vec_tiles ) {
+            if ( tile.GetObject( false ) == MP2::OBJ_ABANDONED_MINE ) {
+                const int32_t spellId = Maps::getMineSpellIdFromTile( tile );
+
+                if ( spellId == Spell::HAUNT ) {
+                    const ResourceCount rc = getResourcesFromTile( tile );
+                    const int resource = rc.isValid() ? rc.first : Resource::GOLD;
+
+                    Maps::Tiles::RestoreAbandonedMine( tile, resource );
+
+                    Heroes * hero = tile.GetHeroes();
+                    if ( hero ) {
+                        hero->SetMapsObject( MP2::OBJ_MINES );
+                    }
+                    else {
+                        tile.SetObject( MP2::OBJ_MINES );
+                    }
+                }
+                else {
+                    Troop & guardians = w.GetCapturedObject( tile.GetIndex() ).GetTroop();
+
+                    setMonsterCountOnTile( tile, guardians.isValid() ? guardians.GetCount() : 0 );
+
+                    guardians.Reset();
+                }
+            }
+        }
+    }
 
     return msg;
 }
 
-void EventDate::LoadFromMP2( StreamBuf st )
+void EventDate::LoadFromMP2( const std::vector<uint8_t> & data )
 {
-    // id
-    if ( 0 == st.get() ) {
-        // resource
-        resource.wood = st.getLE32();
-        resource.mercury = st.getLE32();
-        resource.ore = st.getLE32();
-        resource.sulfur = st.getLE32();
-        resource.crystal = st.getLE32();
-        resource.gems = st.getLE32();
-        resource.gold = st.getLE32();
+    assert( data.size() >= MP2::MP2_EVENT_STRUCTURE_MIN_SIZE );
 
-        st.skip( 2 );
+    assert( data[0] == 0 );
 
-        // allow computer
-        computer = ( st.getLE16() != 0 );
+    assert( data[42] == 1 );
 
-        // day of first occurent
-        first = st.getLE16();
+    // Structure containing information about a timed global event.
+    //
+    // - uint8_t (1 byte)
+    //     Always 0 as an indicator that this indeed a timed global object.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Wood to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Mercury to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Ore to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Sulfur to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Crystals to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Gems to be given. Can be negative.
+    //
+    // - int32_t (4 bytes)
+    //     The amount of Gold to be given. Can be negative.
+    //
+    // - uint16_t (2 bytes)
+    //     Possible artifacts to be given. Not in use.
+    //
+    // - uint16_t (2 bytes)
+    //     A flag whether the event is applicable for AI players as well.
+    //
+    // - uint16_t (2 bytes)
+    //     The first day of occurrence of the event.
+    //
+    // - uint16_t (2 bytes)
+    //     Period in days when the event repeats. 0 means that the event never repeats.
+    //
+    // - unused 5 bytes
+    //    Always 0.
+    //
+    // - unused 1 byte
+    //    Always 1.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Blue player receives the event.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Green player receives the event.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Red player receives the event.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Yellow player receives the event.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Orange player receives the event.
+    //
+    // - uint8_t (1 byte)
+    //     A flag to determine whether Purple player receives the event.
+    //
+    // - string
+    //    Null terminated string containing the event text.
 
-        // subsequent occurrences
-        subsequent = st.getLE16();
+    StreamBuf dataStream( data );
 
-        st.skip( 6 );
+    dataStream.skip( 1 );
 
-        colors = 0;
-        // blue
-        if ( st.get() )
-            colors |= Color::BLUE;
-        // green
-        if ( st.get() )
-            colors |= Color::GREEN;
-        // red
-        if ( st.get() )
-            colors |= Color::RED;
-        // yellow
-        if ( st.get() )
-            colors |= Color::YELLOW;
-        // orange
-        if ( st.get() )
-            colors |= Color::ORANGE;
-        // purple
-        if ( st.get() )
-            colors |= Color::PURPLE;
+    // Get the amount of resources.
+    resource.wood = static_cast<int32_t>( dataStream.getLE32() );
+    resource.mercury = static_cast<int32_t>( dataStream.getLE32() );
+    resource.ore = static_cast<int32_t>( dataStream.getLE32() );
+    resource.sulfur = static_cast<int32_t>( dataStream.getLE32() );
+    resource.crystal = static_cast<int32_t>( dataStream.getLE32() );
+    resource.gems = static_cast<int32_t>( dataStream.getLE32() );
+    resource.gold = static_cast<int32_t>( dataStream.getLE32() );
 
-        // message
-        message = st.toString();
-        DEBUG_LOG( DBG_GAME, DBG_INFO,
-                   "event"
-                       << ": " << message )
+    dataStream.skip( 2 );
+
+    // The event applies to AI players as well.
+    isApplicableForAIPlayers = ( dataStream.getLE16() != 0 );
+
+    // Get the first day of occurrence.
+    firstOccurrenceDay = dataStream.getLE16();
+
+    // Get the repeat period.
+    repeatPeriodInDays = dataStream.getLE16();
+
+    dataStream.skip( 6 );
+
+    colors = 0;
+
+    if ( dataStream.get() ) {
+        colors |= Color::BLUE;
     }
-    else {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, "unknown id" )
+
+    if ( dataStream.get() ) {
+        colors |= Color::GREEN;
     }
+
+    if ( dataStream.get() ) {
+        colors |= Color::RED;
+    }
+
+    if ( dataStream.get() ) {
+        colors |= Color::YELLOW;
+    }
+
+    if ( dataStream.get() ) {
+        colors |= Color::ORANGE;
+    }
+
+    if ( dataStream.get() ) {
+        colors |= Color::PURPLE;
+    }
+
+    message = dataStream.toString();
+
+    DEBUG_LOG( DBG_GAME, DBG_INFO, "A timed event which occurs at day " << firstOccurrenceDay << " contains a message: " << message )
 }
 
-bool EventDate::isDeprecated( uint32_t date ) const
+bool EventDate::isAllow( const int col, const uint32_t date ) const
 {
-    return 0 == subsequent && first < date;
-}
+    if ( ( col & colors ) == 0 ) {
+        // This player color is not allowed for the event.
+        return false;
+    }
 
-bool EventDate::isAllow( int col, uint32_t date ) const
-{
-    return ( ( first == date || ( subsequent && ( first < date && 0 == ( ( date - first ) % subsequent ) ) ) ) && ( col & colors ) );
+    if ( firstOccurrenceDay > date ) {
+        // The date has not come.
+        return false;
+    }
+
+    if ( firstOccurrenceDay == date ) {
+        return true;
+    }
+
+    if ( repeatPeriodInDays == 0 ) {
+        // This is not the same date and the event does not repeat.
+        return false;
+    }
+
+    return ( ( date - firstOccurrenceDay ) % repeatPeriodInDays ) == 0;
 }
 
 StreamBase & operator<<( StreamBase & msg, const EventDate & obj )
 {
-    return msg << obj.resource << obj.computer << obj.first << obj.subsequent << obj.colors << obj.message << obj.title;
+    return msg << obj.resource << obj.isApplicableForAIPlayers << obj.firstOccurrenceDay << obj.repeatPeriodInDays << obj.colors << obj.message << obj.title;
 }
 
 StreamBase & operator>>( StreamBase & msg, EventDate & obj )
 {
-    msg >> obj.resource >> obj.computer >> obj.first >> obj.subsequent >> obj.colors >> obj.message >> obj.title;
-
-    return msg;
+    return msg >> obj.resource >> obj.isApplicableForAIPlayers >> obj.firstOccurrenceDay >> obj.repeatPeriodInDays >> obj.colors >> obj.message >> obj.title;
 }

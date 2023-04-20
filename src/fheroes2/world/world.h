@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -34,7 +34,6 @@
 #include "army_troop.h"
 #include "artifact_ultimate.h"
 #include "castle.h"
-#include "castle_heroes.h"
 #include "heroes.h"
 #include "kingdom.h"
 #include "maps.h"
@@ -47,10 +46,8 @@
 #include "world_pathfinding.h"
 #include "world_regions.h"
 
-class ActionSimple;
 class MapObjectSimple;
 class StreamBase;
-class StreamBuf;
 
 struct MapEvent;
 struct Week;
@@ -59,20 +56,6 @@ namespace Route
 {
     class Step;
 }
-
-struct ListActions : public std::list<ActionSimple *>
-{
-    ListActions() = default;
-    ListActions( const ListActions & other ) = default;
-    ListActions( ListActions && other ) = delete;
-
-    ~ListActions();
-
-    ListActions & operator=( const ListActions & other ) = delete;
-    ListActions & operator=( ListActions && other ) = delete;
-
-    void clear();
-};
 
 struct MapObjects : public std::map<uint32_t, MapObjectSimple *>
 {
@@ -92,22 +75,13 @@ struct MapObjects : public std::map<uint32_t, MapObjectSimple *>
     void remove( uint32_t uid );
 };
 
-using MapActions = std::map<int32_t, ListActions>;
-
 struct CapturedObject
 {
     ObjectColor objcol;
     Troop guardians;
-    int split;
 
-    CapturedObject()
-        : split( 1 )
-    {}
+    CapturedObject() = default;
 
-    int GetSplit() const
-    {
-        return split;
-    }
     int GetColor() const
     {
         return objcol.second;
@@ -125,10 +99,6 @@ struct CapturedObject
     {
         objcol.second = col;
     }
-    void SetSplit( int spl )
-    {
-        split = spl;
-    }
 };
 
 struct CapturedObjects : std::map<int32_t, CapturedObject>
@@ -140,8 +110,6 @@ struct CapturedObjects : std::map<int32_t, CapturedObject>
 
     CapturedObject & Get( int32_t );
 
-    void tributeCapturedObjects( const int playerColorId, const MP2::MapObjectType objectType, Funds & funds, int & objectCount );
-
     uint32_t GetCount( int, int ) const;
     uint32_t GetCountMines( int, int ) const;
     int GetColor( int32_t ) const;
@@ -149,23 +117,20 @@ struct CapturedObjects : std::map<int32_t, CapturedObject>
 
 struct EventDate
 {
-    EventDate()
-        : first( 0 )
-        , subsequent( 0 )
-        , colors( 0 )
-        , computer( false )
-    {}
+    void LoadFromMP2( const std::vector<uint8_t> & data );
 
-    void LoadFromMP2( StreamBuf );
+    bool isAllow( const int color, const uint32_t date ) const;
 
-    bool isAllow( int color, uint32_t date ) const;
-    bool isDeprecated( uint32_t date ) const;
+    bool isDeprecated( const uint32_t date ) const
+    {
+        return date > firstOccurrenceDay && repeatPeriodInDays == 0;
+    }
 
     Funds resource;
-    uint32_t first;
-    uint32_t subsequent;
-    int colors;
-    bool computer;
+    uint32_t firstOccurrenceDay{ 0 };
+    uint32_t repeatPeriodInDays{ 0 };
+    int colors{ 0 };
+    bool isApplicableForAIPlayers{ false };
     std::string message;
 
     std::string title;
@@ -191,7 +156,7 @@ public:
     World & operator=( const World & other ) = delete;
     World & operator=( World && other ) = delete;
 
-    bool LoadMapMP2( const std::string & );
+    bool LoadMapMP2( const std::string & filename, const bool isOriginalMp2File );
 
     void NewMaps( int32_t, int32_t );
 
@@ -299,7 +264,7 @@ public:
     const Heroes * GetHeroesCondWins() const;
     const Heroes * GetHeroesCondLoss() const;
 
-    CastleHeroes GetHeroes( const Castle & ) const;
+    Heroes * GetHero( const Castle & ) const;
 
     const UltimateArtifact & GetUltimateArtifact() const;
     bool DiggingForUltimateArtifact( const fheroes2::Point & );
@@ -355,7 +320,6 @@ public:
     int ColorCapturedObject( int32_t ) const;
     void ResetCapturedObjects( int );
     CapturedObject & GetCapturedObject( int32_t );
-    ListActions * GetListActions( int32_t );
 
     void ActionForMagellanMaps( int color );
     void ClearFog( int color );
@@ -421,7 +385,6 @@ private:
     int heroes_cond_wins = Heroes::UNKNOWN;
     int heroes_cond_loss = Heroes::UNKNOWN;
 
-    MapActions map_actions;
     MapObjects map_objects;
 
     uint32_t _seed{ 0 }; // Map seed
@@ -440,9 +403,6 @@ StreamBase & operator>>( StreamBase &, CapturedObject & );
 
 StreamBase & operator<<( StreamBase &, const World & );
 StreamBase & operator>>( StreamBase &, World & );
-
-StreamBase & operator<<( StreamBase &, const ListActions & );
-StreamBase & operator>>( StreamBase &, ListActions & );
 
 StreamBase & operator<<( StreamBase &, const MapObjects & );
 StreamBase & operator>>( StreamBase &, MapObjects & );

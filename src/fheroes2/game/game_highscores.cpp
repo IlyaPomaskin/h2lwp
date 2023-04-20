@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -28,6 +28,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "agg_image.h"
@@ -38,6 +39,7 @@
 #include "game.h"
 #include "game_delays.h"
 #include "game_hotkeys.h"
+#include "game_io.h"
 #include "game_mode.h"
 #include "game_over.h"
 #include "highscores.h"
@@ -54,6 +56,7 @@
 #include "translations.h"
 #include "ui_button.h"
 #include "ui_dialog.h"
+#include "ui_language.h"
 #include "ui_text.h"
 #include "ui_window.h"
 #include "world.h"
@@ -94,6 +97,8 @@ namespace
 
         for ( const fheroes2::HighscoreData & data : highScores ) {
             const fheroes2::FontType font = ( scoreIndex == selectedScoreIndex ) ? fheroes2::FontType::normalYellow() : fheroes2::FontType::normalWhite();
+
+            const fheroes2::LanguageSwitcher languageSwitcher( fheroes2::getLanguageFromAbbreviation( data.languageAbbreviation ) );
 
             text.set( data.playerName, font );
             text.draw( offsetX + playerNameOffset, offsetY + initialHighScoreEntryOffsetY, display );
@@ -183,13 +188,13 @@ fheroes2::GameMode Game::DisplayHighScores( const bool isCampaign )
     }
 #endif
 
-    const std::string highScoreDataPath = System::ConcatePath( GetSaveDir(), highScoreFileName );
+    const std::string highScoreDataPath = System::concatPath( GetSaveDir(), highScoreFileName );
 
     if ( !highScoreDataContainer.load( highScoreDataPath ) ) {
         // Unable to load the file. Let's populate with the default values.
+        highScoreDataContainer.clear();
         highScoreDataContainer.populateStandardDefaultHighScores();
         highScoreDataContainer.populateCampaignDefaultHighScores();
-        highScoreDataContainer.save( highScoreDataPath );
     }
 
     const bool isAfterGameCompletion = ( ( gameResult.GetResult() & GameOver::WINS ) != 0 );
@@ -225,7 +230,7 @@ fheroes2::GameMode Game::DisplayHighScores( const bool isCampaign )
 
     fheroes2::Display & display = fheroes2::Display::instance();
     const fheroes2::Point top{ ( display.width() - back.width() ) / 2, ( display.height() - back.height() ) / 2 };
-    const fheroes2::StandardWindow border( display.DEFAULT_WIDTH, display.DEFAULT_HEIGHT );
+    const fheroes2::StandardWindow border( display.DEFAULT_WIDTH, display.DEFAULT_HEIGHT, false );
 
     int32_t selectedEntryIndex = -1;
     uint32_t monsterAnimationFrameId = 0;
@@ -252,18 +257,20 @@ fheroes2::GameMode Game::DisplayHighScores( const bool isCampaign )
 
         const uint32_t completionTime = fheroes2::HighscoreData::generateCompletionTime();
 
+        std::string lang = fheroes2::getLanguageAbbreviation( fheroes2::getCurrentLanguage() );
+
         if ( isCampaign ) {
             const Campaign::CampaignSaveData & campaignSaveData = Campaign::CampaignSaveData::Get();
             const uint32_t rating = getCampaignRating( campaignSaveData );
 
-            selectedEntryIndex = highScoreDataContainer.registerScoreCampaign(
-                { player, Campaign::getCampaignName( campaignSaveData.getCampaignID() ), completionTime, campaignSaveData.getDaysPassed(), rating, world.GetMapSeed() } );
+            selectedEntryIndex = highScoreDataContainer.registerScoreCampaign( { std::move( lang ), player, Campaign::getCampaignName( campaignSaveData.getCampaignID() ),
+                                                                                 completionTime, campaignSaveData.getDaysPassed(), rating, world.GetMapSeed() } );
         }
         else {
             const uint32_t rating = GetGameOverScores();
             const uint32_t days = world.CountDay();
-            selectedEntryIndex
-                = highScoreDataContainer.registerScoreStandard( { player, Settings::Get().CurrentFileInfo().name, completionTime, days, rating, world.GetMapSeed() } );
+            selectedEntryIndex = highScoreDataContainer.registerScoreStandard(
+                { std::move( lang ), player, Settings::Get().CurrentFileInfo().name, completionTime, days, rating, world.GetMapSeed() } );
         }
 
         highScoreDataContainer.save( highScoreDataPath );
@@ -281,7 +288,7 @@ fheroes2::GameMode Game::DisplayHighScores( const bool isCampaign )
     }
 
     LocalEvent & le = LocalEvent::Get();
-    while ( le.HandleEvents() ) {
+    while ( le.HandleEvents( Game::isDelayNeeded( { Game::MAPS_DELAY } ) ) ) {
         le.MousePressLeft( buttonOtherHighScore.area() ) ? buttonOtherHighScore.drawOnPress() : buttonOtherHighScore.drawOnRelease();
         le.MousePressLeft( buttonExit.area() ) ? buttonExit.drawOnPress() : buttonExit.drawOnRelease();
 
@@ -306,6 +313,7 @@ fheroes2::GameMode Game::DisplayHighScores( const bool isCampaign )
         }
 
         if ( Game::validateAnimationDelay( Game::MAPS_DELAY ) ) {
+            // TODO: avoid redrawing the whole screen when only monster animation update is required.
             if ( isCampaign )
                 RedrawHighScoresCampaign( top.x, top.y, monsterAnimationFrameId, selectedEntryIndex );
             else

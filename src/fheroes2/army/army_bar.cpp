@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2012 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "army_bar.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -28,7 +30,6 @@
 
 #include "agg_image.h"
 #include "army.h"
-#include "army_bar.h"
 #include "army_troop.h"
 #include "castle.h"
 #include "dialog.h"
@@ -128,7 +129,7 @@ namespace
         }
     }
 
-    void RedistributeTroopToFirstFreeSlot( ArmyTroop & troopFrom, Army * armyTarget, const uint32_t count )
+    void RedistributeTroopToFirstFreeSlot( ArmyTroop & troopFrom, const Army * armyTarget, const uint32_t count )
     {
         // can't split up a stack with just 1 unit, and obviously on count == 0, there's no splitting at all
         if ( troopFrom.GetCount() <= 1 || count == 0 )
@@ -142,27 +143,27 @@ namespace
         troopFrom.SetCount( troopFrom.GetCount() - count );
     }
 
-    void RedistributeTroopByOne( ArmyTroop & troopFrom, Army * armyTarget )
+    void RedistributeTroopByOne( ArmyTroop & troopFrom, const Army * armyTarget )
     {
         RedistributeTroopToFirstFreeSlot( troopFrom, armyTarget, 1 );
     }
 
-    void RedistributeTroopEvenly( ArmyTroop & troopFrom, Army * armyTarget )
+    void RedistributeTroopEvenly( ArmyTroop & troopFrom, const Army * armyTarget )
     {
         RedistributeTroopToFirstFreeSlot( troopFrom, armyTarget, troopFrom.GetCount() / 2 );
     }
 
-    bool IsSplitHotkeyUsed( ArmyTroop & troopFrom, Army * armyTarget )
+    bool IsSplitHotkeyUsed( ArmyTroop & troopFrom, const Army * armyTarget )
     {
-        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::SPLIT_STACK_BY_ONE ) ) {
+        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_SPLIT_STACK_BY_ONE ) ) {
             RedistributeTroopByOne( troopFrom, armyTarget );
             return true;
         }
-        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::JOIN_STACKS ) ) {
+        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_JOIN_STACKS ) ) {
             armyTarget->JoinAllTroopsOfType( troopFrom );
             return true;
         }
-        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::SPLIT_STACK_BY_HALF ) ) {
+        if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_SPLIT_STACK_BY_HALF ) ) {
             RedistributeTroopEvenly( troopFrom, armyTarget );
             return true;
         }
@@ -177,6 +178,7 @@ ArmyBar::ArmyBar( Army * ptr, bool mini, bool ro, bool change /* false */ )
     , use_mini_sprite( mini )
     , read_only( ro )
     , can_change( change )
+    , _troopWindowOffsetY( 0 )
 {
     if ( use_mini_sprite )
         SetBackground( { 43, 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
@@ -305,7 +307,7 @@ bool ArmyBar::ActionBarCursor( ArmyTroop & troop )
 
         if ( &troop == troop2 ) {
             msg = _( "View %{name}" );
-            StringReplace( msg, "%{name}", Translation::StringLower( troop.GetName() ) );
+            StringReplaceWithLowercase( msg, "%{name}", troop.GetName() );
         }
         else if ( !troop.isValid() ) {
             if ( !read_only ) {
@@ -316,24 +318,24 @@ bool ArmyBar::ActionBarCursor( ArmyTroop & troop )
                     msg = _( "Move or right click to redistribute %{name}" );
                 }
 
-                StringReplace( msg, "%{name}", Translation::StringLower( troop2->GetName() ) );
+                StringReplaceWithLowercase( msg, "%{name}", troop2->GetName() );
             }
         }
         else if ( troop.GetID() == troop2->GetID() ) {
             if ( !read_only ) {
                 msg = _( "Combine %{name} armies" );
-                StringReplace( msg, "%{name}", Translation::StringLower( troop.GetName() ) );
+                StringReplaceWithLowercase( msg, "%{name}", troop.GetName() );
             }
         }
         else if ( !read_only ) {
             msg = _( "Exchange %{name2} with %{name}" );
-            StringReplace( msg, "%{name}", Translation::StringLower( troop.GetName() ) );
-            StringReplace( msg, "%{name2}", Translation::StringLower( troop2->GetName() ) );
+            StringReplaceWithLowercase( msg, "%{name}", troop.GetName() );
+            StringReplaceWithLowercase( msg, "%{name2}", troop2->GetName() );
         }
     }
     else if ( troop.isValid() ) {
         msg = _( "Select %{name}" );
-        StringReplace( msg, "%{name}", Translation::StringLower( troop.GetName() ) );
+        StringReplaceWithLowercase( msg, "%{name}", troop.GetName() );
     }
 
     return false;
@@ -346,14 +348,14 @@ bool ArmyBar::ActionBarCursor( ArmyTroop & destTroop, ArmyTroop & selectedTroop 
     if ( destTroop.isValid() ) {
         if ( destTroop.GetID() != selectedTroop.GetID() ) {
             msg = _( "Exchange %{name2} with %{name}" );
-            StringReplace( msg, "%{name}", Translation::StringLower( destTroop.GetName() ) );
-            StringReplace( msg, "%{name2}", Translation::StringLower( selectedTroop.GetName() ) );
+            StringReplaceWithLowercase( msg, "%{name}", destTroop.GetName() );
+            StringReplaceWithLowercase( msg, "%{name2}", selectedTroop.GetName() );
         }
         else if ( save_last_troop )
             msg = _( "Cannot move last troop" );
         else {
             msg = _( "Combine %{name} armies" );
-            StringReplace( msg, "%{name}", Translation::StringLower( destTroop.GetName() ) );
+            StringReplaceWithLowercase( msg, "%{name}", destTroop.GetName() );
         }
     }
     else if ( save_last_troop )
@@ -366,7 +368,7 @@ bool ArmyBar::ActionBarCursor( ArmyTroop & destTroop, ArmyTroop & selectedTroop 
             msg = _( "Move or right click to redistribute %{name}" );
         }
 
-        StringReplace( msg, "%{name}", Translation::StringLower( selectedTroop.GetName() ) );
+        StringReplaceWithLowercase( msg, "%{name}", selectedTroop.GetName() );
     }
 
     return false;
@@ -385,7 +387,7 @@ bool ArmyBar::ActionBarLeftMouseSingleClick( ArmyTroop & troop )
         const bool isSameTroopType = troop.isValid() && troop.GetID() == selectedTroop->GetID();
 
         // prioritize standard split via shift hotkey
-        if ( ( !troop.isValid() || isSameTroopType ) && Game::HotKeyHoldEvent( Game::HotKeyEvent::SPLIT_STACK_BY_HALF ) ) {
+        if ( ( !troop.isValid() || isSameTroopType ) && Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_SPLIT_STACK_BY_HALF ) ) {
             RedistributeArmy( *selectedTroop, troop, _army );
             ResetSelected();
         }
@@ -401,7 +403,7 @@ bool ArmyBar::ActionBarLeftMouseSingleClick( ArmyTroop & troop )
         // exchange
         else if ( selectedTroop ) {
             // count this as an attempt to split to a troop type that is not the same
-            if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::SPLIT_STACK_BY_HALF ) )
+            if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_SPLIT_STACK_BY_HALF ) )
                 ResetSelected();
             else if ( IsSplitHotkeyUsed( troop, _army ) )
                 return false;
@@ -470,8 +472,8 @@ bool ArmyBar::ActionBarLeftMouseSingleClick( ArmyTroop & destTroop, ArmyTroop & 
     const bool isSameTroopType = destTroop.isValid() && destTroop.GetID() == selectedTroop.GetID();
 
     // specifically for shift hotkey, handle this logic before anything else
-    // this will ensure that clicking on a different troop type while shift key is pressed will not show the split dialogue, which can be ambiguous
-    if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::SPLIT_STACK_BY_HALF ) ) {
+    // this will ensure that clicking on a different troop type while shift key is pressed will not show the split dialog, which can be ambiguous
+    if ( Game::HotKeyHoldEvent( Game::HotKeyEvent::ARMY_SPLIT_STACK_BY_HALF ) ) {
         if ( destTroop.isEmpty() || isSameTroopType ) {
             RedistributeArmy( selectedTroop, destTroop, _army );
             ResetSelected();
@@ -530,19 +532,27 @@ bool ArmyBar::ActionBarLeftMouseDoubleClick( ArmyTroop & troop )
     assert( troop2 != nullptr );
 
     if ( &troop == troop2 ) {
-        int flags = ( read_only || _army->SaveLastTroop() ? Dialog::READONLY | Dialog::BUTTONS : Dialog::BUTTONS );
-        const Castle * castle = _army->inCastle();
+        int flags = Dialog::BUTTONS;
 
-        if ( troop.isAllowUpgrade() &&
-             // allow upgrade
-             castle && castle->GetRace() == troop.GetRace() && castle->isBuild( troop.GetUpgrade().GetDwelling() ) ) {
-            flags |= Dialog::UPGRADE;
+        if ( !read_only ) {
+            if ( !_army->SaveLastTroop() ) {
+                flags |= Dialog::DISMISS;
+            }
 
-            if ( !world.GetKingdom( _army->GetColor() ).AllowPayment( troop.GetTotalUpgradeCost() ) )
-                flags |= Dialog::UPGRADE_DISABLE;
+            if ( troop.isAllowUpgrade() ) {
+                const Castle * castle = _army->inCastle();
+
+                if ( castle && castle->GetRace() == troop.GetRace() && castle->isBuild( troop.GetUpgrade().GetDwelling() ) ) {
+                    flags |= Dialog::UPGRADE;
+
+                    if ( !world.GetKingdom( _army->GetColor() ).AllowPayment( troop.GetTotalUpgradeCost() ) ) {
+                        flags |= Dialog::UPGRADE_DISABLE;
+                    }
+                }
+            }
         }
 
-        switch ( Dialog::ArmyInfo( troop, flags ) ) {
+        switch ( Dialog::ArmyInfo( troop, flags, false, _troopWindowOffsetY ) ) {
         case Dialog::UPGRADE:
             world.GetKingdom( _army->GetColor() ).OddFundsResource( troop.GetTotalUpgradeCost() );
             troop.Upgrade();
@@ -566,17 +576,15 @@ bool ArmyBar::ActionBarLeftMouseRelease( ArmyTroop & troop )
 {
     if ( !read_only ) {
         // drag drop - redistribute troops
-        LocalEvent & le = LocalEvent::Get();
-        ArmyTroop * troopPress = GetItem( le.GetMousePressLeft() );
-
+        ArmyTroop * troopPress = GetItem( LocalEvent::Get().GetMousePressLeft() );
         const bool isTroopPressValid = troopPress && troopPress->isValid();
 
         if ( isTroopPressValid && ( !troop.isValid() || troop.GetID() == troopPress->GetID() ) ) {
             RedistributeArmy( *troopPress, troop, _army );
-            le.ResetPressLeft();
 
-            if ( isSelected() )
+            if ( isSelected() ) {
                 ResetSelected();
+            }
         }
     }
 
@@ -607,10 +615,12 @@ bool ArmyBar::ActionBarRightMouseHold( ArmyTroop & troop )
     if ( troop.isValid() ) {
         ResetSelected();
 
-        if ( can_change && !_army->SaveLastTroop() )
+        if ( can_change && !_army->SaveLastTroop() ) {
             troop.Reset();
-        else
-            Dialog::ArmyInfo( troop, 0 );
+        }
+        else {
+            Dialog::ArmyInfo( troop, Dialog::ZERO, false, _troopWindowOffsetY );
+        }
     }
 
     return true;

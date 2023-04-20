@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "maps.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -31,16 +33,12 @@
 #include "difficulty.h"
 #include "direction.h"
 #include "game.h"
-#include "icn.h"
 #include "kingdom.h"
 #include "logging.h"
-#include "maps.h"
 #include "maps_tiles.h"
-#include "pairs.h"
 #include "players.h"
 #include "race.h"
 #include "resource.h"
-#include "serialize.h"
 #include "translations.h"
 #include "world.h"
 
@@ -331,9 +329,9 @@ Maps::Indexes Maps::getAroundIndexes( const int32_t tileIndex, const int32_t max
     return results;
 }
 
-void Maps::ClearFog( const int32_t tileIndex, int scouteValue, const int playerColor )
+void Maps::ClearFog( const int32_t tileIndex, int scoutingDistance, const int playerColor )
 {
-    if ( scouteValue <= 0 || !Maps::isValidAbsIndex( tileIndex ) ) {
+    if ( scoutingDistance <= 0 || !Maps::isValidAbsIndex( tileIndex ) ) {
         // Nothing to uncover.
         return;
     }
@@ -343,20 +341,24 @@ void Maps::ClearFog( const int32_t tileIndex, int scouteValue, const int playerC
     // AI is cheating!
     const bool isAIPlayer = world.GetKingdom( playerColor ).isControlAI();
     if ( isAIPlayer ) {
-        scouteValue += Difficulty::GetScoutingBonus( Game::getDifficulty() );
+        scoutingDistance += Difficulty::GetScoutingBonus( Game::getDifficulty() );
     }
 
     const int alliedColors = Players::GetPlayerFriends( playerColor );
+    const bool isHumanOrHumanFriend = !isAIPlayer || Players::isFriends( playerColor, Players::HumanColors() );
 
-    const int revealRadiusSquared = scouteValue * scouteValue + 4; // constant factor for "backwards compatibility"
+    const int revealRadiusSquared = scoutingDistance * scoutingDistance + 4; // constant factor for "backwards compatibility"
 
-    const int32_t minY = std::max( center.y - scouteValue, 0 );
-    const int32_t maxY = std::min( center.y + scouteValue, world.h() - 1 );
+    const int32_t minY = std::max( center.y - scoutingDistance, 0 );
+    const int32_t maxY = std::min( center.y + scoutingDistance, world.h() - 1 );
     assert( minY < maxY );
 
-    const int32_t minX = std::max( center.x - scouteValue, 0 );
-    const int32_t maxX = std::min( center.x + scouteValue, world.w() - 1 );
+    const int32_t minX = std::max( center.x - scoutingDistance, 0 );
+    const int32_t maxX = std::min( center.x + scoutingDistance, world.w() - 1 );
     assert( minX < maxX );
+
+    fheroes2::Point fogRevealMinPos( world.h(), world.w() );
+    fheroes2::Point fogRevealMaxPos( 0, 0 );
 
     for ( int32_t y = minY; y <= maxY; ++y ) {
         const int32_t dy = y - center.y;
@@ -369,15 +371,34 @@ void Maps::ClearFog( const int32_t tileIndex, int scouteValue, const int playerC
                     AI::Get().revealFog( tile );
                 }
 
-                tile.ClearFog( alliedColors );
+                if ( tile.isFog( alliedColors ) ) {
+                    // Clear fog only if it is not already cleared.
+                    tile.ClearFog( alliedColors );
+
+                    if ( isHumanOrHumanFriend ) {
+                        // Update fog reveal area points only for human player and his allies.
+                        fogRevealMinPos.x = std::min( fogRevealMinPos.x, x );
+                        fogRevealMinPos.y = std::min( fogRevealMinPos.y, y );
+                        fogRevealMaxPos.x = std::max( fogRevealMaxPos.x, x );
+                        fogRevealMaxPos.y = std::max( fogRevealMaxPos.y, y );
+                    }
+                }
             }
         }
     }
+
+    // Update fog directions only for human player and his allies and only if fog has to be cleared.
+    if ( isHumanOrHumanFriend && ( fogRevealMaxPos.x >= fogRevealMinPos.x ) && ( fogRevealMaxPos.y >= fogRevealMinPos.y ) ) {
+        // Fog directions should be updated 1 tile outside of the cleared fog.
+        fogRevealMinPos -= { 1, 1 };
+        fogRevealMaxPos += { 1, 1 };
+        Maps::Tiles::updateFogDirectionsInArea( fogRevealMinPos, fogRevealMaxPos, alliedColors );
+    }
 }
 
-int32_t Maps::getFogTileCountToBeRevealed( const int32_t tileIndex, int scouteValue, const int playerColor )
+int32_t Maps::getFogTileCountToBeRevealed( const int32_t tileIndex, int scoutingDistance, const int playerColor )
 {
-    if ( scouteValue <= 0 || !Maps::isValidAbsIndex( tileIndex ) ) {
+    if ( scoutingDistance <= 0 || !Maps::isValidAbsIndex( tileIndex ) ) {
         return 0;
     }
 
@@ -386,17 +407,17 @@ int32_t Maps::getFogTileCountToBeRevealed( const int32_t tileIndex, int scouteVa
     // AI is cheating!
     const bool isAIPlayer = world.GetKingdom( playerColor ).isControlAI();
     if ( isAIPlayer ) {
-        scouteValue += Difficulty::GetScoutingBonus( Game::getDifficulty() );
+        scoutingDistance += Difficulty::GetScoutingBonus( Game::getDifficulty() );
     }
 
-    const int revealRadiusSquared = scouteValue * scouteValue + 4; // constant factor for "backwards compatibility"
+    const int revealRadiusSquared = scoutingDistance * scoutingDistance + 4; // constant factor for "backwards compatibility"
 
-    const int32_t minY = std::max( center.y - scouteValue, 0 );
-    const int32_t maxY = std::min( center.y + scouteValue, world.h() - 1 );
+    const int32_t minY = std::max( center.y - scoutingDistance, 0 );
+    const int32_t maxY = std::min( center.y + scoutingDistance, world.h() - 1 );
     assert( minY < maxY );
 
-    const int32_t minX = std::max( center.x - scouteValue, 0 );
-    const int32_t maxX = std::min( center.x + scouteValue, world.w() - 1 );
+    const int32_t minX = std::max( center.x - scoutingDistance, 0 );
+    const int32_t maxX = std::min( center.x + scoutingDistance, world.w() - 1 );
     assert( minX < maxX );
 
     int32_t tileCount = 0;
@@ -547,8 +568,8 @@ void Maps::ReplaceRandomCastleObjectId( const fheroes2::Point & center )
         for ( int32_t x = -2; x < 3; ++x ) {
             Maps::Tiles & tile = world.GetTiles( center.x + x, center.y + y );
 
-            if ( MP2::OBJN_RNDCASTLE == tile.GetObject() || MP2::OBJN_RNDTOWN == tile.GetObject() ) {
-                tile.SetObject( MP2::OBJN_CASTLE );
+            if ( MP2::OBJ_NON_ACTION_RANDOM_CASTLE == tile.GetObject() || MP2::OBJ_NON_ACTION_RANDOM_TOWN == tile.GetObject() ) {
+                tile.SetObject( MP2::OBJ_NON_ACTION_CASTLE );
             }
         }
     }
@@ -561,7 +582,7 @@ void Maps::UpdateCastleSprite( const fheroes2::Point & center, int race, bool is
 {
     /*
     Castle/Town object image consists of 42 tile sprites:
-    10 base tiles (OBJNTWBA) with 16 shadow tiles on left side (OBJNTWSH) overlayed by 16 town tiles (OBJNTOWN)
+    10 base tiles (OBJNTWBA) with 16 shadow tiles on left side (OBJNTWSH) overlaid by 16 town tiles (OBJNTOWN)
 
     Shadows (OBJNTWSH)  Castle (OBJNTOWN)
                               0
@@ -576,7 +597,7 @@ void Maps::UpdateCastleSprite( const fheroes2::Point & center, int race, bool is
     const MP2::MapObjectType objectType = entranceTile.GetObject();
     const uint32_t castleID = entranceTile.GetObjectUID();
 
-    if ( isRandom && ( objectType != MP2::OBJ_RNDCASTLE && objectType != MP2::OBJ_RNDTOWN ) ) {
+    if ( isRandom && ( objectType != MP2::OBJ_RANDOM_CASTLE && objectType != MP2::OBJ_RANDOM_TOWN ) ) {
         DEBUG_LOG( DBG_GAME, DBG_WARN,
                    "incorrect object"
                        << ", index: " << GetIndexFromAbsPoint( center.x, center.y ) )
@@ -618,35 +639,26 @@ void Maps::UpdateCastleSprite( const fheroes2::Point & center, int race, bool is
             Tiles & tile = world.GetTiles( castleTile );
 
             if ( isRandom )
-                tile.ReplaceObjectSprite( castleID, 38, 35 * 4, lookupID, fullTownIndex ); // OBJNTWRD to OBJNTOWN
+                tile.replaceObject( castleID, MP2::OBJ_ICN_TYPE_OBJNTWRD, MP2::OBJ_ICN_TYPE_OBJNTOWN, lookupID, fullTownIndex ); // OBJNTWRD to OBJNTOWN
             else
-                tile.UpdateObjectSprite( castleID, 35, 35 * 4, -16 ); // no change in tileset
+                tile.updateObjectImageIndex( castleID, MP2::OBJ_ICN_TYPE_OBJNTOWN, -16 );
 
             if ( index == 0 ) {
                 TilesAddon * addon = tile.FindAddonLevel2( castleID );
-                if ( addon && MP2::GetICNObject( addon->object ) == ICN::OBJNTWRD ) {
-                    addon->object -= 12;
-                    addon->index = fullTownIndex - 16;
+                if ( addon && addon->_objectIcnType == MP2::OBJ_ICN_TYPE_OBJNTWRD ) {
+                    addon->_objectIcnType = MP2::OBJ_ICN_TYPE_OBJNTOWN;
+                    addon->_imageIndex = fullTownIndex - 16;
                 }
             }
         }
 
-        const int shadowTile = GetIndexFromAbsPoint( center.x + shadowCoordinates[index][0], center.y + shadowCoordinates[index][1] );
-        if ( isValidAbsIndex( shadowTile ) ) {
+        const int shadowTileId = GetIndexFromAbsPoint( center.x + shadowCoordinates[index][0], center.y + shadowCoordinates[index][1] );
+        if ( isValidAbsIndex( shadowTileId ) ) {
+            Maps::Tiles & shadowTile = world.GetTiles( shadowTileId );
             if ( isRandom )
-                world.GetTiles( shadowTile ).ReplaceObjectSprite( castleID, 38, 37 * 4, lookupID + 32, fullTownIndex ); // OBJNTWRD to OBJNTWSH
+                shadowTile.replaceObject( castleID, MP2::OBJ_ICN_TYPE_OBJNTWRD, MP2::OBJ_ICN_TYPE_OBJNTWSH, lookupID + 32, fullTownIndex );
             else
-                world.GetTiles( shadowTile ).UpdateObjectSprite( castleID, 37, 37 * 4, -16 ); // no change in tileset
+                shadowTile.updateObjectImageIndex( castleID, MP2::OBJ_ICN_TYPE_OBJNTWSH, -16 );
         }
     }
-}
-
-StreamBase & operator>>( StreamBase & sb, IndexObject & st )
-{
-    return sb >> st.first >> st.second;
-}
-
-StreamBase & operator>>( StreamBase & sb, ObjectColor & st )
-{
-    return sb >> st.first >> st.second;
 }

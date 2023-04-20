@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2022                                                    *
+ *   Copyright (C) 2022 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,13 +18,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "artifact_info.h"
+
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <memory>
 #include <sstream>
 
 #include "artifact.h"
-#include "artifact_info.h"
 #include "spell.h"
 #include "tools.h"
 #include "translations.h"
@@ -73,23 +75,23 @@ namespace
               {},
               {} },
             { gettext_noop( "Medal of Valor" ),
-              gettext_noop( "The %{name} increases your morale." ),
+              gettext_noop( "The %{name} increases your morale by %{count}." ),
               gettext_noop( "Freeing a virtuous maiden from the clutches of an evil overlord, you are granted a Medal of Valor by the King's herald." ),
               {},
               {} },
             { gettext_noop( "Medal of Courage" ),
-              gettext_noop( "The %{name} increases your morale." ),
+              gettext_noop( "The %{name} increases your morale by %{count}." ),
               gettext_noop(
                   "After saving a young boy from a vicious pack of Wolves, you return him to his father's manor. The grateful nobleman awards you with a Medal of Courage." ),
               {},
               {} },
             { gettext_noop( "Medal of Honor" ),
-              gettext_noop( "The %{name} increases your morale." ),
+              gettext_noop( "The %{name} increases your morale by %{count}." ),
               gettext_noop( "After freeing a princess of a neighboring kingdom from the evil clutches of despicable slavers, she awards you with a Medal of Honor." ),
               {},
               {} },
             { gettext_noop( "Medal of Distinction" ),
-              gettext_noop( "The %{name} increases your morale." ),
+              gettext_noop( "The %{name} increases your morale by %{count}." ),
               gettext_noop(
                   "Ridding the countryside of the hideous Minotaur who made a sport of eating noblemen's Knights, you are honored with the Medal of Distinction." ),
               {},
@@ -123,7 +125,7 @@ namespace
               {},
               {} },
             { gettext_noop( "Ballista of Quickness" ),
-              gettext_noop( "The %{name} lets your catapult fire twice per combat round." ),
+              gettext_noop( "The %{name} gives your catapult one extra shot per combat round." ),
               gettext_noop( "Walking through the ruins of an ancient walled city, you find the instrument of the city's destruction, an elaborately crafted ballista." ),
               {},
               {} },
@@ -205,24 +207,24 @@ namespace
               {},
               {} },
             { gettext_noop( "Lucky Rabbit's Foot" ),
-              gettext_noop( "The %{name} increases your luck in combat." ),
+              gettext_noop( "The %{name} increases your luck in combat by %{count}." ),
               gettext_noop(
                   "A traveling merchant offers you a rabbit's foot, made of gleaming silver fur, for safe passage. The merchant explains the charm will increase your luck in combat." ),
               {},
               {} },
             { gettext_noop( "Golden Horseshoe" ),
-              gettext_noop( "The %{name} increases your luck in combat." ),
+              gettext_noop( "The %{name} increases your luck in combat by %{count}." ),
               gettext_noop(
                   "An ensnared Unicorn whinnies in fright. Murmuring soothing words, you set her free. Snorting and stamping her front hoof once, she gallops off. Looking down you see a golden horseshoe." ),
               {},
               {} },
             { gettext_noop( "Gambler's Lucky Coin" ),
-              gettext_noop( "The %{name} increases your luck in combat." ),
+              gettext_noop( "The %{name} increases your luck in combat by %{count}." ),
               gettext_noop( "You have captured a mischievous imp who has been terrorizing the region. In exchange for his release, he rewards you with a magical coin." ),
               {},
               {} },
             { gettext_noop( "Four-Leaf Clover" ),
-              gettext_noop( "The %{name} increases your luck in combat." ),
+              gettext_noop( "The %{name} increases your luck in combat by %{count}." ),
               gettext_noop( "In the middle of a patch of dead and dry vegetation, to your surprise you find a healthy green four-leaf clover." ),
               {},
               {} },
@@ -572,7 +574,7 @@ namespace
 
         assert( artifactData.size() == ( Artifact::UNKNOWN + 1 ) );
 
-        // Artifact bonus and curse 'value' is signed integer. However, it should not be negvative.
+        // Artifact bonus and curse 'value' is signed integer. However, it should not be negative.
 
         artifactData[Artifact::ULTIMATE_BOOK].bonuses.emplace_back( fheroes2::ArtifactBonusType::KNOWLEDGE_SKILL, 12 );
 
@@ -1111,7 +1113,7 @@ namespace fheroes2
                     os << "Improve Resurrection spell effectiveness by " << bonus.value << " percent" << std::endl;
                     break;
                 case ArtifactBonusType::SUMMONING_SPELL_EXTRA_EFFECTIVENESS_PERCENT:
-                    os << "Improve Sumonnining spell effectiveness by " << bonus.value << " percent" << std::endl;
+                    os << "Improve Summoning spell effectiveness by " << bonus.value << " percent" << std::endl;
                     break;
                 case ArtifactBonusType::CURSE_SPELL_IMMUNITY:
                     os << "Add immunity to Curse spells" << std::endl;
@@ -1209,16 +1211,16 @@ namespace fheroes2
                     os << "Add Undead Penalty to army's Morale" << std::endl;
                     break;
                 case ArtifactCurseType::GOLD_PENALTY:
-                    os << "Deducts " << curse.value << " gold from kindgom daily" << std::endl;
+                    os << "Deducts " << curse.value << " gold from kingdom daily" << std::endl;
                     break;
                 case ArtifactCurseType::SPELL_POWER_SKILL:
                     os << "Reduces Spell Power by " << curse.value << std::endl;
                     break;
                 case ArtifactCurseType::FIRE_SPELL_EXTRA_DAMAGE_PERCENT:
-                    os << "Icreases Damage from Fire spells by " << curse.value << " percent" << std::endl;
+                    os << "Increases Damage from Fire spells by " << curse.value << " percent" << std::endl;
                     break;
                 case ArtifactCurseType::COLD_SPELL_EXTRA_DAMAGE_PERCENT:
-                    os << "Icreases Damage from Cold spells by " << curse.value << " percent" << std::endl;
+                    os << "Increases Damage from Cold spells by " << curse.value << " percent" << std::endl;
                     break;
                 default:
                     // Did you add a new curse type? Add the logic above!

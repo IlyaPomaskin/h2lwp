@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -30,6 +30,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <SDL_events.h>
 #include <SDL_main.h> // IWYU pragma: keep
@@ -63,13 +64,9 @@
 #include "image_palette.h"
 #include "localevent.h"
 #include "logging.h"
-#include "math_base.h"
 #include "screen.h"
 #include "settings.h"
 #include "system.h"
-#ifdef WITH_DEBUG
-#include "tools.h"
-#endif
 #include "ui_tool.h"
 #include "zzlib.h"
 
@@ -78,17 +75,6 @@ namespace
     std::string GetCaption()
     {
         return std::string( "fheroes2 engine, version: " + Settings::GetVersion() );
-    }
-
-    int PrintHelp( const char * basename )
-    {
-        COUT( "Usage: " << basename << " [OPTIONS]" )
-#ifdef WITH_DEBUG
-        COUT( "  -d <level>\tprint debug messages, see src/engine/logging.h for possible values of <level> argument" )
-#endif
-        COUT( "  -h\t\tprint this help message and exit" )
-
-        return EXIT_SUCCESS;
     }
 
     void ReadConfigs()
@@ -102,6 +88,10 @@ namespace
         }
         else {
             conf.Save( configurationFileName );
+
+            // Fullscreen mode can be enabled by default for some devices, we need to forcibly
+            // synchronize reality with the default config if config file was not read
+            conf.setFullScreen( conf.FullScreen() );
         }
     }
 
@@ -118,11 +108,13 @@ namespace
     {
         const std::string dataDir = System::GetDataDirectory( "fheroes2" );
 
+__android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
+
         if ( dataDir.empty() )
             return;
 
-        const std::string dataFiles = System::ConcatePath( dataDir, "files" );
-        const std::string dataFilesSave = System::ConcatePath( dataFiles, "save" );
+        const std::string dataFiles = System::concatPath( dataDir, "files" );
+        const std::string dataFilesSave = System::concatPath( dataFiles, "save" );
 
         if ( !System::IsDirectory( dataDir ) )
             System::MakeDirectory( dataDir );
@@ -147,9 +139,24 @@ namespace
                 fheroes2::engine().toggleFullScreen();
             }
 
-            resizeDisplay();
+            // resizeDisplay();
 
-            __android_log_print(ANDROID_LOG_INFO, "SDL", "DisplayInitializer w: %d h: %d", conf.VideoMode().width, conf.VideoMode().height);
+            if ( conf.isFirstGameRun() && System::isHandheldDevice() ) {
+                // We do not show resolution dialog for first run on handheld devices. In this case it is wise to set 'widest' resolution by default.
+                const std::vector<fheroes2::ResolutionInfo> resolutions = fheroes2::engine().getAvailableResolutions();
+                fheroes2::ResolutionInfo bestResolution{ conf.currentResolutionInfo() };
+
+                for ( const fheroes2::ResolutionInfo & info : resolutions ) {
+                    if ( info.gameWidth > bestResolution.gameWidth && info.gameHeight == bestResolution.gameHeight ) {
+                        bestResolution = info;
+                    }
+                }
+
+                display.setResolution( bestResolution );
+            }
+            else {
+                display.setResolution( conf.currentResolutionInfo() );
+            } 
 
             fheroes2::engine().setTitle( GetCaption() );
 
@@ -193,7 +200,11 @@ namespace
 
             __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
 
-            display.resize(uint32_t (displayMode.w * dpiScaling * scale), uint32_t (displayMode.h * dpiScaling * scale));
+            uint32_t width = displayMode.w * dpiScaling * scale;
+            uint32_t height = displayMode.h * dpiScaling * scale;
+
+            // FIXME use setResolution
+            // display.resize(uint32_t (displayMode.w * dpiScaling * scale), uint32_t (displayMode.h * dpiScaling * scale));
             display.fill( 0 ); // start from a black screen
         }
     };
@@ -267,6 +278,8 @@ int main( int argc, char ** argv )
     assert( argc == __argc );
 
     argv = __argv;
+#else
+    (void)argc;
 #endif
 
     try {
@@ -282,26 +295,6 @@ int main( int argc, char ** argv )
         InitDataDir();
         ReadConfigs();
 
-        // getopt
-        {
-            int opt;
-
-            while ( ( opt = System::GetCommandOptions( argc, argv, "hd:" ) ) != -1 )
-                switch ( opt ) {
-#ifdef WITH_DEBUG
-                case 'd':
-                    conf.SetDebug( System::GetOptionsArgument() ? GetInt( System::GetOptionsArgument() ) : 0 );
-                    break;
-#endif
-                case '?':
-                case 'h':
-                    return PrintHelp( argv[0] );
-
-                default:
-                    break;
-                }
-        }
-
         std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Audio,
                                                                           fheroes2::SystemInitializationComponent::Video };
 
@@ -314,13 +307,12 @@ int main( int argc, char ** argv )
         DEBUG_LOG( DBG_GAME, DBG_INFO, conf.String() )
 
         const DisplayInitializer displayInitializer;
-
         const DataInitializer dataInitializer;
 
         ListFiles midiSoundFonts;
 
-        midiSoundFonts.Append( Settings::FindFiles( System::ConcatePath( "files", "soundfonts" ), ".sf2", false ) );
-        midiSoundFonts.Append( Settings::FindFiles( System::ConcatePath( "files", "soundfonts" ), ".sf3", false ) );
+        midiSoundFonts.Append( Settings::FindFiles( System::concatPath( "files", "soundfonts" ), ".sf2", false ) );
+        midiSoundFonts.Append( Settings::FindFiles( System::concatPath( "files", "soundfonts" ), ".sf3", false ) );
 
 #ifdef WITH_DEBUG
         for ( const std::string & file : midiSoundFonts ) {

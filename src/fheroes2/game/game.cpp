@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "game.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -36,7 +38,6 @@
 #include "color.h"
 #include "cursor.h"
 #include "difficulty.h"
-#include "game.h"
 #include "game_credits.h"
 #include "game_hotkeys.h"
 #include "game_interface.h"
@@ -48,13 +49,10 @@
 #include "maps_fileinfo.h"
 #include "maps_tiles.h"
 #include "math_base.h"
-#include "mp2.h"
 #include "mus.h"
 #include "players.h"
 #include "rand.h"
-#include "save_format_version.h"
 #include "settings.h"
-#include "skill.h"
 #include "tools.h"
 #include "world.h"
 
@@ -63,33 +61,9 @@ namespace
     std::string lastMapFileName;
     std::vector<Player> savedPlayers;
 
-    uint16_t save_version = CURRENT_FORMAT_VERSION;
-
-    std::string last_name;
-
     bool updateSoundsOnFocusUpdate = true;
 
     uint32_t maps_animation_frame = 0;
-
-    // TODO: this function returns a sound track based on a provided tile. It works fine for most of objects as they have only one "main" tile.
-    // However, some objects like Oracle or Volcano can be bigger than 1 tile leading to multiple sounds coming from the same object and these
-    // sounds might not be synchronized. This is mostly noticeable with 3D Audio mode on.
-    M82::SoundType getSoundTypeFromTile( const Maps::Tiles & tile )
-    {
-        // check stream first
-        if ( tile.isStream() ) {
-            return M82::LOOP0014;
-        }
-
-        const MP2::MapObjectType objectType = tile.GetObject( false );
-
-        // This is a horrible hack but we want to play sounds only for a particular sprite belonging to Stones.
-        if ( objectType == MP2::OBJ_STONES && tile.containsSprite( 200, 183 ) ) {
-            return M82::LOOP0019;
-        }
-
-        return M82::getAdventureMapObjectSound( objectType );
-    }
 }
 
 namespace Game
@@ -167,26 +141,6 @@ void Game::SavePlayers( const std::string & mapFileName, const Players & players
     }
 }
 
-void Game::SetLoadVersion( uint16_t ver )
-{
-    save_version = ver;
-}
-
-uint16_t Game::GetLoadVersion()
-{
-    return save_version;
-}
-
-const std::string & Game::GetLastSavename()
-{
-    return last_name;
-}
-
-void Game::SetLastSavename( const std::string & name )
-{
-    last_name = name;
-}
-
 fheroes2::GameMode Game::Credits()
 {
     ShowCredits();
@@ -206,22 +160,24 @@ void Game::SetUpdateSoundsOnFocusUpdate( const bool update )
 
 void Game::Init()
 {
-    // default events
-    LocalEvent::SetStateDefaults();
-
     // set global events
     LocalEvent & le = LocalEvent::Get();
-    le.SetGlobalFilterMouseEvents( Cursor::Redraw );
-    le.SetGlobalFilterKeysEvents( Game::KeyboardGlobalFilter );
+    le.setGlobalMouseMotionEventHook( Cursor::updateCursorPosition );
+    le.setGlobalKeyDownEventHook( Game::globalKeyDownEvent );
 
     Game::AnimateDelaysInitialize();
 
     Game::HotKeysLoad( Settings::GetLastFile( "", "fheroes2.key" ) );
 }
 
-uint32_t & Game::MapsAnimationFrame()
+uint32_t Game::getAdventureMapAnimationIndex()
 {
     return maps_animation_frame;
+}
+
+void Game::updateAdventureMapAnimationIndex()
+{
+    ++maps_animation_frame;
 }
 
 // play environment sounds from the game area in focus
@@ -289,7 +245,7 @@ void Game::EnvironmentSoundMixer()
     const bool is3DAudioEnabled = Settings::Get().is3DAudioEnabled();
 
     for ( const fheroes2::Point & pos : positions ) {
-        const M82::SoundType soundType = getSoundTypeFromTile( world.GetTiles( pos.x + center.x, pos.y + center.y ) );
+        const M82::SoundType soundType = M82::getAdventureMapTileSound( world.GetTiles( pos.x + center.x, pos.y + center.y ) );
         if ( soundType == M82::UNKNOWN ) {
             continue;
         }
@@ -323,7 +279,7 @@ void Game::EnvironmentSoundMixer()
 
             // We need to swap X and Y axes and invert Y axis as on screen Y axis goes from top to bottom.
             angle = static_cast<int16_t>( std::atan2( actualPosition.x, -actualPosition.y ) * 180 / M_PI );
-            // It is exteremely important to normalize the angle.
+            // It is extremely important to normalize the angle.
             if ( angle < 0 ) {
                 angle = 360 + angle;
             }
@@ -491,89 +447,13 @@ int Game::GetActualKingdomColors()
     return Settings::Get().GetPlayers().GetActualColors();
 }
 
-std::string Game::formatMonsterCount( const uint32_t count, const int scoutingLevel, const bool abbreviateNumber /* = false */ )
+std::string Game::formatMonsterCount( const uint32_t count, const bool isDetailedView, const bool abbreviateNumber /* = false */ )
 {
-    switch ( scoutingLevel ) {
-    case Skill::Level::BASIC:
-    case Skill::Level::ADVANCED: {
-        // Always use abbreviated numbers for ranges, otherwise the string might become too long
-        auto formatString = []( const uint32_t min, const uint32_t max ) {
-            const std::string minStr = fheroes2::abbreviateNumber( min );
-            const std::string maxStr = fheroes2::abbreviateNumber( max );
-
-            if ( minStr == maxStr ) {
-                return '~' + minStr;
-            }
-
-            return minStr + '-' + maxStr;
-        };
-
-        const auto [min, max] = Army::SizeRange( count );
-        assert( min <= max );
-
-        // Open range without upper bound
-        if ( max == UINT32_MAX ) {
-            return fheroes2::abbreviateNumber( min ) + '+';
-        }
-
-        // With basic scouting level, the range is divided in half and the part of the range into
-        // which the monster count falls is returned
-        if ( scoutingLevel == Skill::Level::BASIC ) {
-            const uint32_t half = min + ( max - min ) / 2;
-
-            if ( count < half ) {
-                return formatString( min, half );
-            }
-
-            return formatString( half, max );
-        }
-
-        // With advanced scouting level, the range is divided into four parts and the part of the
-        // range into which the monster count falls is returned
-        if ( scoutingLevel == Skill::Level::ADVANCED ) {
-            const uint32_t firstQuarter = min + ( max - min ) / 4;
-
-            if ( count < firstQuarter ) {
-                return formatString( min, firstQuarter );
-            }
-
-            const uint32_t secondQuarter = min + ( max - min ) / 2;
-
-            if ( count < secondQuarter ) {
-                return formatString( firstQuarter, secondQuarter );
-            }
-
-            const uint32_t thirdQuarter = min + ( max - min ) / 2 + ( max - min ) / 4;
-
-            if ( count < thirdQuarter ) {
-                return formatString( secondQuarter, thirdQuarter );
-            }
-
-            return formatString( thirdQuarter, max );
-        }
-
-        // We shouldn't be here
-        assert( 0 );
-
-        break;
-    }
-
-    // With expert scouting level, the exact monster count is returned (possibly in abbreviated form)
-    case Skill::Level::EXPERT:
+    if ( isDetailedView ) {
         return ( abbreviateNumber ? fheroes2::abbreviateNumber( count ) : std::to_string( count ) );
-
-    default:
-        break;
     }
 
-    // Otherwise we just return the approximate string representation (Few, Several, Pack, ...)
     return Army::SizeString( count );
-}
-
-std::string Game::CountThievesGuild( uint32_t monsterCount, int guildCount )
-{
-    assert( guildCount > 0 );
-    return guildCount == 1 ? "???" : Army::SizeString( monsterCount );
 }
 
 void Game::PlayPickupSound()

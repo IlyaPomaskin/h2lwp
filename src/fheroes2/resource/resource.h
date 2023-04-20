@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -95,7 +95,6 @@ public:
     int getLowestQuotient( const Funds & ) const;
     int GetValidItems() const;
     uint32_t GetValidItemsCount() const;
-
     void Trim(); // set all values to be >= 0
 
     void Reset();
@@ -121,8 +120,10 @@ namespace Resource
 
     int Rand( const bool includeGold );
 
-    /* return index sprite objnrsrc.icn */
-    uint32_t GetIndexSprite( int resource );
+    Funds CalculateEventResourceUpdate( const Funds & currentFunds, const Funds & eventFunds );
+
+    // Returns index sprite objnrsrc.icn
+    uint8_t GetIndexSprite( int resource );
     int FromIndexSprite( uint32_t index );
 
     // Return index sprite from resource.icn.

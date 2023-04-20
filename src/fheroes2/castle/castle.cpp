@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -59,16 +59,15 @@
 #include "race.h"
 #include "rand.h"
 #include "resource.h"
-#include "route.h"
 #include "screen.h"
 #include "serialize.h"
 #include "settings.h"
 #include "skill.h"
 #include "spell.h"
 #include "spell_storage.h"
-#include "text.h"
 #include "tools.h"
 #include "translations.h"
+#include "ui_dialog.h"
 #include "week.h"
 #include "world.h"
 
@@ -117,9 +116,119 @@ Castle::Castle( int32_t cx, int32_t cy, int rc )
 
 void Castle::LoadFromMP2( const std::vector<uint8_t> & data )
 {
-    StreamBuf st( data );
+    assert( data.size() == MP2::MP2_CASTLE_STRUCTURE_SIZE );
 
-    switch ( st.get() ) {
+    // Structure containing information about town or castle.
+    //
+    // - uint8_t (1 byte)
+    //     Owner color. Possible values:
+    //     00 - blue
+    //     01 - green
+    //     02 - red
+    //     03 - yellow
+    //     04 - orange
+    //     05 - purple
+    //     255 - none
+    //
+    // - uint8_t (1 byte)
+    //     Does the town / castle have custom buildings set by map creator?
+    //
+    // - uint16_t (2 bytes)
+    //    Bitfield containing common buildings within the town / castle.
+    //     0000 0000 0000 0010 : Thieves' Guild
+    //     0000 0000 0000 0100 : Tavern
+    //     0000 0000 0000 1000 : Shipyard
+    //     0000 0000 0001 0000 : Well
+    //     0000 0000 1000 0000 : Statue
+    //     0000 0001 0000 0000 : Left Turret
+    //     0000 0010 0000 0000 : Right Turret
+    //     0000 0100 0000 0000 : Marketplace
+    //     0000 1000 0000 0000 : First monster level growth building
+    //     0001 0000 0000 0000 : Moat
+    //     0010 0000 0000 0000 : Special building
+    //
+    // - uint16_t (2 bytes)
+    //     Bitfield containing information about built dwellings in the town / castle.
+    //     0000 0000 0000 1000 : level 1 dwelling
+    //     0000 0000 0001 0000 : level 2 dwelling
+    //     0000 0000 0010 0000 : level 3 dwelling
+    //     0000 0000 0100 0000 : level 4 dwelling
+    //     0000 0000 1000 0000 : level 5 dwelling
+    //     0000 0001 0000 0000 : level 6 dwelling
+    //     0000 0010 0000 0000 : upgraded level 2 dwelling
+    //     0000 0100 0000 0000 : upgraded level 3 dwelling
+    //     0000 1000 0000 0000 : upgraded level 4 dwelling
+    //     0001 0000 0000 0000 : upgraded level 5 dwelling
+    //     0010 0000 0000 0000 : upgraded level 6 dwelling
+    //
+    // - uint8_t (1 byte)
+    //     Magic Guild level.
+    //
+    // - uint8_t (1 byte)
+    //     Does the town / castle have custom set defenders?
+    //
+    // - uint8_t (1 byte)
+    //    Custom defender monster type in army slot 1.
+    //
+    // - uint8_t (1 byte)
+    //    Custom defender monster type in army slot 2.
+    //
+    // - uint8_t (1 byte)
+    //    Custom defender monster type in army slot 3.
+    //
+    // - uint8_t (1 byte)
+    //    Custom defender monster type in army slot 4.
+    //
+    // - uint8_t (1 byte)
+    //    Custom defender monster type in army slot 5.
+    //
+    // - uint16_t (2 bytes)
+    //    The number of custom defender monsters in army slot 1.
+    //
+    // - uint16_t (2 bytes)
+    //    The number of custom defender monsters in army slot 2.
+    //
+    // - uint16_t (2 bytes)
+    //    The number of custom defender monsters in army slot 3.
+    //
+    // - uint16_t (2 bytes)
+    //    The number of custom defender monsters in army slot 4.
+    //
+    // - uint16_t (2 bytes)
+    //    The number of custom defender monsters in army slot 5.
+    //
+    // - uint8_t (1 byte)
+    //     Does the town / castle have captain?
+    //
+    // - uint8_t (1 byte)
+    //     Does the town / castle have a specified name?
+    //
+    // - string of 13 bytes
+    //    Null terminated string of custom town / castle name.
+    //
+    // - uint8_t (1 byte)
+    //    Town / castle faction type. Possible values
+    //    00 - knight
+    //    01 - barbarian
+    //    02 - sorceress
+    //    03 - warlock
+    //    04 - wizard
+    //    05 - necromancer
+    //    06 - random
+    //
+    // - uint8_t (1 byte)
+    //    Is it a castle (is castle building being built)?
+    //
+    // - uint8_t (1 byte)
+    //    Is it allowed to build a castle?
+    //
+    // - unused 29 bytes
+    //    Always zeros.
+
+    StreamBuf dataStream( data );
+
+    const uint8_t ownerColor = dataStream.get();
+    switch ( ownerColor ) {
     case 0:
         SetColor( Color::BLUE );
         break;
@@ -143,75 +252,76 @@ void Castle::LoadFromMP2( const std::vector<uint8_t> & data )
         break;
     }
 
-    // custom building
-    if ( st.get() ) {
-        // building
-        int build = st.getLE16();
-        if ( 0x0002 & build )
+    const bool hasCustomBuildings = ( dataStream.get() != 0 );
+    if ( hasCustomBuildings ) {
+        // Common buildings.
+        const uint16_t commonBuildings = dataStream.getLE16();
+        if ( 0x0002 & commonBuildings )
             building |= BUILD_THIEVESGUILD;
-        if ( 0x0004 & build )
+        if ( 0x0004 & commonBuildings )
             building |= BUILD_TAVERN;
-        if ( 0x0008 & build )
+        if ( 0x0008 & commonBuildings )
             building |= BUILD_SHIPYARD;
-        if ( 0x0010 & build )
+        if ( 0x0010 & commonBuildings )
             building |= BUILD_WELL;
-        if ( 0x0080 & build )
+        if ( 0x0080 & commonBuildings )
             building |= BUILD_STATUE;
-        if ( 0x0100 & build )
+        if ( 0x0100 & commonBuildings )
             building |= BUILD_LEFTTURRET;
-        if ( 0x0200 & build )
+        if ( 0x0200 & commonBuildings )
             building |= BUILD_RIGHTTURRET;
-        if ( 0x0400 & build )
+        if ( 0x0400 & commonBuildings )
             building |= BUILD_MARKETPLACE;
-        if ( 0x1000 & build )
+        if ( 0x1000 & commonBuildings )
             building |= BUILD_MOAT;
-        if ( 0x0800 & build )
+        if ( 0x0800 & commonBuildings )
             building |= BUILD_WEL2;
-        if ( 0x2000 & build )
+        if ( 0x2000 & commonBuildings )
             building |= BUILD_SPEC;
 
-        // dwelling
-        int dwell = st.getLE16();
-        if ( 0x0008 & dwell )
+        // Existing dwellings.
+        const uint16_t existingDwellings = dataStream.getLE16();
+        if ( 0x0008 & existingDwellings )
             building |= DWELLING_MONSTER1;
-        if ( 0x0010 & dwell )
+        if ( 0x0010 & existingDwellings )
             building |= DWELLING_MONSTER2;
-        if ( 0x0020 & dwell )
+        if ( 0x0020 & existingDwellings )
             building |= DWELLING_MONSTER3;
-        if ( 0x0040 & dwell )
+        if ( 0x0040 & existingDwellings )
             building |= DWELLING_MONSTER4;
-        if ( 0x0080 & dwell )
+        if ( 0x0080 & existingDwellings )
             building |= DWELLING_MONSTER5;
-        if ( 0x0100 & dwell )
+        if ( 0x0100 & existingDwellings )
             building |= DWELLING_MONSTER6;
-        if ( 0x0200 & dwell )
+        if ( 0x0200 & existingDwellings )
             building |= DWELLING_UPGRADE2 | DWELLING_MONSTER2;
-        if ( 0x0400 & dwell )
+        if ( 0x0400 & existingDwellings )
             building |= DWELLING_UPGRADE3 | DWELLING_MONSTER3;
-        if ( 0x0800 & dwell )
+        if ( 0x0800 & existingDwellings )
             building |= DWELLING_UPGRADE4 | DWELLING_MONSTER4;
-        if ( 0x1000 & dwell )
+        if ( 0x1000 & existingDwellings )
             building |= DWELLING_UPGRADE5 | DWELLING_MONSTER5;
-        if ( 0x2000 & dwell )
+        if ( 0x2000 & existingDwellings )
             building |= DWELLING_UPGRADE6 | DWELLING_MONSTER6;
 
         // magic tower
-        int level = st.get();
-        if ( 0 < level )
+        const uint8_t magicGuildLevel = dataStream.get();
+        if ( 0 < magicGuildLevel )
             building |= BUILD_MAGEGUILD1;
-        if ( 1 < level )
+        if ( 1 < magicGuildLevel )
             building |= BUILD_MAGEGUILD2;
-        if ( 2 < level )
+        if ( 2 < magicGuildLevel )
             building |= BUILD_MAGEGUILD3;
-        if ( 3 < level )
+        if ( 3 < magicGuildLevel )
             building |= BUILD_MAGEGUILD4;
-        if ( 4 < level )
+        if ( 4 < magicGuildLevel )
             building |= BUILD_MAGEGUILD5;
     }
     else {
-        st.skip( 5 );
+        // Skip reading 5 bytes corresponding to custom buildings for the town / castle.
+        dataStream.skip( 5 );
 
-        // default building
+        // Set default buildings.
         building |= DWELLING_MONSTER1;
         uint32_t dwelling2 = 0;
         switch ( Game::getDifficulty() ) {
@@ -234,36 +344,42 @@ void Castle::LoadFromMP2( const std::vector<uint8_t> & data )
             building |= DWELLING_MONSTER2;
     }
 
-    // custom troops
-    bool custom_troops = ( st.get() != 0 );
-    if ( custom_troops ) {
+    const bool customDefenders = ( dataStream.get() != 0 );
+    if ( customDefenders ) {
         Troop troops[5];
 
         // set monster id
         for ( Troop & troop : troops )
-            troop.SetMonster( st.get() + 1 );
+            troop.SetMonster( dataStream.get() + 1 );
 
         // set count
         for ( Troop & troop : troops )
-            troop.SetCount( st.getLE16() );
+            troop.SetCount( dataStream.getLE16() );
 
         army.Assign( troops, std::end( troops ) );
         SetModes( CUSTOMARMY );
     }
-    else
-        st.skip( 15 );
+    else {
+        // Skip 15 bytes as custom defenders are not set.
+        dataStream.skip( 15 );
+    }
 
-    // captain
-    if ( st.get() )
+    const bool isCaptainAvailable = ( dataStream.get() != 0 );
+    if ( isCaptainAvailable ) {
         building |= BUILD_CAPTAIN;
+    }
 
-    // custom name
-    st.skip( 1 );
-    name = st.toString( 13 );
+    const bool isCustomTownNameSet = ( dataStream.get() != 0 );
+    if ( isCustomTownNameSet ) {
+        name = dataStream.toString( 13 );
+    }
+    else {
+        // Skip 13 bytes since the name is not set.
+        dataStream.skip( 13 );
+    }
 
-    // race
-    uint32_t kingdom_race = Players::GetPlayerRace( GetColor() );
-    switch ( st.get() ) {
+    const uint8_t castleFaction = dataStream.get();
+    switch ( castleFaction ) {
     case 0:
         race = Race::KNGT;
         break;
@@ -282,22 +398,30 @@ void Castle::LoadFromMP2( const std::vector<uint8_t> & data )
     case 5:
         race = Race::NECR;
         break;
-    default:
-        race = ( Color::NONE != GetColor() && ( Race::ALL & kingdom_race ) ? kingdom_race : Race::Rand() );
+    default: {
+        const uint32_t kingdomRace = Players::GetPlayerRace( GetColor() );
+        race = ( Color::NONE != GetColor() && ( Race::ALL & kingdomRace ) ? kingdomRace : Race::Rand() );
         break;
     }
+    }
 
-    // castle
-    building |= st.get() ? BUILD_CASTLE : BUILD_TENT;
+    const bool isCastleBuilt = ( dataStream.get() != 0 );
+    if ( isCastleBuilt ) {
+        building |= BUILD_CASTLE;
+    }
+    else {
+        building |= BUILD_TENT;
+    }
 
-    // allow upgrade to castle (0 - true, 1 - false)
-    if ( st.get() )
+    const bool allowToBuildCastle = ( dataStream.get() != 0 );
+    if ( allowToBuildCastle ) {
         ResetModes( ALLOWCASTLE );
-    else
+    }
+    else {
         SetModes( ALLOWCASTLE );
+    }
 
-    // unknown 29 byte
-    //
+    // Skip the rest of 29 bytes.
 
     PostLoad();
 }
@@ -330,7 +454,7 @@ void Castle::PostLoad()
     if ( building & DWELLING_UPGRADE7 )
         dwelling[5] = Monster( race, DWELLING_UPGRADE7 ).GetGrown();
 
-    // fix upgrade dwelling dependend from race
+    // fix upgrade dwelling dependent from race
     switch ( race ) {
     case Race::BARB:
         building &= ~( DWELLING_UPGRADE3 | DWELLING_UPGRADE6 );
@@ -354,8 +478,10 @@ void Castle::PostLoad()
     army.SetColor( GetColor() );
 
     // fix captain
-    if ( building & BUILD_CAPTAIN )
+    if ( building & BUILD_CAPTAIN ) {
         captain.LoadDefaults( HeroBase::CAPTAIN, race );
+        captain.SetSpellPoints( captain.GetMaxSpellPoints() );
+    }
 
     // MageGuild
     mageguild.initialize( race, HaveLibraryCapability() );
@@ -413,20 +539,17 @@ bool Castle::isPosition( const fheroes2::Point & pt ) const
 
 void Castle::EducateHeroes()
 {
-    // for learns new spells need 1 day
-    if ( GetLevelMageGuild() ) {
-        CastleHeroes heroes = world.GetHeroes( *this );
+    if ( GetLevelMageGuild() == 0 ) {
+        return;
+    }
 
-        if ( heroes.FullHouse() ) {
-            MageGuildEducateHero( *heroes.Guest() );
-            MageGuildEducateHero( *heroes.Guard() );
-        }
-        else if ( heroes.IsValid() )
-            MageGuildEducateHero( *heroes.GuestFirst() );
+    Heroes * hero = world.GetHero( *this );
+    if ( hero != nullptr ) {
+        MageGuildEducateHero( *hero );
+    }
 
-        // captain
-        if ( captain.isValid() )
-            MageGuildEducateHero( captain );
+    if ( captain.isValid() ) {
+        MageGuildEducateHero( captain );
     }
 }
 
@@ -823,34 +946,26 @@ const char * Castle::GetDescriptionBuilding( uint32_t build, int race )
 
 bool Castle::AllowBuyHero( std::string * msg ) const
 {
-    CastleHeroes heroes = world.GetHeroes( *this );
-
-    if ( heroes.Guest() ) {
-        // allow recruit with auto move guest to guard
-        if ( Settings::Get().ExtCastleAllowGuardians() && !heroes.Guard() ) {
-            if ( !heroes.Guest()->GetArmy().CanJoinTroops( army ) ) {
-                if ( msg )
-                    *msg = _( "Cannot recruit - guest to guard automove error." );
-                return false;
-            }
+    const Heroes * hero = world.GetHero( *this );
+    if ( hero != nullptr ) {
+        if ( msg ) {
+            *msg = _( "Cannot recruit - you already have a Hero in this town." );
         }
-        else {
-            if ( msg )
-                *msg = _( "Cannot recruit - you already have a Hero in this town." );
-            return false;
-        }
+        return false;
     }
 
     const Kingdom & myKingdom = GetKingdom();
     if ( !myKingdom.AllowRecruitHero( false ) ) {
-        if ( msg )
+        if ( msg ) {
             *msg = _( "Cannot recruit - you have too many Heroes." );
+        }
         return false;
     }
 
     if ( !myKingdom.AllowRecruitHero( true ) ) {
-        if ( msg )
+        if ( msg ) {
             *msg = _( "Cannot afford a Hero" );
+        }
         return false;
     }
 
@@ -859,36 +974,30 @@ bool Castle::AllowBuyHero( std::string * msg ) const
 
 Heroes * Castle::RecruitHero( Heroes * hero )
 {
-    if ( !hero || !AllowBuyHero() )
+    if ( !hero || !AllowBuyHero() ) {
         return nullptr;
-
-    CastleHeroes heroes = world.GetHeroes( *this );
-    if ( heroes.Guest() ) {
-        if ( Settings::Get().ExtCastleAllowGuardians() && !heroes.Guard() ) {
-            // move guest to guard
-            SwapCastleHeroes( heroes );
-        }
-        else
-            return nullptr;
     }
 
-    // recruit
-    if ( !hero->Recruit( *this ) )
+    if ( world.GetHero( *this ) != nullptr ) {
         return nullptr;
+    }
+
+    if ( !hero->Recruit( *this ) ) {
+        return nullptr;
+    }
 
     Kingdom & currentKingdom = GetKingdom();
     currentKingdom.OddFundsResource( PaymentConditions::RecruitHero() );
 
-    // update spell book
-    if ( GetLevelMageGuild() )
+    if ( GetLevelMageGuild() ) {
         MageGuildEducateHero( *hero );
+    }
 
     DEBUG_LOG( DBG_GAME, DBG_INFO, name << ", recruit: " << hero->GetName() )
 
     return hero;
 }
 
-/* recruit monster from building to castle army */
 bool Castle::RecruitMonster( const Troop & troop, bool showDialog )
 {
     if ( !troop.isValid() )
@@ -927,24 +1036,23 @@ bool Castle::RecruitMonster( const Troop & troop, bool showDialog )
 
     uint32_t count = troop.GetCount();
 
-    // fix count
-    if ( dwelling[dwellingIndex] < count )
+    if ( dwelling[dwellingIndex] < count ) {
         count = dwelling[dwellingIndex];
+    }
 
-    // buy
     const payment_t paymentCosts = troop.GetTotalCost();
     Kingdom & kingdom = GetKingdom();
 
-    if ( !kingdom.AllowPayment( paymentCosts ) )
+    if ( !kingdom.AllowPayment( paymentCosts ) ) {
         return false;
+    }
 
-    // first: guard army join
     if ( !GetArmy().JoinTroop( troop ) ) {
-        CastleHeroes heroes = world.GetHeroes( *this );
+        Heroes * hero = world.GetHero( *this );
 
-        if ( !heroes.Guest() || !heroes.Guest()->GetArmy().JoinTroop( troop ) ) {
+        if ( hero == nullptr || !hero->GetArmy().JoinTroop( troop ) ) {
             if ( showDialog ) {
-                Dialog::Message( "", _( "There is no room in the garrison for this army." ), Font::BIG, Dialog::OK );
+                fheroes2::showStandardTextMessage( "", _( "There is no room in the garrison for this army." ), Dialog::OK );
             }
             return false;
         }
@@ -1462,6 +1570,7 @@ bool Castle::BuyBuilding( uint32_t build )
 
     case BUILD_CAPTAIN:
         captain.LoadDefaults( HeroBase::CAPTAIN, race );
+        captain.SetSpellPoints( captain.GetMaxSpellPoints() );
         if ( GetLevelMageGuild() )
             MageGuildEducateHero( captain );
         break;
@@ -1993,9 +2102,9 @@ int Castle::GetICNBuilding( uint32_t build, int race )
     return ICN::UNKNOWN;
 }
 
-CastleHeroes Castle::GetHeroes() const
+Heroes * Castle::GetHero() const
 {
-    return world.GetHeroes( *this );
+    return world.GetHero( *this );
 }
 
 bool Castle::HaveNearlySea() const
@@ -2180,8 +2289,7 @@ bool Castle::PredicateIsBuildBuilding( const Castle * castle, const uint32_t bui
 std::string Castle::String() const
 {
     std::ostringstream os;
-    const CastleHeroes heroes = GetHeroes();
-    const Heroes * hero = nullptr;
+    const Heroes * hero = GetHero();
 
     os << "name and type   : " << name << " (" << Race::String( race ) << ")" << std::endl
        << "color           : " << Color::String( GetColor() ) << std::endl
@@ -2204,12 +2312,8 @@ std::string Castle::String() const
        << "is castle       : " << ( isCastle() ? "yes" : "no" ) << " (" << getBuildingValue() << ")" << std::endl
        << "army            : " << army.String() << std::endl;
 
-    if ( nullptr != ( hero = heroes.Guard() ) ) {
-        os << "army guard      : " << hero->GetArmy().String() << std::endl;
-    }
-
-    if ( nullptr != ( hero = heroes.Guest() ) ) {
-        os << "army guest      : " << hero->GetArmy().String() << std::endl;
+    if ( hero != nullptr ) {
+        os << "hero army       : " << hero->GetArmy().String() << std::endl;
     }
 
     return os.str();
@@ -2294,27 +2398,23 @@ int Castle::GetLuckModificator( std::string * strs ) const
 
 const Army & Castle::GetArmy() const
 {
-    const CastleHeroes heroes = world.GetHeroes( *this );
-    return heroes.Guard() ? heroes.Guard()->GetArmy() : army;
+    return army;
 }
 
 Army & Castle::GetArmy()
 {
-    CastleHeroes heroes = world.GetHeroes( *this );
-    return heroes.Guard() ? heroes.Guard()->GetArmy() : army;
+    return army;
 }
 
 const Army & Castle::GetActualArmy() const
 {
-    CastleHeroes heroes = world.GetHeroes( *this );
-    const Heroes * hero = heroes.GuardFirst();
+    const Heroes * hero = world.GetHero( *this );
     return hero ? hero->GetArmy() : army;
 }
 
 Army & Castle::GetActualArmy()
 {
-    CastleHeroes heroes = world.GetHeroes( *this );
-    Heroes * hero = heroes.GuardFirst();
+    Heroes * hero = world.GetHero( *this );
     return hero ? hero->GetArmy() : army;
 }
 
@@ -2322,21 +2422,29 @@ double Castle::GetGarrisonStrength( const Heroes * attackingHero ) const
 {
     double totalStrength = 0;
 
-    CastleHeroes heroes = world.GetHeroes( *this );
-    if ( heroes.Guest() ) {
-        totalStrength += heroes.Guest()->GetArmy().GetStrength();
+    Heroes * hero = world.GetHero( *this );
+
+    // If there is a hero in the castle, then some of the garrison troops can join his army if
+    // there is a place for them. Castle bonuses are applied to the resulting combined army.
+    if ( hero ) {
+        Army garrisonArmy;
+        garrisonArmy.Assign( army );
+
+        Army combinedArmy( hero );
+        combinedArmy.Assign( hero->GetArmy() );
+        combinedArmy.ArrangeForCastleDefense( garrisonArmy );
+
+        totalStrength += combinedArmy.GetStrength();
     }
-    if ( Settings::Get().ExtCastleAllowGuardians() && heroes.Guard() ) {
-        totalStrength += heroes.Guard()->GetArmy().GetStrength();
-    }
+    // Otherwise just use the garrison army strength. Castle bonuses are also applied.
     else {
         totalStrength += army.GetStrength();
     }
 
-    // Add castle bonus if there are any troops defending it
+    // Add castle bonuses if there are any troops defending the castle
     if ( isCastle() && totalStrength > 1 ) {
-        const Battle::Tower tower( *this, Battle::TWR_CENTER, Rand::DeterministicRandomGenerator( 0 ), 0 );
-        const double towerStr = tower.GetStrengthWithBonus( tower.GetBonus(), 0 );
+        const Battle::Tower tower( *this, Battle::TowerType::TWR_CENTER, Rand::DeterministicRandomGenerator( 0 ), 0 );
+        const double towerStr = tower.GetStrengthWithBonus( tower.GetAttackBonus(), 0 );
 
         totalStrength += towerStr;
         if ( isBuild( BUILD_LEFTTURRET ) ) {
@@ -2350,10 +2458,11 @@ double Castle::GetGarrisonStrength( const Heroes * attackingHero ) const
             totalStrength *= isBuild( BUILD_MOAT ) ? 1.2 : 1.15;
         }
         else {
-            // heavy penalty if no ballistics skill and army is melee infantry based
+            // Heavy penalty if the attacking hero does not have a ballistic skill, and his army is based on melee infantry
             totalStrength *= isBuild( BUILD_MOAT ) ? 1.45 : 1.25;
         }
     }
+
     return totalStrength;
 }
 
@@ -2379,20 +2488,17 @@ bool Castle::BuyBoat() const
     Maps::Tiles & middle = world.GetTiles( index );
     Kingdom & kingdom = GetKingdom();
 
-    if ( MP2::OBJ_ZERO == left.GetObject() && left.isWater() ) {
+    if ( MP2::OBJ_NONE == left.GetObject() && left.isWater() ) {
         kingdom.OddFundsResource( PaymentConditions::BuyBoat() );
-
-        left.setBoat( Direction::RIGHT );
+        left.setBoat( Direction::RIGHT, kingdom.GetColor() );
     }
-    else if ( MP2::OBJ_ZERO == right.GetObject() && right.isWater() ) {
+    else if ( MP2::OBJ_NONE == right.GetObject() && right.isWater() ) {
         kingdom.OddFundsResource( PaymentConditions::BuyBoat() );
-
-        right.setBoat( Direction::RIGHT );
+        right.setBoat( Direction::RIGHT, kingdom.GetColor() );
     }
-    else if ( MP2::OBJ_ZERO == middle.GetObject() && middle.isWater() ) {
+    else if ( MP2::OBJ_NONE == middle.GetObject() && middle.isWater() ) {
         kingdom.OddFundsResource( PaymentConditions::BuyBoat() );
-
-        middle.setBoat( Direction::RIGHT );
+        middle.setBoat( Direction::RIGHT, kingdom.GetColor() );
     }
 
     return true;
@@ -2420,7 +2526,7 @@ void Castle::setName( const std::set<std::string> & usedNames )
 
 int Castle::GetControl() const
 {
-    /* gray towns: ai control */
+    /* gray towns: AI control */
     return GetColor() & Color::ALL ? GetKingdom().GetControl() : CONTROL_AI;
 }
 
@@ -2449,7 +2555,7 @@ uint32_t Castle::GetGrownMonthOf()
     return GameStatic::GetCastleGrownMonthOf();
 }
 
-void Castle::Scoute() const
+void Castle::Scout() const
 {
     Maps::ClearFog( GetIndex(), GameStatic::getFogDiscoveryDistance( GameStatic::FogDiscoveryType::CASTLE ), GetColor() );
 }
@@ -2487,9 +2593,7 @@ void Castle::JoinRNDArmy()
 
 void Castle::ActionPreBattle()
 {
-    CastleHeroes heroes = world.GetHeroes( *this );
-    Heroes * hero = heroes.GuardFirst();
-
+    Heroes * hero = world.GetHero( *this );
     if ( hero ) {
         hero->GetArmy().ArrangeForCastleDefense( army );
     }
@@ -2584,11 +2688,11 @@ void AllCastles::AddCastle( Castle * castle )
     _castleTiles[center + fheroes2::Point( 0, -3 )] = id;
 }
 
-void AllCastles::Scoute( int colors ) const
+void AllCastles::Scout( int colors ) const
 {
     for ( auto it = begin(); it != end(); ++it )
         if ( colors & ( *it )->GetColor() )
-            ( *it )->Scoute();
+            ( *it )->Scout();
 }
 
 /* pack castle */
@@ -2674,54 +2778,6 @@ StreamBase & operator>>( StreamBase & msg, AllCastles & castles )
     }
 
     return msg;
-}
-
-void Castle::SwapCastleHeroes( CastleHeroes & heroes )
-{
-    if ( heroes.Guest() && heroes.Guard() ) {
-        heroes.Guest()->SetModes( Heroes::GUARDIAN );
-        heroes.Guest()->ResetModes( Heroes::SLEEPER );
-        heroes.Guard()->ResetModes( Heroes::GUARDIAN );
-        heroes.Swap();
-
-        world.GetTiles( center.x, center.y ).SetHeroes( nullptr );
-
-        fheroes2::Point position( heroes.Guard()->GetCenter() );
-        position.y -= 1;
-        heroes.Guard()->SetCenter( position );
-        heroes.Guard()->GetPath().Reset();
-
-        position = heroes.Guest()->GetCenter();
-        position.y += 1;
-        heroes.Guest()->SetCenter( position );
-        heroes.Guest()->GetPath().Reset();
-
-        world.GetTiles( center.x, center.y ).SetHeroes( heroes.Guest() );
-    }
-    else if ( heroes.Guest() && !heroes.Guard() ) {
-        heroes.Guest()->SetModes( Heroes::GUARDIAN );
-        heroes.Guest()->ResetModes( Heroes::SLEEPER );
-        heroes.Swap();
-        heroes.Guard()->GetArmy().JoinTroops( army );
-
-        world.GetTiles( center.x, center.y ).SetHeroes( nullptr );
-
-        fheroes2::Point position( heroes.Guard()->GetCenter() );
-        position.y -= 1;
-        heroes.Guard()->SetCenter( position );
-        heroes.Guard()->GetPath().Reset();
-    }
-    else if ( !heroes.Guest() && heroes.Guard() ) {
-        heroes.Guard()->ResetModes( Heroes::GUARDIAN );
-        heroes.Swap();
-
-        fheroes2::Point position( heroes.Guest()->GetCenter() );
-        position.y += 1;
-        heroes.Guest()->SetCenter( position );
-        heroes.Guest()->GetPath().Reset();
-
-        world.GetTiles( center.x, center.y ).SetHeroes( heroes.Guest() );
-    }
 }
 
 std::string Castle::GetStringBuilding( uint32_t build ) const

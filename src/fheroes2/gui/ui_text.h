@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2021 - 2022                                             *
+ *   Copyright (C) 2021 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -84,6 +84,8 @@ namespace fheroes2
         }
     };
 
+    int32_t getFontHeight( const FontSize fontSize );
+
     class TextBase
     {
     public:
@@ -108,10 +110,10 @@ namespace fheroes2
         // Draw text as a single line text.
         virtual void draw( const int32_t x, const int32_t y, Image & output ) const = 0;
 
-        // Draw text as a multi-line limited by width of a line.
+        // Draw text as a multi-line limited by width of a line. The text will be centered according to the provided maximum width.
         virtual void draw( const int32_t x, const int32_t y, const int32_t maxWidth, Image & output ) const = 0;
 
-        // Returns true if here is something to draw.
+        // Returns true if nothing to draw.
         virtual bool empty() const = 0;
 
         // Returns full text. Multi-text class cannot return by reference hence returning by value.

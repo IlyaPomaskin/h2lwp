@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -31,7 +31,6 @@
 #include <exception>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "army.h"
@@ -49,7 +48,6 @@
 
 class Castle;
 class StreamBase;
-class StreamBuf;
 
 namespace Battle
 {
@@ -65,14 +63,15 @@ namespace fheroes2
 {
     class Image;
     class Sprite;
+    struct ObjectRenderingInfo;
 }
 
 struct HeroSeedsForLevelUp
 {
     uint32_t seedPrimarySkill = 0;
-    uint32_t seedSecondaySkill1 = 0;
-    uint32_t seedSecondaySkill2 = 0;
-    uint32_t seedSecondaySkillRandomChoose = 0;
+    uint32_t seedSecondarySkill1 = 0;
+    uint32_t seedSecondarySkill2 = 0;
+    uint32_t seedSecondarySkillRandomChoose = 0;
 };
 
 class Heroes final : public HeroBase, public ColorBase
@@ -180,10 +179,12 @@ public:
         RECRUIT = 0x00000040,
         JAIL = 0x00000080,
         ACTION = 0x00000100,
-        // Hero should remember his movement points when retreating or surrendering, related to Settings::HEROES_REMEMBER_MP_WHEN_RETREATING
+        // Hero must retain his movement points if he retreated or surrendered and was then rehired on the same day
         SAVEMP = 0x00000200,
         SLEEPER = 0x00000400,
-        GUARDIAN = 0x00000800,
+
+        // UNUSED = 0x00000800,
+
         NOTDEFAULTS = 0x00001000,
         NOTDISMISS = 0x00002000,
         VISIONS = 0x00004000,
@@ -265,7 +266,7 @@ public:
 
     Heroes();
     Heroes( int heroid, int rc );
-    Heroes( int heroID, int race, int initialLevel );
+    Heroes( const int heroID, const int race, const uint32_t additionalExperience );
     Heroes( const Heroes & ) = delete;
 
     ~Heroes() override = default;
@@ -283,7 +284,7 @@ public:
     const Castle * inCastle() const override;
     Castle * inCastleMutable() const;
 
-    void LoadFromMP2( int32_t map_index, int cl, int rc, StreamBuf );
+    void LoadFromMP2( const int32_t mapIndex, const int colorType, const int raceType, const std::vector<uint8_t> & data );
     void PostLoad();
 
     int GetRace() const override;
@@ -393,7 +394,7 @@ public:
     void ActionAfterBattle() override;
     void ActionPreBattle() override;
 
-    bool BuySpellBook( const Castle *, int shrine = 0 );
+    bool BuySpellBook( const Castle * castle );
 
     const Route::Path & GetPath() const
     {
@@ -449,7 +450,7 @@ public:
     // Do not call this method directly. It is used by AIHeroMeetingUpdater class.
     void unmarkHeroMeeting();
 
-    bool Move( bool fast = false );
+    bool Move( const bool jumpToNextTile = false );
     void Move2Dest( const int32_t destination );
     bool isMoveEnabled() const;
     bool CanMove() const;
@@ -461,11 +462,14 @@ public:
     void ApplyPenaltyMovement( uint32_t penalty );
     void ActionSpellCast( const Spell & spell );
 
+    // Update map in the scout area around the Hero on radar (mini-map).
+    void ScoutRadar() const;
+
     bool MayCastAdventureSpells() const;
 
     // Since heroes sprite are much bigger than a tile we need to 'cut' the sprite and the shadow's sprite into pieces. Each piece is for a separate tile.
-    std::vector<std::pair<fheroes2::Point, fheroes2::Sprite>> getHeroSpritesPerTile() const;
-    std::vector<std::pair<fheroes2::Point, fheroes2::Sprite>> getHeroShadowSpritesPerTile() const;
+    std::vector<fheroes2::ObjectRenderingInfo> getHeroSpritesPerTile() const;
+    std::vector<fheroes2::ObjectRenderingInfo> getHeroShadowSpritesPerTile() const;
 
     void PortraitRedraw( const int32_t px, const int32_t py, const PortraitType type, fheroes2::Image & dstsf ) const override;
 
@@ -489,8 +493,12 @@ public:
 
     void FadeOut( const fheroes2::Point & offset = fheroes2::Point() ) const;
     void FadeIn( const fheroes2::Point & offset = fheroes2::Point() ) const;
-    void Scoute( const int tileIndex ) const;
-    int GetScoute() const;
+    void Scout( const int tileIndex ) const;
+    int GetScoutingDistance() const;
+
+    // Returns the area in map tiles around hero's position in his scout range.
+    fheroes2::Rect GetScoutRoi() const;
+
     uint32_t GetVisionsDistance() const;
 
     bool isShipMaster() const;
@@ -513,6 +521,11 @@ public:
     const fheroes2::Sprite & GetPortrait( const int type ) const
     {
         return Heroes::GetPortrait( portrait, type );
+    }
+
+    int getPortraitId() const
+    {
+        return portrait;
     }
 
     static int GetLevelFromExperience( uint32_t );
@@ -545,7 +558,9 @@ public:
         return static_cast<uint8_t>( _alphaValue );
     }
 
-    double getAIMininumJoiningArmyStrength() const;
+    double getAIMinimumJoiningArmyStrength() const;
+
+    uint32_t getDailyRestoredSpellPoints() const;
 
 private:
     friend StreamBase & operator<<( StreamBase &, const Heroes & );
@@ -558,7 +573,7 @@ private:
     void LevelUp( bool skipsecondary, bool autoselect = false );
     void LevelUpSecondarySkill( const HeroSeedsForLevelUp & seeds, int primary, bool autoselect = false );
     void AngleStep( int );
-    bool MoveStep( bool fast = false );
+    bool MoveStep( const bool jumpToNextTile );
     static void MoveStep( Heroes &, int32_t to, bool newpos );
     static uint32_t GetStartingXp();
     bool isInVisibleMapArea() const;
@@ -587,8 +602,11 @@ private:
 
     Army army;
 
-    int hid; /* hero id */
-    int portrait; /* hero id */
+    // Hero ID
+    int hid;
+    // Corresponds to the ID of the hero whose portrait is applied. Usually equal to the
+    // ID of this hero, unless a custom portrait is applied.
+    int portrait;
     int _race;
     int save_maps_object;
 
@@ -635,7 +653,7 @@ struct AllHeroes : public VecHeroes
     void Init();
     void clear();
 
-    void Scoute( int ) const;
+    void Scout( int ) const;
 
     void ResetModes( const uint32_t modes ) const
     {
@@ -657,8 +675,7 @@ struct AllHeroes : public VecHeroes
         std::for_each( begin(), end(), []( Heroes * hero ) { hero->ActionNewMonth(); } );
     }
 
-    Heroes * GetGuest( const Castle & ) const;
-    Heroes * GetGuard( const Castle & ) const;
+    Heroes * GetHero( const Castle & castle ) const;
     Heroes * GetFreeman( const int race, const int heroIDToIgnore ) const;
     Heroes * FromJail( int32_t ) const;
 };

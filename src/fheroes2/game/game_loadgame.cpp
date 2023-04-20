@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -100,9 +100,9 @@ fheroes2::GameMode Game::LoadMulti()
     const int32_t buttonYPos = 46;
     const int32_t buttonYStep = 66;
 
-    fheroes2::Button buttonHotSeat( buttonXPos, buttonYPos, ICN::BTNMP, 0, 1 );
+    fheroes2::Button buttonHotSeat( buttonXPos, buttonYPos, ICN::BUTTON_HOT_SEAT, 0, 1 );
     fheroes2::Button buttonNetwork( buttonXPos, buttonYPos + buttonYStep * 1, ICN::BTNMP, 2, 3 );
-    fheroes2::Button buttonCancelGame( buttonXPos, buttonYPos + buttonYStep * 5, ICN::BTNMP, 8, 9 );
+    fheroes2::Button buttonCancelGame( buttonXPos, buttonYPos + buttonYStep * 5, ICN::BUTTON_LARGE_CANCEL, 0, 1 );
 
     buttonHotSeat.draw();
     buttonCancelGame.draw();
@@ -170,10 +170,10 @@ fheroes2::GameMode Game::LoadGame()
     std::vector<fheroes2::Button> buttons( 4 );
     const size_t buttonCount = buttons.size();
 
-    buttons[0].setICNInfo( ICN::BTNNEWGM, 0, 1 );
-    buttons[1].setICNInfo( ICN::BTNNEWGM, 2, 3 );
-    buttons[2].setICNInfo( ICN::BTNNEWGM, 4, 5 );
-    buttons[3].setICNInfo( ICN::BTNNEWGM, 6, 7 );
+    buttons[0].setICNInfo( ICN::BUTTON_STANDARD_GAME, 0, 1 );
+    buttons[1].setICNInfo( ICN::BUTTON_CAMPAIGN_GAME, 0, 1 );
+    buttons[2].setICNInfo( ICN::BUTTON_MULTIPLAYER_GAME, 0, 1 );
+    buttons[3].setICNInfo( ICN::BUTTON_LARGE_CANCEL, 0, 1 );
 
     const int32_t buttonXPos = buttonMiddlePos - buttonWidth / 2 - 3; // 3 is button shadow
     const int32_t buttonYPos = 46;
@@ -210,7 +210,7 @@ fheroes2::GameMode Game::LoadGame()
                 Dialog::Message( _( "Load Game" ), _( "No save files to load." ), Font::BIG, Dialog::OK );
             }
             else {
-                return fheroes2::GameMode::LOAD_CAMPAIN;
+                return fheroes2::GameMode::LOAD_CAMPAIGN;
             }
         }
         else if ( le.MouseClickLeft( buttons[2].area() ) || HotKeyPressEvent( HotKeyEvent::MAIN_MENU_MULTI ) ) {

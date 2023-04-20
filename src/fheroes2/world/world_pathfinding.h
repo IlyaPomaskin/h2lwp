@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2020 - 2022                                             *
+ *   Copyright (C) 2020 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -78,7 +78,7 @@ public:
     static uint32_t calculatePathPenalty( const std::list<Route::Step> & path );
 
 protected:
-    void processWorldMap();
+    virtual void processWorldMap();
     void checkAdjacentNodes( std::vector<int> & nodesToExplore, int currentNodeIdx );
 
     // This method defines pathfinding rules. This has to be implemented by the derived class.
@@ -90,8 +90,8 @@ protected:
     // the hero's remaining movement points. The default implementation can be overridden by a derived class.
     virtual uint32_t getMovementPenalty( int src, int dst, int direction ) const;
 
-    // Substracts movement points taking the transition between turns into account
-    uint32_t substractMovePoints( const uint32_t movePoints, const uint32_t substractedMovePoints ) const;
+    // Subtracts movement points taking the transition between turns into account
+    uint32_t subtractMovePoints( const uint32_t movePoints, const uint32_t subtractedMovePoints ) const;
 
     uint8_t _pathfindingSkill = Skill::Level::EXPERT;
     int _currentColor = Color::NONE;
@@ -132,8 +132,8 @@ public:
     void reset() override;
 
     void reEvaluateIfNeeded( const Heroes & hero );
-    void reEvaluateIfNeeded( const int start, const int color, const double armyStrength, const uint8_t skill, const bool isArtifactBagFull );
-    int getFogDiscoveryTile( const Heroes & hero );
+    void reEvaluateIfNeeded( const int start, const int color, const double armyStrength, const uint8_t skill );
+    int getFogDiscoveryTile( const Heroes & hero, bool & isTerritoryExpansion );
 
     // Used for cases when heroes are stuck because one hero might be blocking the way and we have to move him.
     int getNearestTileToMove( const Heroes & hero );
@@ -162,6 +162,8 @@ public:
     void setSpellPointReserve( const double reserve );
 
 private:
+    void processWorldMap() override;
+
     // Follows custom passability rules (for the AI)
     void processCurrentNode( std::vector<int> & nodesToExplore, const int currentNodeIdx ) override;
 
@@ -171,6 +173,7 @@ private:
     // about the hero's remaining movement points.
     uint32_t getMovementPenalty( int src, int dst, int direction ) const override;
 
+    const Heroes * _hero = nullptr;
     double _armyStrength{ -1 };
     double _advantage{ 1.0 };
     double _spellPointsReserved{ 0.5 };

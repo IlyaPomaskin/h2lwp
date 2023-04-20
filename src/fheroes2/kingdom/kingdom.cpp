@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -20,6 +20,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#include "kingdom.h"
 
 #include <algorithm>
 #include <cassert>
@@ -42,18 +44,17 @@
 #include "game_interface.h"
 #include "game_static.h"
 #include "interface_icons.h"
-#include "kingdom.h"
 #include "logging.h"
 #include "maps.h"
 #include "maps_fileinfo.h"
 #include "maps_tiles.h"
+#include "maps_tiles_helper.h"
 #include "math_base.h"
 #include "payment.h"
 #include "players.h"
 #include "profit.h"
 #include "race.h"
 #include "route.h"
-#include "save_format_version.h"
 #include "serialize.h"
 #include "settings.h"
 #include "skill.h"
@@ -82,7 +83,16 @@ namespace
     Funds getHandicapDependentIncome( const Funds & original, const Player::HandicapStatus handicapStatus )
     {
         const int32_t handicapPercentage = getHandicapIncomePercentage( handicapStatus );
-        return ( original * handicapPercentage + Funds( 99, 99, 99, 99, 99, 99, 99 ) ) / 100;
+        Funds corrected( original );
+        corrected.wood = std::min( corrected.wood, ( corrected.wood * handicapPercentage + 99 ) / 100 );
+        corrected.mercury = std::min( corrected.mercury, ( corrected.mercury * handicapPercentage + 99 ) / 100 );
+        corrected.ore = std::min( corrected.ore, ( corrected.ore * handicapPercentage + 99 ) / 100 );
+        corrected.sulfur = std::min( corrected.sulfur, ( corrected.sulfur * handicapPercentage + 99 ) / 100 );
+        corrected.crystal = std::min( corrected.crystal, ( corrected.crystal * handicapPercentage + 99 ) / 100 );
+        corrected.gems = std::min( corrected.gems, ( corrected.gems * handicapPercentage + 99 ) / 100 );
+        corrected.gold = std::min( corrected.gold, ( corrected.gold * handicapPercentage + 99 ) / 100 );
+
+        return corrected;
     }
 }
 
@@ -228,7 +238,10 @@ void Kingdom::ActionNewDay()
 
     // Reset the effect of the "Identify Hero" spell
     ResetModes( IDENTIFYHERO );
+}
 
+void Kingdom::ActionNewDayResourceUpdate( const std::function<void( const EventDate & event, const Funds & funds )> & displayEventDialog )
+{
     // Skip the income for the first day
     if ( world.CountDay() > 1 ) {
         AddFundsResource( GetIncome() );
@@ -250,7 +263,10 @@ void Kingdom::ActionNewDay()
     // Resources from events
     const EventsDate events = world.GetEventsDate( GetColor() );
     for ( const EventDate & event : events ) {
-        AddFundsResource( event.resource );
+        const Funds fundsUpdate = Resource::CalculateEventResourceUpdate( GetFunds(), event.resource );
+        AddFundsResource( fundsUpdate );
+        if ( displayEventDialog )
+            displayEventDialog( event, fundsUpdate );
     }
 }
 
@@ -413,7 +429,6 @@ bool Kingdom::AllowPayment( const Funds & funds ) const
            && ( resource.gold >= funds.gold || 0 == funds.gold );
 }
 
-/* is visited cell */
 bool Kingdom::isVisited( const Maps::Tiles & tile ) const
 {
     return isVisited( tile.GetIndex(), tile.GetObject( false ) );
@@ -425,7 +440,6 @@ bool Kingdom::isVisited( int32_t index, const MP2::MapObjectType objectType ) co
     return visit_object.end() != it && ( *it ).isObject( objectType );
 }
 
-/* return true if object visited */
 bool Kingdom::isVisited( const MP2::MapObjectType objectType ) const
 {
     return std::any_of( visit_object.begin(), visit_object.end(), [objectType]( const IndexObject & v ) { return v.isObject( objectType ); } );
@@ -437,10 +451,9 @@ uint32_t Kingdom::CountVisitedObjects( const MP2::MapObjectType objectType ) con
     return static_cast<uint32_t>( std::count_if( visit_object.begin(), visit_object.end(), [objectType]( const IndexObject & v ) { return v.isObject( objectType ); } ) );
 }
 
-/* set visited cell */
-void Kingdom::SetVisited( int32_t index, const MP2::MapObjectType objectType = MP2::OBJ_ZERO )
+void Kingdom::SetVisited( int32_t index, const MP2::MapObjectType objectType )
 {
-    if ( !isVisited( index, objectType ) && objectType != MP2::OBJ_ZERO )
+    if ( !isVisited( index, objectType ) && objectType != MP2::OBJ_NONE )
         visit_object.push_front( IndexObject( index, objectType ) );
 }
 
@@ -454,25 +467,25 @@ bool Kingdom::isValidKingdomObject( const Maps::Tiles & tile, const MP2::MapObje
 
     // Check castle first to ignore guest hero (tile with both Castle and Hero)
     if ( tile.GetObject( false ) == MP2::OBJ_CASTLE ) {
-        const int tileColor = tile.QuantityColor();
-        if ( Players::isFriends( color, tileColor ) ) {
-            // false only if alliance castles can't be visited
-            return color == tileColor;
-        }
-        return true;
+        const int tileColor = getColorFromTile( tile );
+
+        // Castle can only be visited if it either belongs to this kingdom or is an enemy castle (in the latter case, an attack may occur)
+        return color == tileColor || !Players::isFriends( color, tileColor );
     }
 
     // Hero object can overlay other objects when standing on top of it: force check with GetObject( true )
     if ( objectType == MP2::OBJ_HEROES ) {
         const Heroes * hero = tile.GetHeroes();
+
+        // Hero can only be met if he either belongs to this kingdom or is an enemy hero (in the latter case, an attack will occur)
         return hero && ( color == hero->GetColor() || !Players::isFriends( color, hero->GetColor() ) );
     }
 
     if ( MP2::isCaptureObject( objectType ) )
-        return !Players::isFriends( color, tile.QuantityColor() );
+        return !Players::isFriends( color, getColorFromTile( tile ) );
 
     if ( MP2::isQuantityObject( objectType ) )
-        return tile.QuantityIsValid();
+        return doesTileContainValuableItems( tile );
 
     return true;
 }
@@ -686,7 +699,7 @@ Funds Kingdom::GetIncome( int type /* INCOME_ALL */ ) const
     return getHandicapDependentIncome( totalIncome, player->getHandicapStatus() );
 }
 
-Heroes * Kingdom::GetBestHero()
+Heroes * Kingdom::GetBestHero() const
 {
     return !heroes.empty() ? *std::max_element( heroes.begin(), heroes.end(), HeroesStrongestArmy ) : nullptr;
 }
@@ -859,46 +872,6 @@ void Kingdoms::AddCastles( const AllCastles & castles )
     }
 }
 
-void Kingdoms::AddTributeEvents( CapturedObjects & captureobj, const uint32_t day, const MP2::MapObjectType objectType )
-{
-    for ( Kingdom & kingdom : kingdoms ) {
-        if ( kingdom.isPlay() ) {
-            const int color = kingdom.GetColor();
-            Funds funds;
-            int objectCount = 0;
-
-            captureobj.tributeCapturedObjects( color, objectType, funds, objectCount );
-            if ( objectCount == 0 ) {
-                continue;
-            }
-
-            // for show dialogs
-            if ( funds.GetValidItemsCount() && kingdom.isControlHuman() ) {
-                EventDate event;
-
-                event.computer = true;
-                event.first = day;
-                event.colors = color;
-                event.resource = funds;
-
-                if ( objectCount > 1 ) {
-                    event.title = std::to_string( objectCount );
-                    event.title += ' ';
-                    event.title += MP2::StringObject( objectType, objectCount );
-                }
-                else {
-                    event.title = MP2::StringObject( objectType );
-                }
-
-                world.AddEventDate( event );
-            }
-            else {
-                kingdom.AddFundsResource( funds );
-            }
-        }
-    }
-}
-
 std::set<Heroes *> Kingdoms::resetRecruits()
 {
     std::set<Heroes *> remainingRecruits;
@@ -999,18 +972,9 @@ StreamBase & operator<<( StreamBase & msg, const Kingdom & kingdom )
 
 StreamBase & operator>>( StreamBase & msg, Kingdom & kingdom )
 {
-    msg >> kingdom.modes >> kingdom.color >> kingdom.resource >> kingdom.lost_town_days >> kingdom.castles >> kingdom.heroes >> kingdom.recruits >> kingdom.visit_object
-        >> kingdom.puzzle_maps >> kingdom.visited_tents_colors >> kingdom._lastBattleWinHeroID >> kingdom._topCastleInKingdomView;
-
-    static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_0921_RELEASE, "Remove the check below." );
-    if ( Game::GetLoadVersion() >= FORMAT_VERSION_0921_RELEASE ) {
-        msg >> kingdom._topHeroInKingdomView;
-    }
-    else {
-        kingdom._topHeroInKingdomView = -1;
-    }
-
-    return msg;
+    return msg >> kingdom.modes >> kingdom.color >> kingdom.resource >> kingdom.lost_town_days >> kingdom.castles >> kingdom.heroes >> kingdom.recruits
+           >> kingdom.visit_object >> kingdom.puzzle_maps >> kingdom.visited_tents_colors >> kingdom._lastBattleWinHeroID >> kingdom._topCastleInKingdomView
+           >> kingdom._topHeroInKingdomView;
 }
 
 StreamBase & operator<<( StreamBase & msg, const Kingdoms & obj )

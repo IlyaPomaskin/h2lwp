@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2021 - 2022                                             *
+ *   Copyright (C) 2021 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -30,14 +30,14 @@
 
 namespace
 {
-    fheroes2::H2RReader reader;
+    fheroes2::H2DReader reader;
 
     bool getH2DFilePath( const std::string & fileName, std::string & path )
     {
 #if defined( MACOS_APP_BUNDLE )
         return Settings::findFile( "h2d", fileName, path );
 #else
-        return Settings::findFile( System::ConcatePath( "files", "data" ), fileName, path );
+        return Settings::findFile( System::concatPath( "files", "data" ), fileName, path );
 #endif
     }
 }

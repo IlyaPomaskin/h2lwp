@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -39,7 +39,7 @@ namespace Interface
 {
     class Basic;
 
-    enum ScollingType
+    enum ScrollingType
     {
         SCROLL_NONE = 0x00,
         SCROLL_LEFT = 0x01,
@@ -80,7 +80,7 @@ namespace Interface
 
         int32_t tileId{ -1 };
 
-        MP2::MapObjectType type{ MP2::OBJ_ZERO };
+        MP2::MapObjectType type{ MP2::OBJ_NONE };
 
         uint8_t alphaValue{ 255 };
 
@@ -206,6 +206,9 @@ namespace Interface
 
         void BlitOnTile( fheroes2::Image & dst, const fheroes2::Image & src, int32_t ox, int32_t oy, const fheroes2::Point & mp, bool flip, uint8_t alpha ) const;
 
+        void BlitOnTile( fheroes2::Image & dst, const fheroes2::Image & src, const fheroes2::Rect & srcRoi, int32_t ox, int32_t oy, const fheroes2::Point & mp, bool flip,
+                         uint8_t alpha ) const;
+
         // Use this method to draw TIL images
         void DrawTile( fheroes2::Image & src, const fheroes2::Image & dst, const fheroes2::Point & mp ) const;
 
@@ -214,7 +217,10 @@ namespace Interface
             updateCursor = true;
         }
 
-        void QueueEventProcessing();
+        // Update fog directions data for entire map tiles by checking fog data for current player and its allies.
+        static void updateMapFogDirections();
+
+        void QueueEventProcessing( bool isCursorOverGamearea );
 
         static fheroes2::Image GenerateUltimateArtifactAreaSurface( const int32_t index, const fheroes2::Point & offset );
 
@@ -245,6 +251,16 @@ namespace Interface
         // Make sure you do not have a copy of this object after the execution of the method to avoid incorrect object removal in some cases.
         void runSingleObjectAnimation( const std::shared_ptr<BaseObjectAnimationInfo> & info );
 
+        bool isDragScroll() const
+        {
+            return _mouseDraggingMovement;
+        }
+
+        bool needDragScrollRedraw() const
+        {
+            return _needRedrawByMouseDragging;
+        }
+
     private:
         Basic & interface;
 
@@ -267,6 +283,11 @@ namespace Interface
 
         // This member needs to be mutable because it is modified during rendering.
         mutable std::vector<std::shared_ptr<BaseObjectAnimationInfo>> _animationInfo;
+
+        fheroes2::Point _lastMouseDragPosition;
+        bool _mouseDraggingInitiated;
+        bool _mouseDraggingMovement;
+        bool _needRedrawByMouseDragging;
 
         // Returns middle point of window ROI.
         fheroes2::Point _middlePoint() const

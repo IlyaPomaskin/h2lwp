@@ -27,6 +27,7 @@
 #include "castle.h"
 #include "color.h"
 #include "icn.h"
+#include "image.h"
 #include "logging.h"
 #include "race.h"
 #include "resource.h"
@@ -190,10 +191,10 @@ namespace fheroes2
             break;
         default:
             assert( 0 );
-            DEBUG_LOG( DBG_ENGINE, DBG_WARN, "unknown race" )
+            DEBUG_LOG( DBG_GAME, DBG_WARN, "unknown race" )
         }
 
-        const Sprite & castleImage = fheroes2::AGG::GetICN( Settings::Get().ExtGameEvilInterface() ? ICN::LOCATORE : ICN::LOCATORS, icnIndex );
+        const Sprite & castleImage = fheroes2::AGG::GetICN( Settings::Get().isEvilInterfaceEnabled() ? ICN::LOCATORE : ICN::LOCATORS, icnIndex );
         fheroes2::Blit( castleImage, output, offset.x, offset.y );
 
         // Draw castle's marker.
@@ -265,7 +266,7 @@ namespace fheroes2
         text.set( std::to_string( kingdomTreasures.gold ), fontType );
         text.draw( roi.x + ( roi.width - text.width() ) / 2, roi.y + offsetY[3] + goldImage.height() + 1, output );
 
-        fheroes2::Blit( fheroes2::AGG::GetICN( ICN::TREASURY, 1 ), output, roi.x + 1, roi.y + 166 );
+        fheroes2::Blit( fheroes2::AGG::GetICN( ICN::BUTTON_SMALLER_EXIT, 0 ), output, roi.x + 1, roi.y + 166 );
 
         return roi;
     }
@@ -277,19 +278,6 @@ namespace fheroes2
 
         const fheroes2::Text text( castle.GetName(), fheroes2::FontType::smallWhite() );
         text.draw( offset.x + 320 - text.width() / 2, offset.y + 250, output );
-    }
-
-    Sprite getHeroExchangeImage()
-    {
-        const Sprite & sprite = fheroes2::AGG::GetICN( ICN::ADVMCO, 8 );
-
-        Sprite result( sprite.width() + 4, sprite.height() + 4 );
-        result.fill( 0 );
-
-        DrawBorder( result, fheroes2::GetColorId( 0xe0, 0xb4, 0 ) );
-        Blit( sprite, result, 2, 2 );
-
-        return result;
     }
 
     void drawCastleDialogBuilding( const int32_t icnId, const uint32_t icnIndex, const Castle & castle, const Point & offset, const Rect & renderArea,

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2021 - 2022                                             *
+ *   Copyright (C) 2021 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -68,26 +68,7 @@ namespace
         case fheroes2::FontSize::LARGE:
         case fheroes2::FontSize::BUTTON_RELEASED:
         case fheroes2::FontSize::BUTTON_PRESSED:
-            return 12;
-        default:
-            assert( 0 ); // Did you add a new font size? Please add implementation.
-        }
-
-        return 0;
-    }
-
-    int32_t getFontHeight( const fheroes2::FontSize fontSize )
-    {
-        switch ( fontSize ) {
-        case fheroes2::FontSize::SMALL:
-            return 8 + 2 + 1;
-        case fheroes2::FontSize::NORMAL:
-            return 13 + 3 + 1;
-        case fheroes2::FontSize::LARGE:
-            return 26 + 6 + 1;
-        case fheroes2::FontSize::BUTTON_RELEASED:
-        case fheroes2::FontSize::BUTTON_PRESSED:
-            return 16;
+            return 8;
         default:
             assert( 0 ); // Did you add a new font size? Please add implementation.
         }
@@ -250,6 +231,11 @@ namespace
                     if ( lineLength == lastWordLength ) {
                         offset->x += getLineWidth( line, lineLength, fontType );
                         ++character;
+
+                        // It could be a case when the next character is line separator symbol. In this case we have to skip it.
+                        if ( character != characterEnd && *character == lineSeparator ) {
+                            ++character;
+                        }
                     }
                     else {
                         offset->x += getLineWidth( line, lineLength - lastWordLength, fontType );
@@ -336,7 +322,7 @@ namespace
             offset = &staticOffset;
         }
 
-        const int32_t fontHeight = getFontHeight( fontType.size );
+        const int32_t fontHeight = fheroes2::getFontHeight( fontType.size );
         const int32_t yPos = y + ( rowHeight - fontHeight ) / 2;
 
         while ( character != characterEnd ) {
@@ -385,6 +371,11 @@ namespace
                         // Looks like a word is bigger than line width.
                         renderLine( line, lineLength, x + offset->x, yPos + offset->y, maxWidth, output, fontType, align );
                         ++character;
+
+                        // It could be a case when the next character is line separator symbol. In this case we have to skip it.
+                        if ( character != characterEnd && *character == lineSeparator ) {
+                            ++character;
+                        }
                     }
                     else {
                         renderLine( line, lineLength - lastWordLength, x + offset->x, yPos + offset->y, maxWidth, output, fontType, align );
@@ -419,10 +410,64 @@ namespace
             offset->x += lineWidth;
         }
     }
+
+    int32_t getMaxWordWidth( const uint8_t * data, const int32_t size, const fheroes2::FontType & fontType )
+    {
+        assert( data != nullptr && size > 0 );
+
+        int32_t maxWidth = 1;
+
+        const CharValidator validator( fontType.size );
+
+        int32_t width = 0;
+
+        const uint8_t * dataEnd = data + size;
+        while ( data != dataEnd ) {
+            if ( *data == lineSeparator || isSpaceChar( *data ) ) {
+                // If it is the end of line ("\n") or a space (" "), then the word has ended.
+                if ( maxWidth < width ) {
+                    maxWidth = width;
+                }
+                width = 0;
+            }
+            else if ( validator.isValid( *data ) ) {
+                width += getCharWidth( *data, fontType );
+            }
+            else {
+                width += getCharWidth( invalidChar, fontType );
+            }
+            ++data;
+        }
+
+        if ( maxWidth < width ) {
+            maxWidth = width;
+        }
+
+        return maxWidth;
+    }
 }
 
 namespace fheroes2
 {
+    int32_t getFontHeight( const fheroes2::FontSize fontSize )
+    {
+        switch ( fontSize ) {
+        case fheroes2::FontSize::SMALL:
+            return 8 + 2 + 1;
+        case fheroes2::FontSize::NORMAL:
+            return 13 + 3 + 1;
+        case fheroes2::FontSize::LARGE:
+            return 26 + 6 + 1;
+        case fheroes2::FontSize::BUTTON_RELEASED:
+        case fheroes2::FontSize::BUTTON_PRESSED:
+            return 16;
+        default:
+            assert( 0 ); // Did you add a new font size? Please add implementation.
+        }
+
+        return 0;
+    }
+
     TextBase::~TextBase() = default;
 
     Text::Text( const std::string & text, const FontType fontType )
@@ -530,7 +575,7 @@ namespace fheroes2
         int32_t correctedWidth = maxWidth;
         if ( offsets.size() > 1 ) {
             // This is a multi-line message. Optimize it to fit the text evenly.
-            int32_t startWidth = 1;
+            int32_t startWidth = getMaxWordWidth( reinterpret_cast<const uint8_t *>( _text.data() ), static_cast<int32_t>( _text.size() ), _fontType );
             int32_t endWidth = maxWidth;
             while ( startWidth + 1 < endWidth ) {
                 const int32_t currentWidth = ( endWidth + startWidth ) / 2;
@@ -547,6 +592,12 @@ namespace fheroes2
                 endWidth = currentWidth;
             }
 
+            xOffset = ( maxWidth - correctedWidth ) / 2;
+        }
+        else {
+            // This is a single-line message. Find its length and center it according to the maximum width.
+            correctedWidth = width();
+            assert( correctedWidth <= maxWidth );
             xOffset = ( maxWidth - correctedWidth ) / 2;
         }
 
@@ -739,6 +790,13 @@ namespace fheroes2
         if ( offsets.size() > 1 ) {
             // This is a multi-line message. Optimize it to fit the text evenly.
             int32_t startWidth = 1;
+            for ( const Text & text : _texts ) {
+                const int32_t maxWordWidth
+                    = getMaxWordWidth( reinterpret_cast<const uint8_t *>( text._text.data() ), static_cast<int32_t>( text._text.size() ), text._fontType );
+                if ( startWidth < maxWordWidth ) {
+                    startWidth = maxWordWidth;
+                }
+            }
             int32_t endWidth = maxWidth;
             while ( startWidth + 1 < endWidth ) {
                 const int32_t currentWidth = ( endWidth + startWidth ) / 2;
@@ -758,6 +816,12 @@ namespace fheroes2
                 std::swap( offsets, tempOffsets );
             }
 
+            xOffset = ( maxWidth - correctedWidth ) / 2;
+        }
+        else {
+            // This is a single-line message. Find its length and center it according to the maximum width.
+            correctedWidth = width();
+            assert( correctedWidth <= maxWidth );
             xOffset = ( maxWidth - correctedWidth ) / 2;
         }
 

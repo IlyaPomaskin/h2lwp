@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2008 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,15 +21,17 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "audio.h"
+
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <list>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <numeric>
 #include <ostream>
 #include <type_traits>
 #include <utility>
@@ -39,9 +41,9 @@
 #include <SDL_error.h>
 #include <SDL_mixer.h>
 #include <SDL_rwops.h>
+#include <SDL_stdinc.h>
 #include <SDL_version.h>
 
-#include "audio.h"
 #include "core.h"
 #include "dir.h"
 #include "logging.h"
@@ -51,30 +53,20 @@
 
 namespace
 {
-    // TODO: This structure is not used anywhere else except Audio::Init(). Consider this structure to be removed or utilize it properly.
-    struct Spec : public SDL_AudioSpec
+    struct AudioSpec
     {
-        Spec()
-            : SDL_AudioSpec()
-        {
-            freq = 22050;
-            format = AUDIO_S16;
-            channels = 2; // Support stereo audio.
-            silence = 0;
+        // Notice: Value 22050 causes music distortion on Windows.
+        int frequency = 44100;
+        uint16_t format = AUDIO_S16;
+        // Stereo audio support
+        int channels = 2;
 #if defined( ANDROID )
-            // TODO: a value greater than 1024 causes audio distortion on Android
-            samples = 1024;
+        // Value greater than 1024 causes audio distortion on Android
+        int chunkSize = 1024;
 #else
-            samples = 2048;
+        int chunkSize = 2048;
 #endif
-            size = 0;
-            // TODO: research if we need to utilize these 2 paremeters in the future.
-            callback = nullptr;
-            userdata = nullptr;
-        }
     };
-
-    Spec audioSpecs;
 
     std::atomic<bool> isInitialized{ false };
     bool isMuted = false;
@@ -184,7 +176,11 @@ namespace
 
     // This is the callback function set by Mix_ChannelFinished(). As a rule, it is called from
     // a SDL_Mixer internal thread. Calls of any SDL_Mixer functions are not allowed in callbacks.
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
+    void SDLCALL channelFinished( const int channelId )
+#else
     void channelFinished( const int channelId )
+#endif
     {
         // This callback function should never be called if audio is not initialized
         assert( isInitialized );
@@ -377,7 +373,7 @@ namespace
 
         double getCurrentTrackPosition() const
         {
-            return _currentTrackTimer.get();
+            return _currentTrackTimer.getS();
         }
 
         void updateCurrentTrack( const uint64_t musicUID, const Music::PlaybackMode trackPlaybackMode )
@@ -506,7 +502,11 @@ namespace
 
     // This is the callback function set by Mix_HookMusicFinished(). As a rule, it is called from
     // a SDL_Mixer internal thread. Calls of any SDL_Mixer functions are not allowed in callbacks.
+#if SDL_VERSION_ATLEAST( 2, 0, 0 )
+    void SDLCALL musicFinished()
+#else
     void musicFinished()
+#endif
     {
         // This callback function should never be called if audio is not initialized
         assert( isInitialized );
@@ -604,6 +604,10 @@ namespace
         musicTrackManager.musicStarted( mus );
     }
 
+    // By the Weber-Fechner law, humans subjective sound sensation is proportional logarithm of sound intensity.
+    // So for linear changing sound intensity we have to change the volume exponential.
+    // There is a good explanation at https://www.dr-lex.be/info-stuff/volumecontrols.html.
+    // This function maps sound volumes in percents to SDL units with values [0..MIX_MAX_VOLUME] by exponential law.
     int normalizeToSDLVolume( const int volumePercentage )
     {
         if ( volumePercentage < 0 ) {
@@ -613,15 +617,12 @@ namespace
         }
 
         if ( volumePercentage >= 100 ) {
-            return MIX_MAX_VOLUME;
+            // Reserve an extra 0.5 dB for possible sound overloads in SDL_mixer, multiplying max volume by 50/53.
+            return MIX_MAX_VOLUME * 50 / 53;
         }
 
-        return volumePercentage * MIX_MAX_VOLUME / 100;
-    }
-
-    int normalizeFromSDLVolume( const int volume )
-    {
-        return volume * 100 / MIX_MAX_VOLUME;
+        // MIX_MAX_VOLUME is divided by 10.6, not 10 to reserve an extra 0.5 dB for possible sound overloads in SDL_mixer.
+        return static_cast<int>( ( std::exp( std::log( 10 + 1 ) * volumePercentage / 100 ) - 1 ) / 10.6 * MIX_MAX_VOLUME );
     }
 }
 
@@ -665,7 +666,9 @@ void Audio::Init()
     }
 #endif
 
-    if ( Mix_OpenAudio( audioSpecs.freq, audioSpecs.format, audioSpecs.channels, audioSpecs.samples ) != 0 ) {
+    const AudioSpec audioSpec;
+
+    if ( Mix_OpenAudio( audioSpec.frequency, audioSpec.format, audioSpec.channels, audioSpec.chunkSize ) != 0 ) {
         ERROR_LOG( "Failed to initialize an audio device. The error: " << Mix_GetError() )
         return;
     }
@@ -673,9 +676,10 @@ void Audio::Init()
     // By default this value should be MIX_CHANNELS.
     mixerChannelCount = Mix_AllocateChannels( -1 );
 
-    int channels = 0;
     int frequency = 0;
     uint16_t format = 0;
+    int channels = 0;
+
     const int deviceInitCount = Mix_QuerySpec( &frequency, &format, &channels );
     if ( deviceInitCount == 0 ) {
         ERROR_LOG( "Failed to query an audio device specs. The error: " << Mix_GetError() )
@@ -687,22 +691,19 @@ void Audio::Init()
         ERROR_LOG( "Trying to initialize an audio system that has been already initialized." )
     }
 
-    if ( audioSpecs.freq != frequency ) {
+    if ( audioSpec.frequency != frequency ) {
         // At least on Windows the standard frequency is 48000 Hz. Sounds in the game are 22500 Hz frequency.
         // However, resampling is done inside SDL so this is not exactly an error.
-        DEBUG_LOG( DBG_ENGINE, DBG_WARN, "Audio frequency is initialized as " << frequency << " instead of " << audioSpecs.freq )
+        DEBUG_LOG( DBG_ENGINE, DBG_WARN, "Audio frequency is initialized as " << frequency << " instead of " << audioSpec.frequency )
     }
 
-    if ( audioSpecs.format != format ) {
-        ERROR_LOG( "Audio format is initialized as " << format << " instead of " << audioSpecs.format )
+    if ( audioSpec.format != format ) {
+        ERROR_LOG( "Audio format is initialized as " << format << " instead of " << audioSpec.format )
     }
 
-    // If this assertion blows up it means that SDL doesn't work properly.
-    assert( channels >= 0 && channels < 256 );
-
-    audioSpecs.freq = frequency;
-    audioSpecs.format = format;
-    audioSpecs.channels = static_cast<uint8_t>( channels );
+    if ( audioSpec.channels != channels ) {
+        ERROR_LOG( "Number of audio channels is initialized as " << channels << " instead of " << audioSpec.channels )
+    }
 
     musicRestartManager.createWorker();
 
@@ -816,7 +817,7 @@ void Mixer::SetChannels( const int num )
     }
 
     if ( isMuted ) {
-        savedMixerVolumes.resize( static_cast<size_t>( mixerChannelCount ), 0 );
+        savedMixerVolumes.resize( static_cast<size_t>( mixerChannelCount ), MIX_MAX_VOLUME );
 
         Mix_Volume( -1, 0 );
     }
@@ -884,42 +885,31 @@ int Mixer::applySoundEffect( const int channelId, const int16_t angle, const uin
     return channelId;
 }
 
-int Mixer::setVolume( const int channelId, const int volumePercentage )
+void Mixer::setVolume( const int channelId, const int volumePercentage )
 {
     const int volume = normalizeToSDLVolume( volumePercentage );
 
     const std::scoped_lock<std::recursive_mutex> lock( audioMutex );
 
     if ( !isInitialized ) {
-        return 0;
+        return;
     }
 
     if ( !isMuted ) {
-        return normalizeFromSDLVolume( Mix_Volume( channelId, volume ) );
+        Mix_Volume( channelId, volume );
+        return;
     }
 
     if ( channelId < 0 ) {
-        if ( savedMixerVolumes.empty() ) {
-            return 0;
-        }
-
-        // return the average volume
-        const int prevVolume = std::accumulate( savedMixerVolumes.begin(), savedMixerVolumes.end(), 0 ) / static_cast<int>( savedMixerVolumes.size() );
         std::fill( savedMixerVolumes.begin(), savedMixerVolumes.end(), volume );
-
-        return normalizeFromSDLVolume( prevVolume );
+        return;
     }
 
     const size_t channel = static_cast<size_t>( channelId );
 
-    if ( channel >= savedMixerVolumes.size() ) {
-        return 0;
+    if ( channel < savedMixerVolumes.size() ) {
+        savedMixerVolumes[channel] = volume;
     }
-
-    const int prevVolume = savedMixerVolumes[channel];
-    savedMixerVolumes[channel] = volume;
-
-    return normalizeFromSDLVolume( prevVolume );
 }
 
 void Mixer::Pause( const int channelId /* = -1 */ )
@@ -1027,25 +1017,22 @@ void Music::SetFadeInMs( const int timeMs )
     musicFadeInMs = timeMs;
 }
 
-int Music::setVolume( const int volumePercentage )
+void Music::setVolume( const int volumePercentage )
 {
     const int volume = normalizeToSDLVolume( volumePercentage );
 
     const std::scoped_lock<std::recursive_mutex> lock( audioMutex );
 
     if ( !isInitialized ) {
-        return 0;
+        return;
     }
 
     if ( isMuted ) {
-        const int prevVolume = savedMusicVolume;
-
         savedMusicVolume = volume;
-
-        return normalizeFromSDLVolume( prevVolume );
+        return;
     }
 
-    return normalizeFromSDLVolume( Mix_VolumeMusic( volume ) );
+    Mix_VolumeMusic( volume );
 }
 
 void Music::Stop()

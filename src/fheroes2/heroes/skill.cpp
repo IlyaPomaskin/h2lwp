@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "skill.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iterator>
@@ -35,7 +37,6 @@
 #include "race.h"
 #include "rand.h"
 #include "serialize.h"
-#include "skill.h"
 #include "skill_static.h"
 #include "tools.h"
 #include "translations.h"
@@ -265,12 +266,12 @@ void Skill::Secondary::Set( const Secondary & skill )
 
 void Skill::Secondary::SetSkill( int skill )
 {
-    first = skill <= ESTATES ? skill : UNKNOWN;
+    first = ( skill >= UNKNOWN && skill <= ESTATES ) ? skill : UNKNOWN;
 }
 
 void Skill::Secondary::SetLevel( int level )
 {
-    second = level <= Level::EXPERT ? level : Level::NONE;
+    second = ( level >= Level::NONE && level <= Level::EXPERT ) ? level : Level::NONE;
 }
 
 void Skill::Secondary::NextLevel()
@@ -336,16 +337,14 @@ int Skill::Secondary::RandForWitchsHut()
     return v.empty() ? UNKNOWN : Rand::Get( v );
 }
 
-/* index sprite from SECSKILL */
 int Skill::Secondary::GetIndexSprite1() const
 {
-    return Skill() <= ESTATES ? Skill() : 0;
+    return ( Skill() > UNKNOWN && Skill() <= ESTATES ) ? Skill() : 0;
 }
 
-/* index sprite from MINISS */
 int Skill::Secondary::GetIndexSprite2() const
 {
-    return Skill() <= ESTATES ? Skill() - 1 : 0xFF;
+    return ( Skill() > UNKNOWN && Skill() <= ESTATES ) ? Skill() - 1 : 0xFF;
 }
 
 const char * Skill::Secondary::String( int skill )
@@ -483,7 +482,8 @@ std::string Skill::Secondary::GetDescription( const Heroes & hero ) const
         break;
     }
     case MYSTICISM: {
-        str = _n( "%{skill} regenerates one of your hero's spell points per day.", "%{skill} regenerates %{count} of your hero's spell points per day.", count );
+        str = _n( "%{skill} regenerates one additional spell point per day to your hero.", "%{skill} regenerates %{count} additional spell points per day to your hero.",
+                  count );
         break;
     }
     case LUCK: {

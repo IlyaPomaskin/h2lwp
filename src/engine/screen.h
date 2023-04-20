@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2020 - 2022                                             *
+ *   Copyright (C) 2020 - 2023                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "image.h"
@@ -32,6 +33,52 @@ namespace fheroes2
 {
     class Cursor;
     class Display;
+
+    struct ResolutionInfo
+    {
+        ResolutionInfo() = default;
+
+        ResolutionInfo( const int32_t gameWidth_, const int32_t gameHeight_ )
+            : gameWidth( gameWidth_ )
+            , gameHeight( gameHeight_ )
+            , screenWidth( gameWidth_ )
+            , screenHeight( gameHeight_ )
+        {
+            // Do nothing.
+        }
+
+        ResolutionInfo( const int32_t gameWidth_, const int32_t gameHeight_, const int32_t screenWidth_, const int32_t screenHeight_ )
+            : gameWidth( gameWidth_ )
+            , gameHeight( gameHeight_ )
+            , screenWidth( screenWidth_ )
+            , screenHeight( screenHeight_ )
+        {
+            // Do nothing.
+        }
+
+        bool operator==( const ResolutionInfo & info ) const
+        {
+            return gameWidth == info.gameWidth && gameHeight == info.gameHeight && screenWidth == info.screenWidth && screenHeight == info.screenHeight;
+        }
+
+        bool operator!=( const ResolutionInfo & info ) const
+        {
+            return !operator==( info );
+        }
+
+        bool operator<( const ResolutionInfo & info ) const
+        {
+            return std::tie( gameWidth, gameHeight, screenWidth, screenHeight ) < std::tie( info.gameWidth, info.gameHeight, info.screenWidth, info.screenHeight );
+        }
+
+        int32_t gameWidth{ 0 };
+
+        int32_t gameHeight{ 0 };
+
+        int32_t screenWidth{ 0 };
+
+        int32_t screenHeight{ 0 };
+    };
 
     class BaseRenderEngine
     {
@@ -51,7 +98,7 @@ namespace fheroes2
             return _isFullScreen;
         }
 
-        virtual std::vector<Size> getAvailableResolutions() const
+        virtual std::vector<ResolutionInfo> getAvailableResolutions() const
         {
             return {};
         }
@@ -66,14 +113,14 @@ namespace fheroes2
             // Do nothing.
         }
 
-        virtual fheroes2::Rect getActiveWindowROI() const
+        virtual Rect getActiveWindowROI() const
         {
-            return fheroes2::Rect();
+            return {};
         }
 
-        virtual fheroes2::Size getCurrentScreenResolution() const
+        virtual Size getCurrentScreenResolution() const
         {
-            return fheroes2::Size();
+            return {};
         }
 
         virtual void setVSync( const bool )
@@ -81,9 +128,20 @@ namespace fheroes2
             // Do nothing.
         }
 
+        void setNearestScaling( const bool enable )
+        {
+            _nearestScaling = enable;
+        }
+
+        bool isNearestScaling() const
+        {
+            return _nearestScaling;
+        }
+
     protected:
         BaseRenderEngine()
             : _isFullScreen( false )
+            , _nearestScaling( false )
         {
             // Do nothing.
         }
@@ -98,7 +156,7 @@ namespace fheroes2
             // Do nothing.
         }
 
-        virtual bool allocate( int32_t &, int32_t &, bool )
+        virtual bool allocate( ResolutionInfo & /*unused*/, bool /*unused*/ )
         {
             return false;
         }
@@ -118,6 +176,8 @@ namespace fheroes2
 
     private:
         bool _isFullScreen;
+
+        bool _nearestScaling;
     };
 
     class Display : public Image
@@ -143,7 +203,13 @@ namespace fheroes2
 
         void render( const Rect & roi ); // render a part of image on screen. Prefer this method over full image if you don't draw full screen.
 
+        // Update the area which will be rendered on the next render() call.
+        void updateNextRenderRoi( const Rect & roi );
+
+        // Do not call this method. It serves as a patch over the basic class.
         void resize( int32_t width_, int32_t height_ ) override;
+
+        void setResolution( ResolutionInfo info );
 
         bool isDefaultSize() const
         {
@@ -167,8 +233,13 @@ namespace fheroes2
         void release(); // to release all allocated resources. Should be used at the end of the application
 
         // Change the whole color representation on the screen. Make sure that palette exists all the time!!!
-        // nullptr input parameter is used to reset pallette to default one.
+        // nullptr input parameter is used to reset palette to default one.
         void changePalette( const uint8_t * palette = nullptr, const bool forceDefaultPaletteUpdate = false ) const;
+
+        Size screenSize() const
+        {
+            return _screenSize;
+        }
 
         friend BaseRenderEngine & engine();
         friend Cursor & cursor();
@@ -183,6 +254,8 @@ namespace fheroes2
 
         // Previous area drawn on the screen.
         Rect _prevRoi;
+
+        Size _screenSize;
 
         // Only for cases of direct drawing on rendered 8-bit image.
         void linkRenderSurface( uint8_t * surface )
@@ -213,9 +286,9 @@ namespace fheroes2
 
         bool isFocusActive() const;
 
-        virtual void update( const fheroes2::Image & image, int32_t offsetX, int32_t offsetY )
+        virtual void update( const Image & image, int32_t offsetX, int32_t offsetY )
         {
-            _image = fheroes2::Sprite( image, offsetX, offsetY );
+            _image = Sprite( image, offsetX, offsetY );
         }
 
         void setPosition( int32_t x, int32_t y )

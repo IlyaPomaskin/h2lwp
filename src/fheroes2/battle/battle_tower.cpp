@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "battle_tower.h"
+
 #include <algorithm>
 #include <cassert>
 #include <vector>
@@ -30,41 +32,36 @@
 #include "battle_arena.h"
 #include "battle_board.h"
 #include "battle_cell.h"
-#include "battle_tower.h"
 #include "castle.h"
 #include "monster.h"
 #include "rand.h"
 #include "tools.h"
 #include "translations.h"
 
-Battle::Tower::Tower( const Castle & castle, int twr, const Rand::DeterministicRandomGenerator & randomGenerator, const uint32_t uid )
-    : Unit( Troop( Monster::ARCHER, 0 ), {}, false, randomGenerator, uid )
-    , type( twr )
-    , color( castle.GetColor() )
-    , bonus( 0 )
-    , valid( true )
+Battle::Tower::Tower( const Castle & castle, const TowerType type, const Rand::DeterministicRandomGenerator & randomGenerator, const uint32_t uid )
+    : Unit( Troop( Monster::ARCHER, castle.CountBuildings() ), {}, false, randomGenerator, uid )
+    , _towerType( type )
+    , _attackBonus( castle.GetLevelMageGuild() )
+    , _isValid( true )
 {
-    count += castle.CountBuildings();
+    count = std::min( count, 20U );
+    count = std::max( _towerType == TowerType::TWR_CENTER ? count : count / 2, 1U );
 
-    if ( count > 20 )
-        count = 20;
-    if ( TWR_CENTER != type )
-        count /= 2;
-    if ( count == 0 )
-        count = 1;
-    bonus = castle.GetLevelMageGuild();
+    // Virtual archers shooting from this tower should receive bonuses
+    // to their attack skill from the commanding hero (if present)
+    SetArmy( castle.GetActualArmy() );
 
     SetModes( CAP_TOWER );
 }
 
 const char * Battle::Tower::GetName() const
 {
-    switch ( type ) {
-    case TWR_LEFT:
+    switch ( _towerType ) {
+    case TowerType::TWR_LEFT:
         return _( "Left Turret" );
-    case TWR_RIGHT:
+    case TowerType::TWR_RIGHT:
         return _( "Right Turret" );
-    case TWR_CENTER:
+    case TowerType::TWR_CENTER:
         return _( "Ballista" );
     default:
         // This is not a valid Tower type!
@@ -77,37 +74,32 @@ const char * Battle::Tower::GetName() const
 
 bool Battle::Tower::isValid() const
 {
-    return valid;
+    return _isValid;
 }
 
-uint32_t Battle::Tower::GetType() const
+Battle::TowerType Battle::Tower::GetType() const
 {
-    return type;
+    return _towerType;
 }
 
-uint32_t Battle::Tower::GetBonus() const
+uint32_t Battle::Tower::GetAttackBonus() const
 {
-    return bonus;
+    return _attackBonus;
 }
 
 uint32_t Battle::Tower::GetAttack() const
 {
-    return Unit::GetAttack() + bonus;
-}
-
-int Battle::Tower::GetColor() const
-{
-    return color;
+    return Unit::GetAttack() + _attackBonus;
 }
 
 fheroes2::Point Battle::Tower::GetPortPosition() const
 {
-    switch ( type ) {
-    case TWR_LEFT:
+    switch ( _towerType ) {
+    case TowerType::TWR_LEFT:
         return { 410, 70 };
-    case TWR_RIGHT:
+    case TowerType::TWR_RIGHT:
         return { 410, 320 };
-    case TWR_CENTER:
+    case TowerType::TWR_CENTER:
         return { 560, 170 };
     default:
         break;
@@ -118,55 +110,84 @@ fheroes2::Point Battle::Tower::GetPortPosition() const
 
 void Battle::Tower::SetDestroy()
 {
-    switch ( type ) {
-    case TWR_LEFT:
+    switch ( _towerType ) {
+    case TowerType::TWR_LEFT:
         Board::GetCell( Arena::CASTLE_TOP_ARCHER_TOWER_POS )->SetObject( 1 );
         break;
-    case TWR_RIGHT:
+    case TowerType::TWR_RIGHT:
         Board::GetCell( Arena::CASTLE_BOTTOM_ARCHER_TOWER_POS )->SetObject( 1 );
         break;
     default:
         break;
     }
-    valid = false;
+
+    _isValid = false;
 }
 
-std::string Battle::Tower::GetInfo( const Castle & cstl )
+std::string Battle::Tower::GetInfo( const Castle & castle )
 {
-    if ( !cstl.isBuild( BUILD_CASTLE ) ) {
+    if ( !castle.isBuild( BUILD_CASTLE ) ) {
         return {};
     }
 
-    std::vector<int> towers;
-    towers.push_back( TWR_CENTER );
+    std::vector<TowerType> towerTypes;
 
-    if ( cstl.isBuild( BUILD_LEFTTURRET ) )
-        towers.push_back( TWR_LEFT );
-    if ( cstl.isBuild( BUILD_RIGHTTURRET ) )
-        towers.push_back( TWR_RIGHT );
+    towerTypes.push_back( TowerType::TWR_CENTER );
+    if ( castle.isBuild( BUILD_LEFTTURRET ) ) {
+        towerTypes.push_back( TowerType::TWR_LEFT );
+    }
+    if ( castle.isBuild( BUILD_RIGHTTURRET ) ) {
+        towerTypes.push_back( TowerType::TWR_RIGHT );
+    }
 
-    const char * tmpl = _( "The %{name} fires with the strength of %{count} Archers" );
-    const char * addn = _( "each with a +%{attack} bonus to their attack skill." );
+    // This method can be called both during combat and outside of it. In the
+    // former case, we have to check if the tower was destroyed during the siege.
+    auto isTowerValid = []( const TowerType towerType ) {
+        // If the siege is in progress, we need to check the current state of the tower
+        if ( GetArena() ) {
+            const Tower * tower = Arena::GetTower( towerType );
+            assert( tower != nullptr );
+
+            return tower->isValid();
+        }
+
+        return true;
+    };
 
     std::string msg;
-    for ( std::vector<int>::const_iterator it = towers.begin(); it != towers.end(); ++it ) {
-        Tower twr( cstl, *it, Rand::DeterministicRandomGenerator( 0 ), 0 );
 
-        msg.append( tmpl );
-        StringReplace( msg, "%{name}", twr.GetName() );
-        StringReplace( msg, "%{count}", twr.GetCount() );
+    for ( std::vector<TowerType>::const_iterator it = towerTypes.begin(); it != towerTypes.end(); ++it ) {
+        const TowerType towerType = *it;
 
-        if ( twr.GetBonus() ) {
-            msg.append( ", " );
-            msg.append( addn );
-            StringReplace( msg, "%{attack}", twr.GetBonus() );
+        if ( isTowerValid( towerType ) ) {
+            const Tower tower( castle, towerType, Rand::DeterministicRandomGenerator( 0 ), 0 );
+
+            msg.append( _( "The %{name} fires with the strength of %{count} Archers" ) );
+            StringReplace( msg, "%{name}", tower.GetName() );
+            StringReplace( msg, "%{count}", std::to_string( tower.GetCount() ) );
+
+            if ( tower.GetAttackBonus() ) {
+                msg.append( ", " );
+                msg.append( _( "each with a +%{attack} bonus to their attack skill." ) );
+                StringReplace( msg, "%{attack}", std::to_string( tower.GetAttackBonus() ) );
+            }
+            else {
+                msg += '.';
+            }
         }
         else {
-            msg += '.';
+            assert( GetArena() != nullptr );
+
+            const Tower * tower = Arena::GetTower( towerType );
+            assert( tower != nullptr );
+
+            msg.append( _( "The %{name} is destroyed." ) );
+            StringReplace( msg, "%{name}", tower->GetName() );
         }
 
-        if ( ( it + 1 ) != towers.end() )
+        if ( ( it + 1 ) != towerTypes.end() ) {
             msg.append( "\n \n" );
+        }
     }
 
     return msg;

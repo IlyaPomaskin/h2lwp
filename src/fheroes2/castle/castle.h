@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2022                                             *
+ *   Copyright (C) 2019 - 2023                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -35,7 +35,6 @@
 #include "army.h"
 #include "bitmodes.h"
 #include "captain.h"
-#include "castle_heroes.h"
 #include "color.h"
 #include "gamedefs.h"
 #include "mageguild.h"
@@ -161,7 +160,7 @@ public:
     uint32_t CountBuildings() const;
 
     Heroes * RecruitHero( Heroes * );
-    CastleHeroes GetHeroes() const;
+    Heroes * GetHero() const;
 
     int GetRace() const
     {
@@ -195,8 +194,13 @@ public:
     Army & GetArmy();
     const Army & GetActualArmy() const;
     Army & GetActualArmy();
-    double GetGarrisonStrength( const Heroes * attackingHero ) const;
     uint32_t getMonstersInDwelling( uint32_t ) const;
+
+    // Returns the garrison strength estimation calculated as if the attacking hero really attacked this
+    // castle - including an estimate of the strength of the combined army consisting of the garrison and
+    // the hero's troops (if present), castle-specific bonuses from moat, towers and so on, relative to
+    // the attacking hero's abilities. See the implementation for details.
+    double GetGarrisonStrength( const Heroes * attackingHero ) const;
 
     // Returns the correct dwelling type available in the castle. BUILD_NOTHING is returned if this is not a dwelling.
     uint32_t GetActualDwelling( const uint32_t buildId ) const;
@@ -225,7 +229,7 @@ public:
 
     void DrawImageCastle( const fheroes2::Point & pt ) const;
 
-    CastleDialogReturnValue OpenDialog( const bool readOnly, const bool openConstructionWindow );
+    CastleDialogReturnValue OpenDialog( const bool openConstructionWindow );
 
     int GetAttackModificator( const std::string * ) const;
     int GetDefenseModificator( const std::string * ) const;
@@ -249,7 +253,7 @@ public:
     int CheckBuyBuilding( const uint32_t build ) const;
     static int GetAllBuildingStatus( const Castle & );
 
-    void Scoute() const;
+    void Scout() const;
 
     std::string GetStringBuilding( uint32_t ) const;
     std::string GetDescriptionBuilding( uint32_t ) const;
@@ -275,7 +279,7 @@ public:
     int DialogBuyHero( const Heroes * ) const;
     int DialogBuyCastle( bool fixed = true ) const;
 
-    void SwapCastleHeroes( CastleHeroes & );
+    Troops getAvailableArmy( Funds potentialBudget ) const;
 
 private:
     enum class ConstructionDialogResult : int
@@ -298,9 +302,8 @@ private:
 
     void OpenTavern() const;
     void OpenWell();
-    void OpenMageGuild( const CastleHeroes & heroes ) const;
+    void OpenMageGuild( const Heroes * hero ) const;
     void WellRedrawInfoArea( const fheroes2::Point & cur_pt, const std::vector<fheroes2::RandomMonsterAnimation> & monsterAnimInfo ) const;
-    Troops getAvailableArmy( Funds potentialBudget ) const;
     void JoinRNDArmy();
     void PostLoad();
 
@@ -414,7 +417,7 @@ public:
         return _castles[iter->second];
     }
 
-    void Scoute( int ) const;
+    void Scout( int ) const;
 
     void NewDay()
     {
