@@ -184,6 +184,7 @@ namespace
             }
             float defaultDpi = 160;
             float dpiScaling = defaultDpi / ddpi;
+            float scale = 0.5;
 
             SDL_DisplayMode displayMode;
             SDL_GetCurrentDisplayMode(0, &displayMode);
@@ -192,7 +193,7 @@ namespace
 
             __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
 
-            display.resize(uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
+            display.resize(uint32_t (displayMode.w * dpiScaling * scale), uint32_t (displayMode.h * dpiScaling * scale));
             display.fill( 0 ); // start from a black screen
         }
     };
