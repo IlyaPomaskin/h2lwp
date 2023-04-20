@@ -112,8 +112,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     protected static SDLSurface mSurface;
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
-    protected static Hashtable<Integer, PointerIcon> mCursors;
-    protected static int mLastCursorID;
     protected static SDLGenericMotionListener_API12 mMotionListener;
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
@@ -196,8 +194,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         mSingleton = null;
         mSurface = null;
         mLayout = null;
-        mCursors = new Hashtable<Integer, PointerIcon>();
-        mLastCursorID = 0;
         mSDLThread = null;
         mIsResumedCalled = false;
         mHasFocus = true;
@@ -1531,31 +1527,13 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static int createCustomCursor(int[] colors, int width, int height, int hotSpotX, int hotSpotY) {
-        Bitmap bitmap = Bitmap.createBitmap(colors, width, height, Bitmap.Config.ARGB_8888);
-        ++mLastCursorID;
-
-        if (Build.VERSION.SDK_INT >= 24) {
-            try {
-                mCursors.put(mLastCursorID, PointerIcon.create(bitmap, hotSpotX, hotSpotY));
-            } catch (Exception e) {
-                return 0;
-            }
-        } else {
-            return 0;
-        }
-        return mLastCursorID;
+        return 0;
     }
 
     /**
      * This method is called by SDL using JNI.
      */
     public static void destroyCustomCursor(int cursorID) {
-        if (Build.VERSION.SDK_INT >= 24) {
-            try {
-                mCursors.remove(cursorID);
-            } catch (Exception e) {
-            }
-        }
         return;
     }
 
@@ -1563,16 +1541,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static boolean setCustomCursor(int cursorID) {
-
-        if (Build.VERSION.SDK_INT >= 24) {
-            try {
-                mSurface.setPointerIcon(mCursors.get(cursorID));
-            } catch (Exception e) {
-                return false;
-            }
-        } else {
-            return false;
-        }
         return true;
     }
 
@@ -1580,52 +1548,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static boolean setSystemCursor(int cursorID) {
-        int cursor_type = 0; //PointerIcon.TYPE_NULL;
-        switch (cursorID) {
-            case SDL_SYSTEM_CURSOR_ARROW:
-                cursor_type = 1000; //PointerIcon.TYPE_ARROW;
-                break;
-            case SDL_SYSTEM_CURSOR_IBEAM:
-                cursor_type = 1008; //PointerIcon.TYPE_TEXT;
-                break;
-            case SDL_SYSTEM_CURSOR_WAIT:
-                cursor_type = 1004; //PointerIcon.TYPE_WAIT;
-                break;
-            case SDL_SYSTEM_CURSOR_CROSSHAIR:
-                cursor_type = 1007; //PointerIcon.TYPE_CROSSHAIR;
-                break;
-            case SDL_SYSTEM_CURSOR_WAITARROW:
-                cursor_type = 1004; //PointerIcon.TYPE_WAIT;
-                break;
-            case SDL_SYSTEM_CURSOR_SIZENWSE:
-                cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
-                break;
-            case SDL_SYSTEM_CURSOR_SIZENESW:
-                cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
-                break;
-            case SDL_SYSTEM_CURSOR_SIZEWE:
-                cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
-                break;
-            case SDL_SYSTEM_CURSOR_SIZENS:
-                cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
-                break;
-            case SDL_SYSTEM_CURSOR_SIZEALL:
-                cursor_type = 1020; //PointerIcon.TYPE_GRAB;
-                break;
-            case SDL_SYSTEM_CURSOR_NO:
-                cursor_type = 1012; //PointerIcon.TYPE_NO_DROP;
-                break;
-            case SDL_SYSTEM_CURSOR_HAND:
-                cursor_type = 1002; //PointerIcon.TYPE_HAND;
-                break;
-        }
-        if (Build.VERSION.SDK_INT >= 24) {
-            try {
-                mSurface.setPointerIcon(PointerIcon.getSystemIcon(SDL.getContext(), cursor_type));
-            } catch (Exception e) {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -1683,38 +1605,8 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             return -1;
         }
 
-        try {
-            class OneShotTask implements Runnable {
-                String mMessage;
-                int mDuration;
-                int mGravity;
-                int mXOffset;
-                int mYOffset;
+        Log.v("SDL", String.format("Show toast: %s", message));
 
-                OneShotTask(String message, int duration, int gravity, int xOffset, int yOffset) {
-                    mMessage = message;
-                    mDuration = duration;
-                    mGravity = gravity;
-                    mXOffset = xOffset;
-                    mYOffset = yOffset;
-                }
-
-                public void run() {
-                    try {
-                        Toast toast = Toast.makeText(mSingleton, mMessage, mDuration);
-                        if (mGravity >= 0) {
-                            toast.setGravity(mGravity, mXOffset, mYOffset);
-                        }
-                        toast.show();
-                    } catch (Exception ex) {
-                        Log.e(TAG, ex.getMessage());
-                    }
-                }
-            }
-//            mSingleton.runOnUiThread(new OneShotTask(message, duration, gravity, xOffset, yOffset));
-        } catch (Exception ex) {
-            return -1;
-        }
         return 0;
     }
 }
@@ -1725,7 +1617,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 class SDLMain implements Runnable {
     @Override
     public void run() {
-        Log.v("SDLMain", "run()");
+        Log.v("SDL", "SDLMain run()");
         // Runs SDL_main()
         String library = SDLActivity.mSingleton.getMainSharedObject();
         String function = SDLActivity.mSingleton.getMainFunction();
