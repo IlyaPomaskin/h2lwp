@@ -2,10 +2,7 @@ package org.libsdl.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.UiModeManager;
-import android.content.ClipboardManager;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,12 +10,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,35 +17,20 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.service.wallpaper.WallpaperService;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.Selection;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.BaseInputConnection;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.Hashtable;
 import java.util.Locale;
 
 
@@ -69,21 +45,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     public static boolean mIsResumedCalled, mHasFocus;
     public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);
-
-    // Cursor types
-    // private static final int SDL_SYSTEM_CURSOR_NONE = -1;
-    private static final int SDL_SYSTEM_CURSOR_ARROW = 0;
-    private static final int SDL_SYSTEM_CURSOR_IBEAM = 1;
-    private static final int SDL_SYSTEM_CURSOR_WAIT = 2;
-    private static final int SDL_SYSTEM_CURSOR_CROSSHAIR = 3;
-    private static final int SDL_SYSTEM_CURSOR_WAITARROW = 4;
-    private static final int SDL_SYSTEM_CURSOR_SIZENWSE = 5;
-    private static final int SDL_SYSTEM_CURSOR_SIZENESW = 6;
-    private static final int SDL_SYSTEM_CURSOR_SIZEWE = 7;
-    private static final int SDL_SYSTEM_CURSOR_SIZENS = 8;
-    private static final int SDL_SYSTEM_CURSOR_SIZEALL = 9;
-    private static final int SDL_SYSTEM_CURSOR_NO = 10;
-    private static final int SDL_SYSTEM_CURSOR_HAND = 11;
 
     protected static final int SDL_ORIENTATION_UNKNOWN = 0;
     protected static final int SDL_ORIENTATION_LANDSCAPE = 1;
@@ -297,13 +258,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         } catch (Exception ignored) {
         }
 
-//        FIXME
-//        setContentView(mLayout);
-
         setWindowStyle(false);
-
-//        FIXME
-//        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
         // Get filename from "Open with" of another application
         Intent intent = new Intent();
@@ -496,7 +451,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         SDLActivity.initialize();
     }
 
-    public static int activityCounter = 0;
     public static int engineCounter = 0;
     private static SDLEngine mEngine;
 
@@ -553,11 +507,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
                 return;
             }
 
-//            super.onSurfaceCreated(holder);
             super.onSurfaceChanged(holder, format, width, height);
 
             SDLActivity.nativeSetScreenResolution(width, height, width, height, mDisplay.getRefreshRate());
-//            SDLActivity.onNativeResize(width, height, sdlFormat, mDisplay.getRefreshRate());
             SDLActivity.onNativeResize();
             SDLActivity.onNativeSurfaceChanged();
 
@@ -620,41 +572,10 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     //    @Override
     public void onBackPressed() {
         Log.v("SDLActivity", "onBackPressed");
-
-//        // Check if we want to block the back button in case of mouse right click.
-//        //
-//        // If we do, the normal hardware back button will no longer work and people have to use home,
-//        // but the mouse right click will work.
-//        //
-//        boolean trapBack = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_TRAP_BACK_BUTTON", false);
-//        if (trapBack) {
-//            // Exit and let the mouse handler handle this button (if appropriate)
-//            return;
-//        }
-//
-//        // Default system back button behavior.
-//        if (!isFinishing()) {
-//            super.onBackPressed();
-//        }
     }
 
     // Called by JNI from SDL.
-    public static void manualBackButton() {
-        mSingleton.pressBackButton();
-    }
-
-    // Used to get us onto the activity's main thread
-    public void pressBackButton() {
-        Log.v("SDLActivity", "pressBackButton");
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (!SDLActivity.this.isFinishing()) {
-//                    SDLActivity.this.superOnBackPressed();
-//                }
-//            }
-//        });
-    }
+    public static void manualBackButton() { }
 
     // Used to access the system back behavior.
     public void superOnBackPressed() {
@@ -1029,23 +950,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * This method is called by SDL using JNI.
      */
     public static boolean shouldMinimizeOnFocusLoss() {
-/*
-        if (Build.VERSION.SDK_INT >= 24) {
-            if (mSingleton == null) {
-                return true;
-            }
-
-            if (mSingleton.isInMultiWindowMode()) {
-                return false;
-            }
-
-            if (mSingleton.isInPictureInPictureMode()) {
-                return false;
-            }
-        }
-
-        return true;
-*/
         return false;
     }
 
