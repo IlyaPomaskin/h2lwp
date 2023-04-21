@@ -711,7 +711,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     // Send a message from the SDLMain thread
     boolean sendCommand(int command, Object data) {
-        Message msg = commandHandler.obtainMessage();
+        return true;
+
+        /*Message msg = commandHandler.obtainMessage();
         msg.arg1 = command;
         msg.obj = data;
         boolean result = commandHandler.sendMessage(msg);
@@ -768,7 +770,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             }
         }
 
-        return result;
+        return result;*/
     }
 
     // C functions we call
