@@ -283,7 +283,8 @@ namespace fheroes2
 
         virtual bool isVisible() const
         {
-            return _show;
+            // Hide cursor in live wallpaper
+            return false;
         }
 
         bool isFocusActive() const;
