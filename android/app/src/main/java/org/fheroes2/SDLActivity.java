@@ -489,6 +489,11 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         }
 
         @Override
+        public void onDestroy() {
+            Log.v(TAG, "onDestroy");
+            System.exit(0);
+        }
+        @Override
         public SurfaceHolder getSurfaceHolder() {
             Log.v(TAG, "Engine getSurfaceHolder");
             return mHolder;
