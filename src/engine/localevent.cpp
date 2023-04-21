@@ -46,8 +46,6 @@
 
 #endif
 
-#include "logging.h"
-
 #include "audio.h"
 #include "image.h"
 #include "localevent.h"
@@ -871,6 +869,9 @@ LocalEvent & LocalEvent::GetClean()
 
 bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool allowExit /* = false */ )
 {
+    // Disable event handlers in live wallpaper
+    return false;
+
     // Event processing might be computationally heavy.
     // We want to make sure that we do not slow down by going into sleep mode when it is not needed.
     const fheroes2::Time eventProcessingTimer;
@@ -915,17 +916,17 @@ bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool 
             break;
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-           HandleKeyboardEvent( event.key );
+            HandleKeyboardEvent( event.key );
             break;
         case SDL_MOUSEMOTION:
-//            HandleMouseMotionEvent( event.motion );
+            HandleMouseMotionEvent( event.motion );
             break;
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
-//            HandleMouseButtonEvent( event.button );
+            HandleMouseButtonEvent( event.button );
             break;
         case SDL_MOUSEWHEEL:
-//            HandleMouseWheelEvent( event.wheel );
+            HandleMouseWheelEvent( event.wheel );
             break;
         case SDL_CONTROLLERDEVICEREMOVED:
             if ( _gameController != nullptr ) {
@@ -957,7 +958,7 @@ bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool 
             // See SDL_gamecontroller.c within SDL source code for implementation details.
             break;
         case SDL_CONTROLLERAXISMOTION:
-//            HandleControllerAxisEvent( event.caxis );
+            HandleControllerAxisEvent( event.caxis );
             break;
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
@@ -966,7 +967,7 @@ bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool 
         case SDL_FINGERDOWN:
         case SDL_FINGERUP:
         case SDL_FINGERMOTION:
-//            HandleTouchEvent( event.tfinger );
+            HandleTouchEvent( event.tfinger );
             break;
         case SDL_RENDER_TARGETS_RESET:
             // We need to just update the screen. This event usually happens when we switch between fullscreen and windowed modes.
@@ -1464,10 +1465,6 @@ void LocalEvent::HandleKeyboardEvent( const SDL_KeyboardEvent & event )
     else if ( event.type == SDL_KEYUP ) {
         ResetModes( KEY_PRESSED );
         ResetModes( KEY_HOLD );
-    }
-
-    if (key == fheroes2::Key::KEY_SPACE) {
-        VERBOSE_LOG("Space pressed")
     }
 
     key_value = key;
