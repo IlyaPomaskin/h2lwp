@@ -46,6 +46,8 @@
 
 #endif
 
+#include "logging.h"
+
 #include "audio.h"
 #include "image.h"
 #include "localevent.h"
@@ -913,7 +915,7 @@ bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool 
             break;
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-//            HandleKeyboardEvent( event.key );
+           HandleKeyboardEvent( event.key );
             break;
         case SDL_MOUSEMOTION:
 //            HandleMouseMotionEvent( event.motion );
@@ -1462,6 +1464,10 @@ void LocalEvent::HandleKeyboardEvent( const SDL_KeyboardEvent & event )
     else if ( event.type == SDL_KEYUP ) {
         ResetModes( KEY_PRESSED );
         ResetModes( KEY_HOLD );
+    }
+
+    if (key == fheroes2::Key::KEY_SPACE) {
+        VERBOSE_LOG("Space pressed")
     }
 
     key_value = key;

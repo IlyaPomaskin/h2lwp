@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -459,6 +460,16 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             SDLActivity.engineCounter++;
             Log.v(TAG, "SDLEngine");
             mDisplay = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+            setTouchEventsEnabled(true);
+        }
+
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                // Fake event to trigger map region change
+                onNativeKeyDown(KeyEvent.KEYCODE_SPACE);
+            }
         }
 
         @Override
