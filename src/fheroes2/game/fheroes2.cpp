@@ -131,11 +131,9 @@ __android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
     public:
         DisplayInitializer()
         {
-            const Settings & conf = Settings::Get();
-
             fheroes2::Display & display = fheroes2::Display::instance();
-
-            resizeDisplay();
+            display.setResolution( display.getScaledScreenSize() );
+            display.fill( 0 );
 
             fheroes2::engine().setTitle( GetCaption() );
 
@@ -159,34 +157,6 @@ __android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
         ~DisplayInitializer()
         {
             fheroes2::Display::instance().release();
-        }
-
-        void resizeDisplay() {
-            float ddpi, hdpi, vdpi;
-            if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-                ERROR_LOG("Failed to obtain DPI information for display 0");
-                ERROR_LOG(SDL_GetError());
-                exit(1);
-            }
-            float defaultDpi = 160;
-            float dpiScaling = defaultDpi / ddpi;
-            float scale = 0.5;
-
-            SDL_DisplayMode displayMode;
-            SDL_GetCurrentDisplayMode(0, &displayMode);
-
-            fheroes2::Display & display = fheroes2::Display::instance();
-
-            __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay ddpi %f, hdpi %f, vdpi %f", ddpi, hdpi, vdpi);
-            __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
-
-            int32_t width = displayMode.w * dpiScaling * scale;
-            int32_t height = displayMode.h * dpiScaling * scale;
-
-            fheroes2::ResolutionInfo ri = { width, height, width, height };
-            display.setResolution( ri );
-
-            display.fill( 0 ); // start from a black screen
         }
     };
 
