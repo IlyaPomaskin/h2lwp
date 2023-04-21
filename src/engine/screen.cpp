@@ -59,6 +59,10 @@ namespace
     // Returns nearest screen supported resolution
     fheroes2::ResolutionInfo GetNearestResolution( fheroes2::ResolutionInfo resolutionInfo, const std::vector<fheroes2::ResolutionInfo> & resolutions )
     {
+        // Otherwise app will find nearest resolution with aspect ratio
+        // But for live wallpaper whole screen should be used
+        return resolutionInfo;
+
         if ( resolutions.empty() ) {
             return resolutionInfo;
         }

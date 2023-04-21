@@ -135,28 +135,7 @@ __android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
 
             fheroes2::Display & display = fheroes2::Display::instance();
 
-            if (!conf.FullScreen()) {
-                fheroes2::engine().toggleFullScreen();
-            }
-
-            // resizeDisplay();
-
-            if ( conf.isFirstGameRun() && System::isHandheldDevice() ) {
-                // We do not show resolution dialog for first run on handheld devices. In this case it is wise to set 'widest' resolution by default.
-                const std::vector<fheroes2::ResolutionInfo> resolutions = fheroes2::engine().getAvailableResolutions();
-                fheroes2::ResolutionInfo bestResolution{ conf.currentResolutionInfo() };
-
-                for ( const fheroes2::ResolutionInfo & info : resolutions ) {
-                    if ( info.gameWidth > bestResolution.gameWidth && info.gameHeight == bestResolution.gameHeight ) {
-                        bestResolution = info;
-                    }
-                }
-
-                display.setResolution( bestResolution );
-            }
-            else {
-                display.setResolution( conf.currentResolutionInfo() );
-            } 
+            resizeDisplay();
 
             fheroes2::engine().setTitle( GetCaption() );
 
@@ -198,13 +177,15 @@ __android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
 
             fheroes2::Display & display = fheroes2::Display::instance();
 
+            __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay ddpi %f, hdpi %f, vdpi %f", ddpi, hdpi, vdpi);
             __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
 
-            uint32_t width = displayMode.w * dpiScaling * scale;
-            uint32_t height = displayMode.h * dpiScaling * scale;
+            int32_t width = displayMode.w * dpiScaling * scale;
+            int32_t height = displayMode.h * dpiScaling * scale;
 
-            // FIXME use setResolution
-            // display.resize(uint32_t (displayMode.w * dpiScaling * scale), uint32_t (displayMode.h * dpiScaling * scale));
+            fheroes2::ResolutionInfo ri = { width, height, width, height };
+            display.setResolution( ri );
+
             display.fill( 0 ); // start from a black screen
         }
     };
