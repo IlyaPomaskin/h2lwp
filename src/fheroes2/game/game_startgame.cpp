@@ -71,6 +71,7 @@
 #include "mp2.h"
 #include "mus.h"
 #include "players.h"
+#include "rand.h"
 #include "resource.h"
 #include "route.h"
 #include "screen.h"
@@ -829,13 +830,11 @@ void Interface::Basic::RandomizeGameAreaPoint()
 
     int32_t widthFrom = halfWidth;
     int32_t widthTo = mapWidth - halfWidth;
-    int32_t widthRange = widthTo - widthFrom;
-    int32_t x = rand() % widthRange + widthFrom;
+    int32_t x = Rand::Get(widthFrom, widthTo);
 
     int32_t heightFrom = halfHeight;
     int32_t heightTo = mapHeight - halfHeight;
-    int32_t heightRange = heightTo - heightFrom;
-    int32_t y = rand() % heightRange + heightFrom;
+    int32_t y = Rand::Get(heightFrom, heightTo);
 
     VERBOSE_LOG("Map w: " << mapWidth << " h: " << mapHeight)
     VERBOSE_LOG("Screen w: " << screenWidth << " h: " << screenHeight)
