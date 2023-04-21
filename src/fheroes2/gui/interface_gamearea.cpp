@@ -406,7 +406,7 @@ void Interface::GameArea::Redraw( fheroes2::Image & dst, int flag, bool isPuzzle
 #ifdef WITH_DEBUG
     const bool drawFog = ( ( flag & LEVEL_FOG ) == LEVEL_FOG ) && !IS_DEVEL();
 #else
-    const bool drawFog = false;
+    const bool drawFog = ( flag & LEVEL_FOG ) == LEVEL_FOG;
 #endif
 
     // Render terrain.
@@ -465,8 +465,6 @@ void Interface::GameArea::Redraw( fheroes2::Image & dst, int flag, bool isPuzzle
     // In case of tile-unfit objects we need to pass tile ID and set alpha value while creating RenderObjectInfo instances.
 
     const bool drawHeroes = ( flag & LEVEL_HEROES ) == LEVEL_HEROES;
-
-    // const int friendColors = Players::FriendColors();
 
     TileUnfitRenderObjectInfo tileUnfit;
 

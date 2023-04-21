@@ -111,6 +111,12 @@ void loadFirstMap() {
 
     conf.GetPlayers().SetStartGame();
     world.LoadMapMP2( conf.MapsFile(), true);
+
+    int32_t mapWidth = World::Get().w();
+    int32_t mapHeight = World::Get().h();
+    int32_t centerTileIndex = static_cast<int32_t>(floor((mapWidth * mapHeight) / 2));
+
+    Maps::ClearFog(centerTileIndex, 200, Players::HumanColors());
 }
 
 void Game::mainGameLoop( bool isFirstGameRun )
