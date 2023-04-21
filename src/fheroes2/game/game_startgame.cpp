@@ -946,7 +946,7 @@ fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
         if ( le.KeyPress() ) {
             // FIXME add correct hotkey
             if ( le.KeyValue() == fheroes2::Key::KEY_SPACE ) {
-               RandomizeGameAreaPoint();
+                RandomizeGameAreaPoint();
             }
 
             // if the hero is currently moving, pressing any key should stop him

@@ -478,6 +478,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             if (visible) {
                 SDLActivity.nativeResume();
             } else {
+                onNativeKeyDown(KeyEvent.KEYCODE_SPACE);
                 SDLActivity.nativePause();
             }
         }
