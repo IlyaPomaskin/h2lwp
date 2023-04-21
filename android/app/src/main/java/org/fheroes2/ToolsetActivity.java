@@ -212,13 +212,6 @@ public final class ToolsetActivity extends AppCompatActivity {
         viewModel.validateAssets(getExternalFilesDir(null));
     }
 
-    public void startGameButtonClicked(final View view) {
-//        startActivity( new Intent( this, GameActivity.class ) );
-
-        // Replace this activity with the newly launched activity
-        finish();
-    }
-
     public void extractHoMM2AssetsButtonClicked(final View view) {
         zipFileChooserLauncher.launch("application/zip");
     }
@@ -227,25 +220,17 @@ public final class ToolsetActivity extends AppCompatActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.activity_toolset_homm2_demo_url))));
     }
 
-    public void saveFileManagerButtonClicked(final View view) {
-        startActivity(new Intent(this, SaveFileManagerActivity.class));
-    }
-
     private void updateUI(final ToolsetActivityViewModel.Status modelStatus) {
-        final Button startGameButton = findViewById(R.id.activity_toolset_start_game_btn);
         final Button extractHoMM2AssetsButton = findViewById(R.id.activity_toolset_extract_homm2_assets_btn);
         final Button downloadHoMM2DemoButton = findViewById(R.id.activity_toolset_download_homm2_demo_btn);
-        final Button saveFileManagerButton = findViewById(R.id.activity_toolset_save_file_manager_btn);
 
         final TextView gameStatusTextView = findViewById(R.id.activity_toolset_game_status_lbl);
         final TextView lastTaskStatusTextView = findViewById(R.id.activity_toolset_last_task_status_lbl);
 
         final ProgressBar backgroundTaskProgressBar = findViewById(R.id.activity_toolset_background_task_pb);
 
-        startGameButton.setEnabled(!modelStatus.isBackgroundTaskExecuting && modelStatus.isHoMM2AssetsPresent);
         extractHoMM2AssetsButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
         downloadHoMM2DemoButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
-        saveFileManagerButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
 
         gameStatusTextView.setVisibility(modelStatus.isHoMM2AssetsPresent ? View.GONE : View.VISIBLE);
         backgroundTaskProgressBar.setVisibility(!modelStatus.isBackgroundTaskExecuting ? View.GONE : View.VISIBLE);
