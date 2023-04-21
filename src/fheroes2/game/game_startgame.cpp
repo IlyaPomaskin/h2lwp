@@ -148,7 +148,7 @@ fheroes2::GameMode Game::StartGame()
     const Settings & conf = Settings::Get();
 
     // setup cursor
-    const CursorRestorer cursorRestorer( true, Cursor::POINTER );
+    const CursorRestorer cursorRestorer( false, Cursor::POINTER );
 
     if ( !conf.LoadedGameVersion() )
         GameOver::Result::Get().Reset();
@@ -615,7 +615,10 @@ fheroes2::GameMode Interface::Basic::StartGame()
     iconsPanel.HideIcons( ICON_ANY );
     statusWindow.Reset();
 
-    Redraw( REDRAW_GAMEAREA | REDRAW_RADAR | REDRAW_ICONS | REDRAW_BUTTONS | REDRAW_STATUS | REDRAW_BORDER );
+    conf.setHideInterface(true);
+    conf.SetShowControlPanel(false);
+
+    Redraw( REDRAW_GAMEAREA );
 
     conf.SetCurrentColor( currentColor );
 

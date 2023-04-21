@@ -128,7 +128,7 @@ void Interface::Basic::Redraw( const uint32_t force /* = 0 */ )
     if ( combinedRedraw & REDRAW_GAMEAREA ) {
         gameArea.Redraw( fheroes2::Display::instance(), LEVEL_ALL );
 
-        if ( hideInterface && conf.ShowControlPanel() && false ) {
+        if ( hideInterface && conf.ShowControlPanel() ) {
             controlPanel.Redraw();
         }
     }
