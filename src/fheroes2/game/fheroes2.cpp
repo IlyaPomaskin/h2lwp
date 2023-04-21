@@ -21,8 +21,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <android/log.h>
-
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -107,8 +105,6 @@ namespace
     void InitDataDir()
     {
         const std::string dataDir = System::GetDataDirectory( "fheroes2" );
-
-__android_log_print(ANDROID_LOG_INFO, "SDL", "dataDir %s", dataDir.c_str());
 
         if ( dataDir.empty() )
             return;
@@ -285,13 +281,13 @@ int main( int argc, char ** argv )
 
         conf.setGameLanguage( conf.getGameLanguage() );
 
-        // if ( conf.isShowIntro() ) {
-        //     fheroes2::showTeamInfo();
+         if ( conf.isShowIntro() && false ) {
+             fheroes2::showTeamInfo();
 
-        //     Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-        //     Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-        //     Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-        // }
+             Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+             Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+             Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+         }
 
         // init cursor
         const CursorRestorer cursorRestorer( true, Cursor::POINTER );

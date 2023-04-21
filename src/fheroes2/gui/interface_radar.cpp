@@ -269,11 +269,11 @@ void Interface::Radar::RedrawForViewWorld( const ViewWorld::ZoomROIs & roi, cons
 
 void Interface::Radar::RedrawObjects( const int32_t playerColor, const ViewWorldMode flags )
 {
-    #ifdef WITH_DEBUG
-        const bool revealAll = ( flags == ViewWorldMode::ViewAll ) || IS_DEVEL();
-    #else
-        const bool revealAll = flags == ViewWorldMode::ViewAll;
-    #endif
+#ifdef WITH_DEBUG
+    const bool revealAll = ( flags == ViewWorldMode::ViewAll ) || IS_DEVEL();
+#else
+    const bool revealAll = flags == ViewWorldMode::ViewAll;
+#endif
 
     uint8_t * radarImage = _map.image();
 
