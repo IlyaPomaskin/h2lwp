@@ -815,6 +815,38 @@ fheroes2::GameMode Interface::Basic::StartGame()
     return res;
 }
 
+void Interface::Basic::RandomizeGameAreaPoint()
+{
+    fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize();
+    int32_t mapWidth = World::Get().w();
+    int32_t mapHeight = World::Get().h();
+
+    int32_t screenHeight = static_cast<int32_t>(floor(resolutionInfo.screenHeight / TILEWIDTH));
+    int32_t screenWidth = static_cast<int32_t>(floor(resolutionInfo.screenWidth / TILEWIDTH));
+
+    int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
+    int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
+
+    int32_t widthFrom = halfWidth;
+    int32_t widthTo = mapWidth - halfWidth;
+    int32_t widthRange = widthTo - widthFrom;
+    int32_t x = rand() % widthRange + widthFrom;
+
+    int32_t heightFrom = halfHeight;
+    int32_t heightTo = mapHeight - halfHeight;
+    int32_t heightRange = heightTo - heightFrom;
+    int32_t y = rand() % heightRange + heightFrom;
+
+    VERBOSE_LOG("Map w: " << mapWidth << " h: " << mapHeight)
+    VERBOSE_LOG("Screen w: " << screenWidth << " h: " << screenHeight)
+    VERBOSE_LOG("Half screen w: " << halfWidth << " h: " << halfHeight)
+    VERBOSE_LOG("Width from: " << widthFrom << " to: " << widthTo)
+    VERBOSE_LOG("Height from: " << heightFrom << " to: " << heightTo)
+    VERBOSE_LOG("Next point x: " << x << " y: " << y)
+
+    Interface::Basic::Get().GetGameArea().SetCenter({ x, y });
+}
+
 fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
 {
     if ( isload ) {
@@ -910,6 +942,11 @@ fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
 
         // hotkeys
         if ( le.KeyPress() ) {
+            // FIXME add correct hotkey
+            if ( le.KeyValue() == fheroes2::Key::KEY_SPACE ) {
+               RandomizeGameAreaPoint();
+            }
+
             // if the hero is currently moving, pressing any key should stop him
             if ( isMovingHero ) {
                 stopHero = true;

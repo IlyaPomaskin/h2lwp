@@ -243,6 +243,8 @@ namespace Interface
         uint32_t redraw;
 
         bool _lockRedraw;
+
+        void RandomizeGameAreaPoint();
     };
 }
 
