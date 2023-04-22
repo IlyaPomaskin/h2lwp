@@ -242,8 +242,7 @@ int main( int argc, char ** argv )
         InitDataDir();
         ReadConfigs();
 
-        std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Audio,
-                                                                          fheroes2::SystemInitializationComponent::Video };
+        std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Video };
 
 #if defined( TARGET_PS_VITA ) || defined( TARGET_NINTENDO_SWITCH )
         coreComponents.emplace( fheroes2::SystemInitializationComponent::GameController );
@@ -266,8 +265,6 @@ int main( int argc, char ** argv )
             DEBUG_LOG( DBG_GAME, DBG_INFO, "MIDI SoundFont to load: " << file )
         }
 #endif
-
-        const AudioManager::AudioInitializer audioInitializer( dataInitializer.getOriginalAGGFilePath(), dataInitializer.getExpansionAGGFilePath(), midiSoundFonts );
 
         // Load palette.
         fheroes2::setGamePalette( AGG::getDataFromAggFile( "KB.PAL" ) );
