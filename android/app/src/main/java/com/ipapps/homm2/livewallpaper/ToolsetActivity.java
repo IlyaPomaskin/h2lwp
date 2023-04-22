@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-package org.fheroes2;
+package com.ipapps.homm2.livewallpaper;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -37,8 +37,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-
-import com.homm2.R;
 
 import org.apache.commons.io.IOUtils;
 

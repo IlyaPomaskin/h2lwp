@@ -27,7 +27,7 @@
 
         <service
             android:exported="true"
-            android:name="org.fheroes2.SDLActivity"
+            android:name="com.ipapps.homm2.livewallpaper.SDLActivity"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_WALLPAPER">
@@ -41,7 +41,7 @@
         </service>
 
         <activity
-            android:name="org.fheroes2.ToolsetActivity"
+            android:name="com.ipapps.homm2.livewallpaper.ToolsetActivity"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_toolset"
             android:label="@string/activity_toolset_label"
@@ -56,7 +56,7 @@
         </activity>
 
         <activity
-            android:name="org.fheroes2.SaveFileManagerActivity"
+            android:name="com.ipapps.homm2.livewallpaper.SaveFileManagerActivity"
             android:exported="false"
             android:icon="@mipmap/ic_launcher_toolset"
             android:label="@string/activity_save_file_manager_label"

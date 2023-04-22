@@ -11,14 +11,14 @@ if (buildAsApplication) {
 
 android {
     compileSdkVersion 33
-    namespace 'com.homm2'
+    namespace 'com.ipapps.homm2.livewallpaper'
 
     buildFeatures {
         compose true
     }
 
     defaultConfig {
-        applicationId 'com.homm2.livewallpaper'
+        applicationId 'com.ipapps.homm2.livewallpaper'
 
         minSdkVersion 22
         targetSdkVersion 33

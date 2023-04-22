@@ -1,4 +1,4 @@
-package org.fheroes2;
+package com.ipapps.homm2.livewallpaper;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;

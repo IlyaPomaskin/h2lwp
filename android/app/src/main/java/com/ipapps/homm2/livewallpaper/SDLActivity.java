@@ -1,4 +1,4 @@
-package org.fheroes2;
+package com.ipapps.homm2.livewallpaper;
 
 import android.app.Activity;
 import android.app.AlertDialog;

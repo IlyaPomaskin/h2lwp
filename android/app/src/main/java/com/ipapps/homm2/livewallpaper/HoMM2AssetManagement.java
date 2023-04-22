@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-package org.fheroes2;
+package com.ipapps.homm2.livewallpaper;
 
 import java.io.File;
 import java.io.FileOutputStream;
