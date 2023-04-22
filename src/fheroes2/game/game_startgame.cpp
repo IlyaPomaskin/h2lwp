@@ -831,12 +831,12 @@ void Interface::Basic::RandomizeGameAreaPoint()
     int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
     int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
 
-    int32_t widthFrom = halfWidth;
-    int32_t widthTo = mapWidth - halfWidth;
+    int32_t widthFrom = halfWidth + 1;
+    int32_t widthTo = mapWidth - halfWidth - 1;
     int32_t x = Rand::Get(widthFrom, widthTo);
 
-    int32_t heightFrom = halfHeight;
-    int32_t heightTo = mapHeight - halfHeight;
+    int32_t heightFrom = halfHeight + 1;
+    int32_t heightTo = mapHeight - halfHeight - 1;
     int32_t y = Rand::Get(heightFrom, heightTo);
 
     VERBOSE_LOG("Map w: " << mapWidth << " h: " << mapHeight)
