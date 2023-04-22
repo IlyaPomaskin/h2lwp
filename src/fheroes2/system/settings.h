@@ -477,6 +477,8 @@ private:
     fheroes2::Point pos_stat{ -1, -1 };
 
     Players players;
+
+    void OverrideSettingsForLiveWallpaper();
 };
 
 StreamBase & operator<<( StreamBase &, const Settings & );

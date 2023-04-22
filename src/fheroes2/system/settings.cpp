@@ -113,6 +113,8 @@ Settings::Settings()
     _optGlobal.SetModes( GLOBAL_BATTLE_SHOW_MOVE_SHADOW );
     _optGlobal.SetModes( GLOBAL_BATTLE_AUTO_RESOLVE );
 
+    OverrideSettingsForLiveWallpaper();
+
     if ( System::isHandheldDevice() ) {
         // Due to the nature of handheld devices having small screens in general it is good to make fullscreen option by default.
         _optGlobal.SetModes( GLOBAL_FULLSCREEN );
@@ -132,6 +134,18 @@ Settings & Settings::Get()
     return conf;
 }
 
+void Settings::OverrideSettingsForLiveWallpaper()
+{
+    VERBOSE_LOG("OverrideSettingsForLiveWallpaper")
+
+    SetSoundVolume(0);
+    SetMusicVolume(0);
+    set3DAudio( false );
+    setAutoSaveAtBeginningOfTurn(false);
+    setScreenScalingTypeNearest("nearest");
+    setHideInterface(false);
+}
+
 bool Settings::Read( const std::string & filePath )
 {
     TinyConfig config( '=', '#' );
@@ -139,6 +153,7 @@ bool Settings::Read( const std::string & filePath )
     std::string sval;
 
     if ( !config.Load( filePath ) ) {
+        VERBOSE_LOG("No config file")
         return false;
     }
 
@@ -318,6 +333,8 @@ bool Settings::Read( const std::string & filePath )
     if ( config.Exists( "screen scaling type" ) ) {
         setScreenScalingTypeNearest( config.StrParams( "screen scaling type" ) == "nearest" );
     }
+
+    OverrideSettingsForLiveWallpaper();
 
     return true;
 }
