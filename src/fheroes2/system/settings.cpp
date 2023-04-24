@@ -146,6 +146,29 @@ void Settings::OverrideSettingsForLiveWallpaper()
     setHideInterface(false);
 }
 
+void Settings::ReadSettingsForLiveWallpaper(TinyConfig & config)
+{
+    VERBOSE_LOG("ReadSettingsForLiveWallpaper")
+
+    if ( config.Exists( "lwp brightness" ) ) {
+        SetLWPBrightness(
+                std::clamp( config.IntParams( "lwp brightness" ), 0, 100 )
+        );
+    }
+
+    if ( config.Exists( "lwp scale" ) ) {
+        SetLWPScale(
+                std::clamp( config.IntParams( "lwp scale" ), 0, 5 )
+        );
+    }
+
+    if ( config.Exists( "lwp map update interval" ) ) {
+        SetLWPScale(
+                std::clamp( config.IntParams( "lwp map update interval" ), 0, 5 )
+        );
+    }
+}
+
 bool Settings::Read( const std::string & filePath )
 {
     TinyConfig config( '=', '#' );
@@ -334,6 +357,7 @@ bool Settings::Read( const std::string & filePath )
         setScreenScalingTypeNearest( config.StrParams( "screen scaling type" ) == "nearest" );
     }
 
+    ReadSettingsForLiveWallpaper(config);
     OverrideSettingsForLiveWallpaper();
 
     return true;

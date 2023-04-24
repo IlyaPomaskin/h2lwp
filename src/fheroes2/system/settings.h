@@ -35,6 +35,7 @@
 #include "math_base.h"
 #include "players.h"
 #include "screen.h"
+#include "tinyconfig.h"
 
 class StreamBase;
 
@@ -421,6 +422,34 @@ public:
         return _viewWorldZoomLevel;
     }
 
+    int GetLWPScale()
+    {
+        return lwp_scale;
+    }
+
+    void SetLWPScale(int scale) {
+        lwp_scale = scale;
+    }
+
+    int GetLWPMapUpdateInterval()
+    {
+        return lwp_map_update_interval;
+    }
+
+    void SetLWPMapUpdateInterval(int interval) {
+        lwp_map_update_interval = interval;
+    }
+
+    int GetLWPBrightness()
+    {
+        return lwp_brightness;
+    }
+
+    void SetLWPBrightness(int brightness)
+    {
+        lwp_brightness = brightness;
+    }
+
     void SetViewWorldZoomLevel( ZoomLevel zoomLevel )
     {
         _viewWorldZoomLevel = zoomLevel;
@@ -467,6 +496,10 @@ private:
     int scroll_speed;
     int battle_speed;
 
+    int lwp_brightness = 70;
+    int lwp_map_update_interval = 0;
+    int lwp_scale = 0;
+
     int game_type;
     int preferably_count_players;
     ZoomLevel _viewWorldZoomLevel{ ZoomLevel::ZoomLevel1 };
@@ -477,6 +510,8 @@ private:
     fheroes2::Point pos_stat{ -1, -1 };
 
     Players players;
+
+    void ReadSettingsForLiveWallpaper(TinyConfig &config);
 
     void OverrideSettingsForLiveWallpaper();
 };
