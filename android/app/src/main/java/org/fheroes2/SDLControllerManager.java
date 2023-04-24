@@ -1,4 +1,4 @@
-package com.ipapps.homm2.livewallpaper;
+package org.fheroes2;
 
 import java.util.ArrayList;
 import java.util.Collections;
