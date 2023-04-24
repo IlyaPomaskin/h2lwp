@@ -128,7 +128,7 @@ namespace
         DisplayInitializer()
         {
             fheroes2::Display & display = fheroes2::Display::instance();
-            display.setResolution( display.getScaledScreenSize() );
+            display.setResolution( display.getScaledScreenSize( Settings::Get().GetLWPScale() ) );
             display.fill( 0 );
 
             fheroes2::engine().setTitle( GetCaption() );

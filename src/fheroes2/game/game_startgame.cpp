@@ -821,7 +821,9 @@ fheroes2::GameMode Interface::Basic::StartGame()
 
 void Interface::Basic::RandomizeGameAreaPoint()
 {
-    fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize();
+    fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize(
+        Settings::Get().GetLWPScale()
+    );
     int32_t mapWidth = World::Get().w();
     int32_t mapHeight = World::Get().h();
 

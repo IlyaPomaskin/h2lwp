@@ -1723,7 +1723,7 @@ namespace fheroes2
         return *( Display::instance()._cursor );
     }
 
-    ResolutionInfo Display::getScaledScreenSize() {
+    ResolutionInfo Display::getScaledScreenSize(int scale) {
         float ddpi = 1;
         float hdpi = 1;
         float vdpi = 1;
@@ -1734,18 +1734,18 @@ namespace fheroes2
             exit(1);
         }
 
-        float defaultDpi = 160;
-        float dpiScaling = defaultDpi / ddpi;
-        float scale = 0.5;
-
         SDL_DisplayMode displayMode;
         SDL_GetCurrentDisplayMode(0, &displayMode);
 
-        __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay ddpi %f, hdpi %f, vdpi %f", ddpi, hdpi, vdpi);
-        __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d", uint32_t (displayMode.w * dpiScaling), uint32_t (displayMode.h * dpiScaling));
+        float defaultDpi = 160;
+        int dpiScaling = static_cast<int>(std::floor(defaultDpi / ddpi));
+        int scaleMultiplier = scale == 0 ? dpiScaling : scale;
 
-        int32_t width = static_cast<int32_t>(displayMode.w * dpiScaling * scale);
-        int32_t height = static_cast<int32_t>(displayMode.h * dpiScaling * scale);
+        int32_t width = static_cast<int32_t>(displayMode.w / scaleMultiplier);
+        int32_t height = static_cast<int32_t>(displayMode.h / scaleMultiplier);
+
+        __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay ddpi %f, hdpi %f, vdpi %f", ddpi, hdpi, vdpi);
+        __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d scaled: w: %d h: %d", displayMode.w, displayMode.h, width, height);
 
         return { width, height, width, height };
     }

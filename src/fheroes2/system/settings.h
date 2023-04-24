@@ -498,7 +498,7 @@ private:
 
     int lwp_brightness = 70;
     int lwp_map_update_interval = 0;
-    int lwp_scale = 0;
+    int lwp_scale = 5;
 
     int game_type;
     int preferably_count_players;
