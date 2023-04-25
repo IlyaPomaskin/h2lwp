@@ -1,5 +1,7 @@
 package com.ipapps.homm2.livewallpaper.settings;
 
+import android.app.WallpaperManager
+import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,19 +14,23 @@ import com.ipapps.homm2.livewallpaper.settings.data.MapsViewModelFactory
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingViewModel
 import com.ipapps.homm2.livewallpaper.settings.data.SettingsViewModel
 import com.ipapps.homm2.livewallpaper.settings.data.WallpaperPreferencesRepository
-import com.ipapps.homm2.livewallpaper.settings.data.dataStore
 import com.ipapps.homm2.livewallpaper.settings.ui.components.NavigationHost
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onEach
-import java.io.File
-
+import org.fheroes2.SDLActivity
 
 class MainActivity() : ComponentActivity() {
     private fun setWallpaper() {
-
+        startActivity(
+            Intent()
+                .setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                .putExtra(
+                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                    ComponentName(
+                        applicationContext,
+                        SDLActivity::class.java
+                    )
+                )
+        )
     }
 
     private fun openIconAuthorUrl() {
@@ -47,7 +53,7 @@ class MainActivity() : ComponentActivity() {
             getExternalFilesDir(null)?.resolve("fheroes2.cfg")
 
         val settingsViewModel = SettingsViewModel(
-            WallpaperPreferencesRepository(config, CoroutineScope(SupervisorJob())),
+            WallpaperPreferencesRepository(config),
             setWallpaper = ::setWallpaper,
             openIconAuthorUrl = ::openIconAuthorUrl
         )

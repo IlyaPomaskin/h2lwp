@@ -1,16 +1,8 @@
 package com.ipapps.homm2.livewallpaper.settings.data;
 
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectIndexed
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
