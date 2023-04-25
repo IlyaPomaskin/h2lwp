@@ -1738,12 +1738,13 @@ namespace fheroes2
         SDL_GetCurrentDisplayMode(0, &displayMode);
 
         float defaultDpi = 160;
-        int dpiScaling = static_cast<int>(std::floor(defaultDpi / ddpi));
-        int scaleMultiplier = scale == 0 ? dpiScaling : scale;
+        float dpiScaling = defaultDpi / ddpi;
+        float scaleMultiplier = scale == 0 ? dpiScaling : 1 / scale;
 
-        int32_t width = static_cast<int32_t>(displayMode.w / scaleMultiplier);
-        int32_t height = static_cast<int32_t>(displayMode.h / scaleMultiplier);
+        int32_t width = static_cast<int32_t>(displayMode.w * scaleMultiplier);
+        int32_t height = static_cast<int32_t>(displayMode.h * scaleMultiplier);
 
+        __android_log_print(ANDROID_LOG_INFO, "SDL", "scale %d multiplier %f dpiScaling %f", scale, scaleMultiplier, dpiScaling);
         __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay ddpi %f, hdpi %f, vdpi %f", ddpi, hdpi, vdpi);
         __android_log_print(ANDROID_LOG_INFO, "SDL", "resizeDisplay w: %d h: %d scaled: w: %d h: %d", displayMode.w, displayMode.h, width, height);
 

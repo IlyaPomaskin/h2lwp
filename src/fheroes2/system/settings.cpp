@@ -171,6 +171,8 @@ void Settings::ReadSettingsForLiveWallpaper(TinyConfig & config)
 
 bool Settings::Read( const std::string & filePath )
 {
+    VERBOSE_LOG("Settings::Read")
+
     TinyConfig config( '=', '#' );
 
     std::string sval;
@@ -507,8 +509,13 @@ std::string Settings::String() const
     os << std::endl << "# scaling type: nearest or linear (set by default)" << std::endl;
     os << "screen scaling type = " << ( _optGlobal.Modes( GLOBAL_SCREEN_SCALING_TYPE_NEAREST ) ? "nearest" : "linear" ) << std::endl;
 
+    os << std::endl << "# lwp: scale" << std::endl;
     os << "lwp scale = " << lwp_scale << std::endl;
+
+    os << std::endl << "# lwp: brightness" << std::endl;
     os << "lwp brightness = " << lwp_brightness << std::endl;
+
+    os << std::endl << "# lwp: map update interval" << std::endl;
     os << "lwp map update interval = " << lwp_map_update_interval << std::endl;
 
     return os.str();
