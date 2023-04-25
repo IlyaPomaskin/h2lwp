@@ -20,26 +20,6 @@ class SettingsViewModel(
 ) : ViewModel() {
     val settingsUiModel = wallpaperPreferencesRepository.preferencesFlow.asLiveData()
 
-    init {
-        viewModelScope.launch {
-            settingsUiModel.observeForever {
-                println("updated")
-            }
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            wallpaperPreferencesRepository.preferencesFlow
-                .onEach {
-                    println("onEach")
-                }
-                .collect {
-                    println("collect")
-                }
-        }
-    }
-
     fun toggleUseScroll() {
         viewModelScope.launch {
             wallpaperPreferencesRepository.toggleUseScroll()
@@ -58,7 +38,7 @@ class SettingsViewModel(
         }
     }
 
-    fun setBrightness(value: Float) {
+    fun setBrightness(value: Int) {
         viewModelScope.launch {
             wallpaperPreferencesRepository.setBrightness(value)
         }

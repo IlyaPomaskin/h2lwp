@@ -46,14 +46,8 @@ class MainActivity() : ComponentActivity() {
         val config =
             getExternalFilesDir(null)?.resolve("fheroes2.cfg")
 
-        val asdf = WallpaperPreferencesRepository(config, CoroutineScope(SupervisorJob()))
-
-        asdf.preferencesFlow.onEach {
-            println("asdf")
-        }
-
         val settingsViewModel = SettingsViewModel(
-            asdf,
+            WallpaperPreferencesRepository(config, CoroutineScope(SupervisorJob())),
             setWallpaper = ::setWallpaper,
             openIconAuthorUrl = ::openIconAuthorUrl
         )

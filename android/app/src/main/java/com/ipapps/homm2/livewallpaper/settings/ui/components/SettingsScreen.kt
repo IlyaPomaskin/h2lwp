@@ -147,9 +147,9 @@ fun SettingsScreen(
                         nextLine = true,
                     ) {
                         Slider(
-                            value = brightnessSliderValue,
-                            valueRange = 0f..0.99f,
-                            onValueChange = { brightnessSliderValue = it },
+                            value = brightnessSliderValue.toFloat() / 100,
+                            valueRange = 0f..1f,
+                            onValueChange = { brightnessSliderValue = (it * 100).toInt() },
                             onValueChangeFinished = { viewModel.setBrightness(brightnessSliderValue) }
                         )
                     }

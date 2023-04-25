@@ -36,12 +36,12 @@ data class WallpaperPreferences(
     val scale: Scale = defaultScale,
     val mapUpdateInterval: MapUpdateInterval = defaultMapUpdateInterval,
     val useScroll: Boolean = defaultUseScroll,
-    val brightness: Float = defaultBrightness,
+    val brightness: Int = defaultBrightness,
 ) {
     companion object Defaults {
         val defaultScale = Scale.DPI
         val defaultMapUpdateInterval = MapUpdateInterval.MINUTES_10
         const val defaultUseScroll = true
-        const val defaultBrightness = 0.6f
+        const val defaultBrightness = 60
     }
 }

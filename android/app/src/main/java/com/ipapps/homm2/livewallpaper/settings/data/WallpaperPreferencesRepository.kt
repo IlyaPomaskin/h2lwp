@@ -44,20 +44,25 @@ fun readConfig(file: File?): List<String> {
     return file.readText().split("\n")
 }
 
-class WallpaperPreferencesRepository(configFile: File?) {
+class WallpaperPreferencesRepository(configFile: File?, scope: CoroutineScope) {
     val preferences = MutableStateFlow(readConfig(configFile))
 
     val preferencesFlow = preferences
         .asStateFlow()
         .map {
             val lines = readConfig(configFile)
-            val brightness = getIntParam(lines, "lwp brightness", 100)
-            val scale = getIntParam(lines, "lwp scale", 0)
-            val mapUpdateInterval = getIntParam(lines, "lwp map update interval", 0)
+            val brightness =
+                getIntParam(lines, "lwp brightness", WallpaperPreferences.defaultBrightness)
+            val scale = getIntParam(lines, "lwp scale", WallpaperPreferences.defaultScale.value)
+            val mapUpdateInterval = getIntParam(
+                lines,
+                "lwp map update interval",
+                WallpaperPreferences.defaultMapUpdateInterval.value
+            )
 
             WallpaperPreferences(
                 scale = Scale.fromInt(scale),
-                brightness = brightness.toFloat() / 100,
+                brightness = brightness,
                 mapUpdateInterval = MapUpdateInterval.fromInt(mapUpdateInterval)
             )
         }
@@ -69,21 +74,9 @@ class WallpaperPreferencesRepository(configFile: File?) {
             }
         }
 
-    init {
-        CoroutineScope(Job() + Dispatchers.Main).launch {
-            preferencesFlow
-                .onEach {
-                    println("onEach")
-                }
-                .collect {
-                    println("collect")
-                }
-        }
-    }
-
-    suspend fun setBrightness(value: Float) {
-        preferences.update {
-                list -> setIntParam(list, "lwp brightness", (value * 100).toInt())
+    fun setBrightness(value: Int) {
+        preferences.update { list ->
+            setIntParam(list, "lwp brightness", value)
         }
     }
 
@@ -100,14 +93,6 @@ class WallpaperPreferencesRepository(configFile: File?) {
     suspend fun setMapUpdateInterval(value: MapUpdateInterval) {
 //        dataStore.edit { prefs -> prefs[MAP_UPDATE_INTERVAL] = value.value }
     }
-
-//    suspend fun setBrightness(value: Float) {
-////        dataStore.edit { prefs -> prefs[BRIGHTNESS] = value }
-//        preferences.update {
-//            list -> setIntParam(list, "lwp brightness", (value * 100).toInt())
-//        }
-//        preferences.emit(preferences.value)
-//    }
 
     private fun mapUserPreferences(preferences: Preferences): WallpaperPreferences {
 //        val scale = Scale.fromInt(preferences[SCALE])
