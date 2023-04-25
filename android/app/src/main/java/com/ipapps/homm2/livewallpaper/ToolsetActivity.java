@@ -147,6 +147,10 @@ public final class ToolsetActivity extends AppCompatActivity {
         // Extract TiMidity GUS patches and config file to the internal app-specific storage
         extractAssets("instruments", filesDir);
         extractAssets("timidity.cfg", filesDir);
+
+        // FIXME add basic fheroes2.cfg
+        // Initially config created on first run of app
+        // But user can edit settings before it
     }
 
     private void extractAssets(final String srcPath, final File dstDir) {
