@@ -63,6 +63,15 @@ enum class ZoomLevel : uint8_t
     ZoomLevel3 = 3, // Max zoom, but should only exists for debug builds
 };
 
+enum MapUpdateInterval : uint32_t
+{
+    EVERY_SWITCH = 0,
+    MINUTES_10 = 1,
+    MINUTES_30 = 2,
+    HOURS_2 = 3,
+    HOURS_24 = 4
+};
+
 class Settings
 {
 public:
@@ -433,7 +442,21 @@ public:
 
     int GetLWPMapUpdateInterval()
     {
-        return lwp_map_update_interval;
+        MapUpdateInterval interval = static_cast<MapUpdateInterval>(lwp_map_update_interval);
+
+        switch (interval) {
+            case MINUTES_10:
+                return 60 * 10;
+            case MINUTES_30:
+                return 60 * 30;
+            case HOURS_2:
+                return 60 * 60 * 2;
+            case HOURS_24:
+                return 60 * 60 * 24;
+            case EVERY_SWITCH:
+            default:
+                return 2000;
+        }
     }
 
     void SetLWPMapUpdateInterval(int interval) {

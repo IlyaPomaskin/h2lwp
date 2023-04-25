@@ -76,6 +76,7 @@
 #include "route.h"
 #include "screen.h"
 #include "settings.h"
+#include "system.h"
 #include "tools.h"
 #include "translations.h"
 #include "ui_dialog.h"
@@ -851,6 +852,39 @@ void Interface::Basic::RandomizeGameAreaPoint()
     Interface::Basic::Get().GetGameArea().SetCenter({ x, y });
 }
 
+bool Interface::Basic::ShouldUpdateMapRegion()
+{
+    uint32_t updateInterval = Settings::Get().GetLWPMapUpdateInterval();
+    uint32_t currentTime = std::time(nullptr);
+    bool isFirstRun = lwpLastMapUpdate == 0;
+    bool isExpired = lwpLastMapUpdate < currentTime - updateInterval;
+
+    if (isFirstRun || isExpired) {
+        lwpLastMapUpdate = currentTime;
+        return true;
+    }
+
+    return false;
+}
+
+void RereadConfigs()
+{
+    const std::string configurationFileName(Settings::configFileName);
+    const std::string confFile = Settings::GetLastFile("", configurationFileName);
+
+    if ( System::IsFile( confFile ) ) {
+        Settings::Get().Read(confFile);
+    }
+}
+
+void Interface::Basic::OnVisibilityChanged() {
+    RereadConfigs();
+
+    if (ShouldUpdateMapRegion()) {
+        RandomizeGameAreaPoint();
+    }
+}
+
 fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
 {
     if ( isload ) {
@@ -948,7 +982,7 @@ fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
         if ( le.KeyPress() ) {
             // FIXME add correct hotkey
             if ( le.KeyValue() == fheroes2::Key::KEY_SPACE ) {
-                RandomizeGameAreaPoint();
+                OnVisibilityChanged();
             }
 
             // if the hero is currently moving, pressing any key should stop him

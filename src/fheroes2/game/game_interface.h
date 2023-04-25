@@ -244,7 +244,13 @@ namespace Interface
 
         bool _lockRedraw;
 
+        uint32_t lwpLastMapUpdate = 0;
+
         void RandomizeGameAreaPoint();
+
+        void OnVisibilityChanged();
+
+        bool ShouldUpdateMapRegion();
     };
 }
 
