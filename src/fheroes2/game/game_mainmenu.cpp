@@ -122,10 +122,13 @@ void loadFirstMap() {
 void Game::mainGameLoop( bool isFirstGameRun )
 {
     loadFirstMap();
-    fheroes2::GameMode result = fheroes2::GameMode::START_GAME;
+    fheroes2::GameMode result = fheroes2::GameMode::WALLPAPER;
 
     while ( result != fheroes2::GameMode::QUIT_GAME ) {
         switch ( result ) {
+        case fheroes2::GameMode::WALLPAPER:
+            result = Game::Wallpaper();
+            break;
         case fheroes2::GameMode::MAIN_MENU:
             result = Game::MainMenu( isFirstGameRun );
             isFirstGameRun = false;

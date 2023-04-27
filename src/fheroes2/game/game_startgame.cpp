@@ -820,71 +820,6 @@ fheroes2::GameMode Interface::Basic::StartGame()
     return res;
 }
 
-void Interface::Basic::RandomizeGameAreaPoint()
-{
-    fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize(
-        Settings::Get().GetLWPScale()
-    );
-    int32_t mapWidth = World::Get().w();
-    int32_t mapHeight = World::Get().h();
-
-    int32_t screenHeight = static_cast<int32_t>(floor(resolutionInfo.screenHeight / TILEWIDTH));
-    int32_t screenWidth = static_cast<int32_t>(floor(resolutionInfo.screenWidth / TILEWIDTH));
-
-    int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
-    int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
-
-    int32_t widthFrom = halfWidth + 1;
-    int32_t widthTo = mapWidth - halfWidth - 1;
-    int32_t x = Rand::Get(widthFrom, widthTo);
-
-    int32_t heightFrom = halfHeight + 1;
-    int32_t heightTo = mapHeight - halfHeight - 1;
-    int32_t y = Rand::Get(heightFrom, heightTo);
-
-    VERBOSE_LOG("Map w: " << mapWidth << " h: " << mapHeight)
-    VERBOSE_LOG("Screen w: " << screenWidth << " h: " << screenHeight)
-    VERBOSE_LOG("Half screen w: " << halfWidth << " h: " << halfHeight)
-    VERBOSE_LOG("Width from: " << widthFrom << " to: " << widthTo)
-    VERBOSE_LOG("Height from: " << heightFrom << " to: " << heightTo)
-    VERBOSE_LOG("Next point x: " << x << " y: " << y)
-
-    Interface::Basic::Get().GetGameArea().SetCenter({ x, y });
-}
-
-bool Interface::Basic::ShouldUpdateMapRegion()
-{
-    uint32_t updateInterval = Settings::Get().GetLWPMapUpdateInterval();
-    uint32_t currentTime = std::time(nullptr);
-    bool isFirstRun = lwpLastMapUpdate == 0;
-    bool isExpired = lwpLastMapUpdate < currentTime - updateInterval;
-
-    if (isFirstRun || isExpired) {
-        lwpLastMapUpdate = currentTime;
-        return true;
-    }
-
-    return false;
-}
-
-void RereadConfigs()
-{
-    const std::string configurationFileName(Settings::configFileName);
-    const std::string confFile = Settings::GetLastFile("", configurationFileName);
-
-    if ( System::IsFile( confFile ) ) {
-        Settings::Get().Read(confFile);
-    }
-}
-
-void Interface::Basic::OnVisibilityChanged() {
-    RereadConfigs();
-
-    if (ShouldUpdateMapRegion()) {
-        RandomizeGameAreaPoint();
-    }
-}
-
 fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
 {
     if ( isload ) {
@@ -980,11 +915,6 @@ fheroes2::GameMode Interface::Basic::HumanTurn( const bool isload )
 
         // hotkeys
         if ( le.KeyPress() ) {
-            // FIXME add correct hotkey
-            if ( le.KeyValue() == fheroes2::Key::KEY_SPACE ) {
-                OnVisibilityChanged();
-            }
-
             // if the hero is currently moving, pressing any key should stop him
             if ( isMovingHero ) {
                 stopHero = true;

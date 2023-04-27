@@ -214,6 +214,7 @@ namespace Interface
         void EventKeyArrowPress( int direct );
 
         fheroes2::GameMode StartGame();
+        fheroes2::GameMode Wallpaper();
 
         void MouseCursorAreaClickLeft( const int32_t index_maps );
         void MouseCursorAreaPressRight( int32_t ) const;

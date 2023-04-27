@@ -870,7 +870,6 @@ LocalEvent & LocalEvent::GetClean()
 bool LocalEvent::HandleEvents( const bool sleepAfterEventProcessing, const bool allowExit /* = false */ )
 {
     // Disable event handlers in live wallpaper
-    return false;
 
     // Event processing might be computationally heavy.
     // We want to make sure that we do not slow down by going into sleep mode when it is not needed.

@@ -116,8 +116,6 @@ Interface::Basic & Interface::Basic::Get()
 
 void Interface::Basic::Redraw( const uint32_t force /* = 0 */ )
 {
-    Uint64 start = SDL_GetPerformanceCounter();
-
     if ( _lockRedraw ) {
         SetRedraw( force );
         return;
@@ -164,10 +162,6 @@ void Interface::Basic::Redraw( const uint32_t force /* = 0 */ )
     }
 
     redraw = 0;
-
-    Uint64 end = SDL_GetPerformanceCounter();
-    float elapsedMS = (end - start) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-    SDL_Delay(static_cast<Uint32>(floor(250.0f - elapsedMS)));
 }
 
 int32_t Interface::Basic::GetDimensionDoorDestination( const int32_t from, const int32_t distance, const bool water )
