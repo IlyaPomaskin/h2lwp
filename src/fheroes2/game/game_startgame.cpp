@@ -71,12 +71,10 @@
 #include "mp2.h"
 #include "mus.h"
 #include "players.h"
-#include "rand.h"
 #include "resource.h"
 #include "route.h"
 #include "screen.h"
 #include "settings.h"
-#include "system.h"
 #include "tools.h"
 #include "translations.h"
 #include "ui_dialog.h"
@@ -149,7 +147,7 @@ fheroes2::GameMode Game::StartGame()
     const Settings & conf = Settings::Get();
 
     // setup cursor
-    const CursorRestorer cursorRestorer( false, Cursor::POINTER );
+    const CursorRestorer cursorRestorer( true, Cursor::POINTER );
 
     if ( !conf.LoadedGameVersion() )
         GameOver::Result::Get().Reset();
@@ -616,10 +614,7 @@ fheroes2::GameMode Interface::Basic::StartGame()
     iconsPanel.HideIcons( ICON_ANY );
     statusWindow.Reset();
 
-    conf.setHideInterface(true);
-    conf.SetShowControlPanel(false);
-
-    Redraw( REDRAW_GAMEAREA );
+    Redraw( REDRAW_GAMEAREA | REDRAW_RADAR | REDRAW_ICONS | REDRAW_BUTTONS | REDRAW_STATUS | REDRAW_BORDER );
 
     conf.SetCurrentColor( currentColor );
 

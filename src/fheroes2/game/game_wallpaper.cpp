@@ -86,53 +86,34 @@
 #include "world.h"
 #include "SDL_timer.h"
 
-fheroes2::GameMode Game::Wallpaper() {
-    AI::Get().Reset();
+void loadFirstMap() {
+    Settings & conf = Settings::Get();
 
-    return Interface::Basic::Get().Wallpaper();
-}
-
-fheroes2::GameMode Interface::Basic::Wallpaper() {
-    Reset();
-
-    Settings &conf = Settings::Get();
-    conf.setSystemInfo(false);
-    conf.SetCurrentColor(-1);
+    conf.SetGameType( Game::TYPE_STANDARD );
     conf.setHideInterface(true);
-    conf.SetShowControlPanel(false);
+    conf.SetShowRadar(false);
+    conf.SetShowButtons(false);
+    conf.SetShowIcons(false);
+    conf.SetShowStatus(false);
 
-    fheroes2::Display &display = fheroes2::Display::instance();
-    LocalEvent &le = LocalEvent::Get();
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap");
 
-    while (true) {
-        if (le.HandleEvents(false, false) && le.KeyPress()) {
-            VERBOSE_LOG("Keypress")
-            // FIXME add correct hotkey
-            if (le.KeyValue() == fheroes2::Key::KEY_SPACE) {
-                VERBOSE_LOG("Space pressed")
-                OnVisibilityChanged();
-            }
-        }
+    const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList( Settings::Get().IsGameType( Game::TYPE_MULTI ) );
+    conf.SetCurrentFileInfo( lists.front() );
 
-        Uint64 start = SDL_GetPerformanceCounter();
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s", lists.front().file.c_str(), lists.front().name.c_str());
 
-        Redraw(REDRAW_GAMEAREA);
-        display.render();
+    conf.GetPlayers().SetStartGame();
+    world.LoadMapMP2( conf.MapsFile(), true);
 
-        if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
-            Game::updateAdventureMapAnimationIndex();
-            gameArea.SetRedraw();
-        }
+    int32_t mapWidth = World::Get().w();
+    int32_t mapHeight = World::Get().h();
+    int32_t centerTileIndex = static_cast<int32_t>(floor((mapWidth * mapHeight) / 2));
 
-        Uint64 end = SDL_GetPerformanceCounter();
-        float elapsedMS = (end - start) / (float) SDL_GetPerformanceFrequency() * 1000.0f;
-        SDL_Delay(static_cast<Uint32>(floor(180.0f - elapsedMS)));
-    }
-
-    return fheroes2::GameMode::END_TURN;
+    Maps::ClearFog(centerTileIndex, 200, Players::HumanColors());
 }
 
-void Interface::Basic::RandomizeGameAreaPoint() {
+void randomizeGameAreaPoint() {
     fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize(
             Settings::Get().GetLWPScale()
     );
@@ -163,7 +144,9 @@ void Interface::Basic::RandomizeGameAreaPoint() {
     Interface::Basic::Get().GetGameArea().SetCenter({x, y});
 }
 
-bool Interface::Basic::ShouldUpdateMapRegion() {
+uint32_t lwpLastMapUpdate = 0;
+
+bool shouldUpdateMapRegion() {
     uint32_t updateInterval = Settings::Get().GetLWPMapUpdateInterval();
     uint32_t currentTime = std::time(nullptr);
     bool isFirstRun = lwpLastMapUpdate == 0;
@@ -184,7 +167,7 @@ bool Interface::Basic::ShouldUpdateMapRegion() {
     return false;
 }
 
-void RereadConfigs() {
+void rereadConfigs() {
     const std::string configurationFileName(Settings::configFileName);
     const std::string confFile = Settings::GetLastFile("", configurationFileName);
 
@@ -193,10 +176,59 @@ void RereadConfigs() {
     }
 }
 
-void Interface::Basic::OnVisibilityChanged() {
-    RereadConfigs();
+void onVisibilityChanged() {
+    rereadConfigs();
 
-    if (ShouldUpdateMapRegion()) {
-        RandomizeGameAreaPoint();
+    if (shouldUpdateMapRegion()) {
+        randomizeGameAreaPoint();
     }
+}
+
+
+fheroes2::GameMode Game::Wallpaper() {
+    AI::Get().Reset();
+
+    loadFirstMap();
+
+    return Interface::Basic::Get().Wallpaper();
+}
+
+fheroes2::GameMode Interface::Basic::Wallpaper() {
+    Reset();
+
+    Settings &conf = Settings::Get();
+    conf.setSystemInfo(false);
+    conf.SetCurrentColor(-1);
+    conf.setHideInterface(true);
+    conf.SetShowControlPanel(false);
+
+    fheroes2::Display &display = fheroes2::Display::instance();
+    LocalEvent &le = LocalEvent::Get();
+
+    while (true) {
+        if (le.HandleEvents(false, false) && le.KeyPress()) {
+            VERBOSE_LOG("Keypress")
+            // FIXME add correct hotkey
+            if (le.KeyValue() == fheroes2::Key::KEY_SPACE) {
+                VERBOSE_LOG("Space pressed")
+                onVisibilityChanged();
+            }
+        }
+
+        Uint64 start = SDL_GetPerformanceCounter();
+
+        Redraw(REDRAW_GAMEAREA);
+        display.render();
+
+        if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
+            Game::updateAdventureMapAnimationIndex();
+            gameArea.SetRedraw();
+        }
+
+        Uint64 end = SDL_GetPerformanceCounter();
+        float elapsedMS = (end - start) / (float) SDL_GetPerformanceFrequency() * 1000.0f;
+        SDL_Delay(static_cast<Uint32>(floor(180.0f - elapsedMS)));
+    }
+
+    return fheroes2::GameMode::END_TURN;
 }

@@ -59,8 +59,6 @@ namespace
     // Returns nearest screen supported resolution
     fheroes2::ResolutionInfo GetNearestResolution( fheroes2::ResolutionInfo resolutionInfo, const std::vector<fheroes2::ResolutionInfo> & resolutions )
     {
-        // Otherwise app will find nearest resolution with aspect ratio
-        // But for live wallpaper whole screen should be used
         return resolutionInfo;
 
         if ( resolutions.empty() ) {
@@ -1739,7 +1737,8 @@ namespace fheroes2
 
         float defaultDpi = 160;
         float dpiScaling = defaultDpi / ddpi;
-        float scaleMultiplier = scale == 0 ? dpiScaling : 1 / scale;
+//        float scaleMultiplier = scale == 0 ? dpiScaling : 1 / scale;
+        float scaleMultiplier = 0.25f;
 
         int32_t width = static_cast<int32_t>(displayMode.w * scaleMultiplier);
         int32_t height = static_cast<int32_t>(displayMode.h * scaleMultiplier);

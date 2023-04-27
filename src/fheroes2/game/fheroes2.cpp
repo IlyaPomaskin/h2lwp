@@ -278,13 +278,13 @@ int main( int argc, char ** argv )
 
         conf.setGameLanguage( conf.getGameLanguage() );
 
-         if ( conf.isShowIntro() && false ) {
-             fheroes2::showTeamInfo();
+        if ( conf.isShowIntro() && false ) {
+            fheroes2::showTeamInfo();
 
-             Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-             Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-             Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
-         }
+            Video::ShowVideo( "NWCLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+            Video::ShowVideo( "CYLOGO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+            Video::ShowVideo( "H2XINTRO.SMK", Video::VideoAction::PLAY_TILL_VIDEO_END );
+        }
 
         // init cursor
         const CursorRestorer cursorRestorer( true, Cursor::POINTER );

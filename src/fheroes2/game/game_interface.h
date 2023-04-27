@@ -244,14 +244,6 @@ namespace Interface
         uint32_t redraw;
 
         bool _lockRedraw;
-
-        uint32_t lwpLastMapUpdate = 0;
-
-        void RandomizeGameAreaPoint();
-
-        void OnVisibilityChanged();
-
-        bool ShouldUpdateMapRegion();
     };
 }
 

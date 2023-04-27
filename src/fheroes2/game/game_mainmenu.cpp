@@ -20,14 +20,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <android/log.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
-#include <world.h>
 
 #include "agg_image.h"
 #include "audio.h"
@@ -92,36 +91,8 @@ namespace
     }
 }
 
-void loadFirstMap() {
-    Settings & conf = Settings::Get();
-
-    conf.SetGameType( Game::TYPE_STANDARD );
-    conf.setHideInterface(true);
-    conf.SetShowRadar(false);
-    conf.SetShowButtons(false);
-    conf.SetShowIcons(false);
-    conf.SetShowStatus(false);
-
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap");
-
-    const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList( Settings::Get().IsGameType( Game::TYPE_MULTI ) );
-    conf.SetCurrentFileInfo( lists.front() );
-    
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s", lists.front().file.c_str(), lists.front().name.c_str());
-
-    conf.GetPlayers().SetStartGame();
-    world.LoadMapMP2( conf.MapsFile(), true);
-
-    int32_t mapWidth = World::Get().w();
-    int32_t mapHeight = World::Get().h();
-    int32_t centerTileIndex = static_cast<int32_t>(floor((mapWidth * mapHeight) / 2));
-
-    Maps::ClearFog(centerTileIndex, 200, Players::HumanColors());
-}
-
 void Game::mainGameLoop( bool isFirstGameRun )
 {
-    loadFirstMap();
     fheroes2::GameMode result = fheroes2::GameMode::WALLPAPER;
 
     while ( result != fheroes2::GameMode::QUIT_GAME ) {
