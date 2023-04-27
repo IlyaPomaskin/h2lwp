@@ -89,14 +89,6 @@
 fheroes2::GameMode Game::Wallpaper() {
     AI::Get().Reset();
 
-    const Settings &conf = Settings::Get();
-
-    // setup cursor
-    const CursorRestorer cursorRestorer(false, Cursor::POINTER);
-
-    if (!conf.LoadedGameVersion())
-        GameOver::Result::Get().Reset();
-
     return Interface::Basic::Get().Wallpaper();
 }
 
@@ -104,6 +96,7 @@ fheroes2::GameMode Interface::Basic::Wallpaper() {
     Reset();
 
     Settings &conf = Settings::Get();
+    conf.setSystemInfo(false);
     conf.SetCurrentColor(-1);
     conf.setHideInterface(true);
     conf.SetShowControlPanel(false);
@@ -132,8 +125,8 @@ fheroes2::GameMode Interface::Basic::Wallpaper() {
         }
 
         Uint64 end = SDL_GetPerformanceCounter();
-        float elapsedMS = (end - start) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-        SDL_Delay(static_cast<Uint32>(floor(250.0f - elapsedMS)));
+        float elapsedMS = (end - start) / (float) SDL_GetPerformanceFrequency() * 1000.0f;
+        SDL_Delay(static_cast<Uint32>(floor(180.0f - elapsedMS)));
     }
 
     return fheroes2::GameMode::END_TURN;
@@ -175,6 +168,13 @@ bool Interface::Basic::ShouldUpdateMapRegion() {
     uint32_t currentTime = std::time(nullptr);
     bool isFirstRun = lwpLastMapUpdate == 0;
     bool isExpired = lwpLastMapUpdate < currentTime - updateInterval;
+
+    VERBOSE_LOG(
+            "ShouldUpdateMapRegion"
+                    << " interval:" << updateInterval
+                    << " current: " << currentTime
+                    << " last update: " << lwpLastMapUpdate
+    )
 
     if (isFirstRun || isExpired) {
         lwpLastMapUpdate = currentTime;
