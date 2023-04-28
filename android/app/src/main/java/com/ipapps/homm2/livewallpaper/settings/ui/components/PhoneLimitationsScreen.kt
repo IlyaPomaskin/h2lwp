@@ -1,15 +1,16 @@
 package com.ipapps.homm2.livewallpaper.settings.ui.components;
 
-import com.ipapps.homm2.livewallpaper.settings.ui.components.NavigationActions;
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.homm3.livewallpaper.android.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.R
 
 @Composable
 fun PhoneLimitations(actions: NavigationActions) {
@@ -25,27 +26,27 @@ fun PhoneLimitations(actions: NavigationActions) {
             Row(modifier = Modifier.padding(vertical = 8.dp)) {
                 Text(
                     textAlign = TextAlign.Center,
-                    text = "stringResource(R.string.phone_limitation_note)"
+                    text = stringResource(R.string.phone_limitation_note)
                 )
             }
 
             Row(modifier = Modifier.padding(vertical = 8.dp)) {
                 Text(
                     textAlign = TextAlign.Center,
-                    text = "stringResource(R.string.phone_limitation_miui)"
+                    text = stringResource(R.string.phone_limitation_miui)
                 )
             }
 
             Row(modifier = Modifier.padding(vertical = 8.dp)) {
                 Text(
                     textAlign = TextAlign.Center,
-                    text = "stringResource(R.string.phone_limitation_no)"
+                    text = stringResource(R.string.phone_limitation_no)
                 )
             }
 
             Button(modifier = Modifier.padding(vertical = 8.dp),
                 onClick = { actions.settings() }) {
-                Text(text = "stringResource(R.string.phone_limitation_okay)")
+                Text(text = stringResource(R.string.phone_limitation_okay))
             }
         }
     }

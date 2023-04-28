@@ -10,16 +10,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.homm3.livewallpaper.android.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingState
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingViewModel
+import com.ipapps.homm2.livewallpaper.R
 
+@Composable
 inline fun <R : Any> AnnotatedString.Builder.boldText(
     crossinline block: AnnotatedString.Builder.() -> R
 ): R {
@@ -48,28 +51,28 @@ fun ParsingScreen(viewModel: ParsingViewModel, actions: NavigationActions) {
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 8.dp),
-                text = "stringResource(R.string.parsing_upload)"
+                text = stringResource(R.string.parsing_upload)
             )
 
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 8.dp),
-                text = "stringResource(R.string.parsing_restictions)"
+                text = stringResource(R.string.parsing_restictions)
             )
 
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 8.dp),
                 text = buildAnnotatedString {
-                    append("stringResource(R.string.parsing_how_to_upload_1)")
+                    append(stringResource(R.string.parsing_how_to_upload_1))
                     append(" ")
-                    boldText { append("stringResource(R.string.parsing_how_to_upload_2)") }
+                    append(stringResource(R.string.parsing_how_to_upload_2))
                     append(" ")
-                    append("stringResource(R.string.parsing_how_to_upload_3)")
+                    append(stringResource(R.string.parsing_how_to_upload_3))
                     append(" ")
-                    boldText { append("stringResource(R.string.parsing_how_to_upload_4)") }
+                    append(stringResource(R.string.parsing_how_to_upload_4))
                     append("\n")
-                    append("stringResource(R.string.parsing_how_to_upload_5)")
+                    append(stringResource(R.string.parsing_how_to_upload_5))
                 }
             )
 
@@ -78,7 +81,7 @@ fun ParsingScreen(viewModel: ParsingViewModel, actions: NavigationActions) {
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .alpha(0.6f),
-                text = "stringResource(R.string.parsing_note)"
+                text = stringResource(R.string.parsing_note)
             )
 
             when (parseStatus) {
@@ -87,13 +90,13 @@ fun ParsingScreen(viewModel: ParsingViewModel, actions: NavigationActions) {
                 }
                 ParsingState.Error -> {
                     AlertDialog(
-                        title = { "stringResource(R.string.parsing_error_cant_parse_header)" },
+                        title = { stringResource(R.string.parsing_error_cant_parse_header) },
                         text = {
-                            Text("stringResource(R.string.parsing_error_cant_parse_text)")
+                            Text(stringResource(R.string.parsing_error_cant_parse_text))
                         },
                         confirmButton = {
                             Button(onClick = { viewModel.clearParsingError() }) {
-                                Text("stringResource(R.string.parsing_error_cant_parse_button)")
+                                Text(stringResource(R.string.parsing_error_cant_parse_button))
                             }
                         },
                         onDismissRequest = { viewModel.clearParsingError() }
@@ -111,7 +114,7 @@ fun ParsingScreen(viewModel: ParsingViewModel, actions: NavigationActions) {
                         onClick = { openFileSelector() }) {
                         Text(
                             textAlign = TextAlign.Center,
-                            text = "stringResource(R.string.parsing_button)"
+                            text = stringResource(R.string.parsing_button)
                         )
                     }
                 }

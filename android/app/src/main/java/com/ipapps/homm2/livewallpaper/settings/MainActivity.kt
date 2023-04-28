@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import com.ipapps.homm2.livewallpaper.R
 import com.ipapps.homm2.livewallpaper.settings.data.MapsViewModel
 import com.ipapps.homm2.livewallpaper.settings.data.MapsViewModelFactory
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingViewModel
@@ -34,12 +35,6 @@ class MainActivity() : ComponentActivity() {
     }
 
     private fun openIconAuthorUrl() {
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("getString(R.string.icon_author_url)")
-            )
-        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

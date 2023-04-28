@@ -1,4 +1,5 @@
 package com.ipapps.homm2.livewallpaper.settings.ui.components;
+
 import android.widget.Toast
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
@@ -9,12 +10,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import com.homm3.livewallpaper.android.ui.theme.H3lwpnextTheme
+import androidx.compose.ui.res.stringResource
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
 import com.ipapps.homm2.livewallpaper.settings.data.MapReadingException
 import com.ipapps.homm2.livewallpaper.settings.data.MapsViewModel
 import com.ipapps.homm2.livewallpaper.settings.ui.components.settings.SettingsCategory
 import com.ipapps.homm2.livewallpaper.settings.ui.components.settings.SettingsContainer
-
+import com.ipapps.homm2.livewallpaper.R
 @Composable
 fun MapLoadingErrorAlert(error: MapReadingException?, onClose: () -> Unit) {
     if (error !== null) {
@@ -22,18 +24,18 @@ fun MapLoadingErrorAlert(error: MapReadingException?, onClose: () -> Unit) {
             title = {
                 Text(
                     when (error) {
-                        MapReadingException.CantParseMap -> "stringResource(R.string.maps_error_parse_title)"
-                        MapReadingException.CantOpenStream -> "stringResource(R.string.maps_error_open_title)"
-                        MapReadingException.CantCopyMap -> "stringResource(R.string.maps_error_copy_title)"
+                        MapReadingException.CantParseMap -> stringResource(R.string.maps_error_parse_title)
+                        MapReadingException.CantOpenStream -> stringResource(R.string.maps_error_open_title)
+                        MapReadingException.CantCopyMap -> stringResource(R.string.maps_error_copy_title)
                     }
                 )
             },
             text = {
                 Text(
                     when (error) {
-                        MapReadingException.CantParseMap -> "stringResource(R.string.maps_error_parse_text)"
-                        MapReadingException.CantOpenStream -> "stringResource(R.string.maps_error_open_title)"
-                        MapReadingException.CantCopyMap -> "stringResource(R.string.maps_error_copy_title)"
+                        MapReadingException.CantParseMap -> stringResource(R.string.maps_error_parse_text)
+                        MapReadingException.CantOpenStream -> stringResource(R.string.maps_error_open_title)
+                        MapReadingException.CantCopyMap -> stringResource(R.string.maps_error_copy_title)
                     }
                 )
             },
@@ -87,7 +89,7 @@ fun MapsScreen(viewModel: MapsViewModel) {
             MapLoadingErrorAlert(error = readingError, onClose = { viewModel.resetCopyMapError() })
 
             SettingsContainer {
-                item { SettingsCategory(text = "stringResource(R.string.maps_title)") }
+                item { SettingsCategory(text = stringResource(R.string.maps_title)) }
 
                 items(files, key = { it.name }) {
                     ListItem(

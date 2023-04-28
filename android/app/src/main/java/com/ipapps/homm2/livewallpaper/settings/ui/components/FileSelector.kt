@@ -1,4 +1,5 @@
 package com.ipapps.homm2.livewallpaper.settings.ui.components;
+
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -11,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
+import com.ipapps.homm2.livewallpaper.R
 
 const val mimeType = "application/octet-stream"
 
@@ -53,7 +55,7 @@ fun createFileSelector(onSelect: (uri: Uri) -> Unit): () -> Unit {
             Toast
                 .makeText(
                     context,
-                    "context.getText(R.string.file_selector_toast)",
+                    context.getText(R.string.file_selector_toast),
                     Toast.LENGTH_LONG
                 )
                 .show()
