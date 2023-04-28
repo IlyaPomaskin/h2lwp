@@ -169,14 +169,17 @@ bool shouldUpdateMapRegion() {
     return false;
 }
 
-uint8_t _brightnessAlpha = 0;
+fheroes2::Image _brightnessOverlay = fheroes2::Image();
+int _brightnessOverlayAlpha = 0;
 
 void updateBrightness() {
     int brightness = Settings::Get().GetLWPBrightness();
+    _brightnessOverlayAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
+    VERBOSE_LOG("updateBrightness value: " << brightness << " alpha: " << _brightnessOverlayAlpha)
 
-    VERBOSE_LOG("updateBrightness " << brightness)
-
-    _brightnessAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
+    fheroes2::Display &display = fheroes2::Display::instance();
+    _brightnessOverlay.resize(display.width(), display.height());
+    _brightnessOverlay.fill(0);
 }
 
 void rereadConfigs() {
@@ -200,12 +203,6 @@ void onVisibilityChanged() {
     if (shouldUpdateMapRegion()) {
         randomizeGameAreaPoint();
     }
-}
-
-void renderBrightnessOverlay(fheroes2::Display &display) {
-    fheroes2::Image rectangle = fheroes2::Image(display.width(), display.height());
-    rectangle.fill(0);
-    AlphaBlit(rectangle, display, 0, 0, _brightnessAlpha);
 }
 
 fheroes2::GameMode Game::Wallpaper() {
@@ -246,7 +243,7 @@ fheroes2::GameMode Interface::Basic::Wallpaper() {
 
         Redraw(REDRAW_GAMEAREA);
 
-        renderBrightnessOverlay(display);
+        AlphaBlit(_brightnessOverlay, display, 0, 0, _brightnessOverlayAlpha);
 
         display.render();
 
