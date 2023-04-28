@@ -87,9 +87,9 @@
 #include "SDL_timer.h"
 
 void loadFirstMap() {
-    Settings & conf = Settings::Get();
+    Settings &conf = Settings::Get();
 
-    conf.SetGameType( Game::TYPE_STANDARD );
+    conf.SetGameType(Game::TYPE_STANDARD);
     conf.setHideInterface(true);
     conf.SetShowRadar(false);
     conf.SetShowButtons(false);
@@ -98,13 +98,15 @@ void loadFirstMap() {
 
     __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap");
 
-    const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList( Settings::Get().IsGameType( Game::TYPE_MULTI ) );
-    conf.SetCurrentFileInfo( lists.front() );
+    const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList(
+            Settings::Get().IsGameType(Game::TYPE_MULTI));
+    conf.SetCurrentFileInfo(lists.front());
 
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s", lists.front().file.c_str(), lists.front().name.c_str());
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s",
+                        lists.front().file.c_str(), lists.front().name.c_str());
 
     conf.GetPlayers().SetStartGame();
-    world.LoadMapMP2( conf.MapsFile(), true);
+    world.LoadMapMP2(conf.MapsFile(), true);
 
     int32_t mapWidth = World::Get().w();
     int32_t mapHeight = World::Get().h();
@@ -167,7 +169,18 @@ bool shouldUpdateMapRegion() {
     return false;
 }
 
+uint8_t _brightnessAlpha = 0;
+
+void updateBrightness() {
+    int brightness = Settings::Get().GetLWPBrightness();
+
+    VERBOSE_LOG("updateBrightness " << brightness)
+
+    _brightnessAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
+}
+
 void rereadConfigs() {
+    VERBOSE_LOG("rereadConfigs")
     const std::string configurationFileName(Settings::configFileName);
     const std::string confFile = Settings::GetLastFile("", configurationFileName);
 
@@ -176,14 +189,24 @@ void rereadConfigs() {
     }
 }
 
-void onVisibilityChanged() {
+void updateConfigs() {
     rereadConfigs();
+    updateBrightness();
+}
+
+void onVisibilityChanged() {
+    updateConfigs();
 
     if (shouldUpdateMapRegion()) {
         randomizeGameAreaPoint();
     }
 }
 
+void renderBrightnessOverlay(fheroes2::Display &display) {
+    fheroes2::Image rectangle = fheroes2::Image(display.width(), display.height());
+    rectangle.fill(0);
+    AlphaBlit(rectangle, display, 0, 0, _brightnessAlpha);
+}
 
 fheroes2::GameMode Game::Wallpaper() {
     AI::Get().Reset();
@@ -207,17 +230,24 @@ fheroes2::GameMode Interface::Basic::Wallpaper() {
 
     while (true) {
         if (le.HandleEvents(false, false) && le.KeyPress()) {
-            VERBOSE_LOG("Keypress")
             // FIXME add correct hotkey
             if (le.KeyValue() == fheroes2::Key::KEY_SPACE) {
                 VERBOSE_LOG("Space pressed")
                 onVisibilityChanged();
+            }
+
+            if (le.KeyValue() == fheroes2::Key::KEY_F1) {
+                VERBOSE_LOG("F1 pressed")
+                updateConfigs();
             }
         }
 
         Uint64 start = SDL_GetPerformanceCounter();
 
         Redraw(REDRAW_GAMEAREA);
+
+        renderBrightnessOverlay(display);
+
         display.render();
 
         if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
