@@ -245,6 +245,8 @@ void renderWallpaper() {
     Interface::Basic &interface = Interface::Basic::Get();
     interface.Reset();
 
+    onVisibilityChanged();
+
     Settings &conf = Settings::Get();
     conf.setSystemInfo(false);
     conf.SetCurrentColor(-1);

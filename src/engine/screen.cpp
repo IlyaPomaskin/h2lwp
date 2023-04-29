@@ -1355,7 +1355,7 @@ namespace
                 return;
             }
 
-            SDL_SetRenderDrawColor(_renderer, 255, 0, 0, _brightness);
+            SDL_SetRenderDrawColor(_renderer, 0, 0, 0, _brightness);
             SDL_Rect rect = { 0, 0, _surface->w, _surface->h };
             SDL_RenderFillRect(_renderer, &rect);
         }
