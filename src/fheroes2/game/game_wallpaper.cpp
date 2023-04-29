@@ -211,12 +211,42 @@ void onVisibilityChanged() {
 
 const std::vector<Game::DelayType> delayTypes = {Game::MAPS_DELAY};
 
+void handleSDLEvents(SDL_Event &event, LocalEvent &le, fheroes2::Display &display) {
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_RENDER_TARGETS_RESET: {
+                VERBOSE_LOG("SDL_RENDER_TARGETS_RESET")
+                display.render();
+                break;
+            }
+            case SDL_RENDER_DEVICE_RESET: {
+                VERBOSE_LOG("SDL_RENDER_DEVICE_RESET")
+                le.HandleRenderDeviceResetEvent();
+                display.render();
+                break;
+            }
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym) {
+                    case SDLK_SPACE: {
+                        VERBOSE_LOG("Space pressed")
+                        onVisibilityChanged();
+                    }
+
+                    case SDLK_F1: {
+                        VERBOSE_LOG("F1 pressed")
+                        updateConfigs();
+                    }
+                }
+        }
+    }
+}
+
 void renderWallpaper() {
     Interface::Basic &interface = Interface::Basic::Get();
     interface.Reset();
 
     Settings &conf = Settings::Get();
-    conf.setSystemInfo(true);
+    conf.setSystemInfo(false);
     conf.SetCurrentColor(-1);
     conf.setHideInterface(true);
     conf.SetShowControlPanel(false);
@@ -224,22 +254,11 @@ void renderWallpaper() {
 
     fheroes2::Display &display = fheroes2::Display::instance();
 
+    SDL_Event event;
+    LocalEvent &le = LocalEvent::Get();
+
     while (true) {
-        SDL_Event event;
-
-        if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN) {
-            switch (event.key.keysym.sym) {
-                case SDLK_SPACE: {
-                    VERBOSE_LOG("Space pressed")
-                    onVisibilityChanged();
-                }
-
-                case SDLK_F1: {
-                    VERBOSE_LOG("F1 pressed")
-                    updateConfigs();
-                }
-            }
-        }
+        handleSDLEvents(event, le, display);
 
         if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
             Game::updateAdventureMapAnimationIndex();
