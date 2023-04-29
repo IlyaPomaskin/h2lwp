@@ -209,31 +209,35 @@ void onVisibilityChanged() {
     }
 }
 
+const std::vector<Game::DelayType> delayTypes = {Game::MAPS_DELAY};
+
 void renderWallpaper() {
     Interface::Basic &interface = Interface::Basic::Get();
     interface.Reset();
 
     Settings &conf = Settings::Get();
-    conf.setSystemInfo(false);
+    conf.setSystemInfo(true);
     conf.SetCurrentColor(-1);
     conf.setHideInterface(true);
     conf.SetShowControlPanel(false);
     conf.setVSync(true);
 
     fheroes2::Display &display = fheroes2::Display::instance();
-    LocalEvent &le = LocalEvent::Get();
 
     while (true) {
-        if (le.KeyPress()) {
-            // FIXME add correct hotkey
-            if (le.KeyValue() == fheroes2::Key::KEY_SPACE) {
-                VERBOSE_LOG("Space pressed")
-                onVisibilityChanged();
-            }
+        SDL_Event event;
 
-            if (le.KeyValue() == fheroes2::Key::KEY_F1) {
-                VERBOSE_LOG("F1 pressed")
-                updateConfigs();
+        if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_SPACE: {
+                    VERBOSE_LOG("Space pressed")
+                    onVisibilityChanged();
+                }
+
+                case SDLK_F1: {
+                    VERBOSE_LOG("F1 pressed")
+                    updateConfigs();
+                }
             }
         }
 
@@ -241,14 +245,13 @@ void renderWallpaper() {
             Game::updateAdventureMapAnimationIndex();
 
             interface.GetGameArea().Redraw(
-                display,
-                Interface::RedrawLevelType::LEVEL_OBJECTS |
-                Interface::RedrawLevelType::LEVEL_HEROES);
+                    display,
+                    Interface::RedrawLevelType::LEVEL_OBJECTS |
+                    Interface::RedrawLevelType::LEVEL_HEROES);
             display.render();
         }
     }
 }
-
 
 fheroes2::GameMode Game::Wallpaper() {
     AI::Get().Reset();
