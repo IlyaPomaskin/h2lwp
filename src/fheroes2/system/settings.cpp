@@ -163,7 +163,7 @@ void Settings::ReadSettingsForLiveWallpaper(TinyConfig & config)
     }
 
     if ( config.Exists( "lwp map update interval" ) ) {
-        SetLWPScale(
+        SetLWPMapUpdateInterval(
                 std::clamp( config.IntParams( "lwp map update interval" ), 0, 5 )
         );
     }

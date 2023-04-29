@@ -128,6 +128,11 @@ namespace fheroes2
             // Do nothing.
         }
 
+        virtual void setBrightness( const int )
+        {
+            // Do nothing.
+        }
+
         void setNearestScaling( const bool enable )
         {
             _nearestScaling = enable;

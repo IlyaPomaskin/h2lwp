@@ -116,14 +116,15 @@ void loadFirstMap() {
 }
 
 void randomizeGameAreaPoint() {
-    fheroes2::ResolutionInfo resolutionInfo = fheroes2::Display::instance().getScaledScreenSize(
-            Settings::Get().GetLWPScale()
-    );
+    fheroes2::Display &display = fheroes2::Display::instance();
+    int32_t displayWidth = display.width();
+    int32_t displayHeight = display.height();
+
     int32_t mapWidth = World::Get().w();
     int32_t mapHeight = World::Get().h();
 
-    int32_t screenHeight = static_cast<int32_t>(floor(resolutionInfo.screenHeight / TILEWIDTH));
-    int32_t screenWidth = static_cast<int32_t>(floor(resolutionInfo.screenWidth / TILEWIDTH));
+    int32_t screenHeight = static_cast<int32_t>(floor(displayHeight / TILEWIDTH));
+    int32_t screenWidth = static_cast<int32_t>(floor(displayWidth / TILEWIDTH));
 
     int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
     int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
@@ -169,17 +170,12 @@ bool shouldUpdateMapRegion() {
     return false;
 }
 
-fheroes2::Image _brightnessOverlay = fheroes2::Image();
-int _brightnessOverlayAlpha = 0;
 
 void updateBrightness() {
     int brightness = Settings::Get().GetLWPBrightness();
-    _brightnessOverlayAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
-    VERBOSE_LOG("updateBrightness value: " << brightness << " alpha: " << _brightnessOverlayAlpha)
-
-    fheroes2::Display &display = fheroes2::Display::instance();
-    _brightnessOverlay.resize(display.width(), display.height());
-    _brightnessOverlay.fill(0);
+    int brightnessAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
+    VERBOSE_LOG("updateBrightness value: " << brightness << " alpha: " << brightnessAlpha)
+    fheroes2::engine().setBrightness(brightnessAlpha);
 }
 
 void rereadConfigs() {
@@ -192,8 +188,16 @@ void rereadConfigs() {
     }
 }
 
+void resizeDisplay() {
+    fheroes2::Display &display = fheroes2::Display::instance();
+    int scale = Settings::Get().GetLWPScale();
+    VERBOSE_LOG("resizeDisplay scale: " << scale)
+    display.setResolution(display.getScaledScreenSize(scale));
+}
+
 void updateConfigs() {
     rereadConfigs();
+    resizeDisplay();
     updateBrightness();
 }
 
@@ -205,28 +209,22 @@ void onVisibilityChanged() {
     }
 }
 
-fheroes2::GameMode Game::Wallpaper() {
-    AI::Get().Reset();
-
-    loadFirstMap();
-
-    return Interface::Basic::Get().Wallpaper();
-}
-
-fheroes2::GameMode Interface::Basic::Wallpaper() {
-    Reset();
+void renderWallpaper() {
+    Interface::Basic &interface = Interface::Basic::Get();
+    interface.Reset();
 
     Settings &conf = Settings::Get();
     conf.setSystemInfo(false);
     conf.SetCurrentColor(-1);
     conf.setHideInterface(true);
     conf.SetShowControlPanel(false);
+    conf.setVSync(true);
 
     fheroes2::Display &display = fheroes2::Display::instance();
     LocalEvent &le = LocalEvent::Get();
 
     while (true) {
-        if (le.HandleEvents(false, false) && le.KeyPress()) {
+        if (le.KeyPress()) {
             // FIXME add correct hotkey
             if (le.KeyValue() == fheroes2::Key::KEY_SPACE) {
                 VERBOSE_LOG("Space pressed")
@@ -239,23 +237,25 @@ fheroes2::GameMode Interface::Basic::Wallpaper() {
             }
         }
 
-        Uint64 start = SDL_GetPerformanceCounter();
-
-        Redraw(REDRAW_GAMEAREA);
-
-        AlphaBlit(_brightnessOverlay, display, 0, 0, _brightnessOverlayAlpha);
-
-        display.render();
-
         if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
             Game::updateAdventureMapAnimationIndex();
-            gameArea.SetRedraw();
-        }
 
-        Uint64 end = SDL_GetPerformanceCounter();
-        float elapsedMS = (end - start) / (float) SDL_GetPerformanceFrequency() * 1000.0f;
-        SDL_Delay(static_cast<Uint32>(floor(180.0f - elapsedMS)));
+            interface.GetGameArea().Redraw(
+                display,
+                Interface::RedrawLevelType::LEVEL_OBJECTS |
+                Interface::RedrawLevelType::LEVEL_HEROES);
+            display.render();
+        }
     }
+}
+
+
+fheroes2::GameMode Game::Wallpaper() {
+    AI::Get().Reset();
+
+    loadFirstMap();
+
+    renderWallpaper();
 
     return fheroes2::GameMode::END_TURN;
 }
