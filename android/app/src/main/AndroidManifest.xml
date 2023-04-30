@@ -46,10 +46,6 @@
             android:icon="@mipmap/ic_launcher_toolset"
             android:label="h2 Settings"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
         </activity>
 
         <activity
@@ -66,14 +62,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.ipapps.homm2.livewallpaper.SaveFileManagerActivity"
-            android:exported="false"
-            android:icon="@mipmap/ic_launcher_toolset"
-            android:label="@string/activity_save_file_manager_label"
-            android:taskAffinity="org.fheroes2.ToolsetTask"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
     </application>
 
 </manifest>
