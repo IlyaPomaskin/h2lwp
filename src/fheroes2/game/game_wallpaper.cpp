@@ -214,11 +214,13 @@ void handleSDLEvents(SDL_Event &event, LocalEvent &le, fheroes2::Display &displa
                     case SDLK_SPACE: {
                         VERBOSE_LOG("Space pressed")
                         updateVisibleMapRegion();
+                        break;
                     }
 
                     case SDLK_F1: {
                         VERBOSE_LOG("F1 pressed")
                         updateConfigs();
+                        break;
                     }
                 }
         }
