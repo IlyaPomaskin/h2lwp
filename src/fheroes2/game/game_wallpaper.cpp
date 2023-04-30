@@ -178,7 +178,13 @@ void resizeDisplay() {
     fheroes2::Display &display = fheroes2::Display::instance();
     int scale = Settings::Get().GetLWPScale();
     VERBOSE_LOG("resizeDisplay scale: " << scale)
-    display.setResolution(display.getScaledScreenSize(scale));
+
+    fheroes2::ResolutionInfo nextResolution = display.getScaledScreenSize(scale);
+
+    if (nextResolution.screenWidth != display.width() || nextResolution.screenHeight != display.height()) {
+        display.setResolution(nextResolution);
+        Interface::Basic::Get().GetGameArea().generate({display.width(), display.height()}, true);
+    }
 }
 
 void updateConfigs() {
