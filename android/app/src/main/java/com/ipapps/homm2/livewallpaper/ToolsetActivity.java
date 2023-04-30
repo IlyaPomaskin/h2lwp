@@ -40,6 +40,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.ipapps.homm2.livewallpaper.settings.MainActivity;
+
 import org.apache.commons.io.IOUtils;
 import org.fheroes2.SDLActivity;
 
@@ -144,12 +146,8 @@ public final class ToolsetActivity extends AppCompatActivity {
         final File filesDir = getFilesDir();
         final File externalFilesDir = getExternalFilesDir(null);
 
-        // Extract H2D and translations to the external app-specific storage (sdcard)
-        extractAssets("files", externalFilesDir);
-
-        // Extract TiMidity GUS patches and config file to the internal app-specific storage
         extractAssets("instruments", filesDir);
-        extractAssets("timidity.cfg", filesDir);
+        extractAssets("files", externalFilesDir);
         extractAssets("fheroes2.cfg", externalFilesDir);
     }
 
@@ -171,6 +169,11 @@ public final class ToolsetActivity extends AppCompatActivity {
                 final File outFileDir = outFile.getParentFile();
                 if (outFileDir != null) {
                     outFileDir.mkdirs();
+                }
+
+                if (outFile.exists()) {
+                    Log.i("fheroes2", String.format("Skip existing asset %s", outFile.getPath()));
+                    continue;
                 }
 
                 try (final OutputStream out = new FileOutputStream(outFile)) {
@@ -222,24 +225,14 @@ public final class ToolsetActivity extends AppCompatActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.activity_toolset_homm2_demo_url))));
     }
 
-    public void setWallpaperButtonClicked(final View view) {
-        startActivity(
-            new Intent()
-                .setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                .putExtra(
-                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                    new ComponentName(
-                        getApplicationContext(),
-                        SDLActivity.class
-                    )
-                )
-        );
+    public void wallpaperSettingsClicked(final View view) {
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     private void updateUI(final ToolsetActivityViewModel.Status modelStatus) {
         final Button extractHoMM2AssetsButton = findViewById(R.id.activity_toolset_extract_homm2_assets_btn);
         final Button downloadHoMM2DemoButton = findViewById(R.id.activity_toolset_download_homm2_demo_btn);
-        final Button setWallpaperButton = findViewById(R.id.activity_toolset_set_wallpaper_btn);
+        final Button wallpaperSettingsButton = findViewById(R.id.activity_toolset_wallpaper_settings_btn);
 
         final TextView gameStatusTextView = findViewById(R.id.activity_toolset_game_status_lbl);
         final TextView lastTaskStatusTextView = findViewById(R.id.activity_toolset_last_task_status_lbl);
@@ -248,7 +241,7 @@ public final class ToolsetActivity extends AppCompatActivity {
 
         extractHoMM2AssetsButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
         downloadHoMM2DemoButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
-        setWallpaperButton.setEnabled(modelStatus.backgroundTaskResult == ToolsetActivityViewModel.RESULT_SUCCESS);
+        wallpaperSettingsButton.setEnabled(modelStatus.backgroundTaskResult == ToolsetActivityViewModel.RESULT_SUCCESS && modelStatus.isHoMM2AssetsPresent);
 
         gameStatusTextView.setVisibility(modelStatus.isHoMM2AssetsPresent ? View.GONE : View.VISIBLE);
         backgroundTaskProgressBar.setVisibility(!modelStatus.isBackgroundTaskExecuting ? View.GONE : View.VISIBLE);
