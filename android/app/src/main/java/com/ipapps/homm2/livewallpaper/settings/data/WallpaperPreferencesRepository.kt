@@ -78,6 +78,9 @@ class WallpaperPreferencesRepository(configFile: File?) {
                 throw exception
             }
         }
+        .onEach {
+            println("Update settings $it")
+        }
 
     fun setBrightness(value: Int) {
         preferences.update { setIntParam(it, "lwp brightness", value) }

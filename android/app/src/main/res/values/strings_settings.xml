@@ -69,7 +69,7 @@
     <string name="update_timeout_5minutes">5 minutes</string>
     <string name="update_timeout_15minutes">15 minutes</string>
     <string name="update_timeout_1hour">1 hour</string>
-    <string name="wallpaper_change_button">Set wallpapers</string>
+    <string name="wallpaper_change_button">Set wallpaper</string>
     <string name="preferences_header">Preferences</string>
     <string name="scale_title">Scale</string>
     <string name="update_time_title">Update timeout</string>

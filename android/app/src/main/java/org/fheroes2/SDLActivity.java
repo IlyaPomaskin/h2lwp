@@ -468,7 +468,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         public void onTouchEvent(MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 // Fake event to trigger map region change
-                onNativeKeyDown(KeyEvent.KEYCODE_SPACE);
+//                onNativeKeyDown(KeyEvent.KEYCODE_SPACE);
             }
         }
 
