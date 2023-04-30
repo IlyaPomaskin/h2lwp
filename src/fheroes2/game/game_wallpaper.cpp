@@ -86,33 +86,19 @@
 #include "world.h"
 #include "SDL_timer.h"
 
-void loadFirstMap() {
+void loadMap() {
     Settings &conf = Settings::Get();
-
-    conf.SetGameType(Game::TYPE_STANDARD);
-    conf.setHideInterface(true);
-    conf.SetShowRadar(false);
-    conf.SetShowButtons(false);
-    conf.SetShowIcons(false);
-    conf.SetShowStatus(false);
-
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap");
 
     const MapsFileInfoList lists = Maps::PrepareMapsFileInfoList(
             Settings::Get().IsGameType(Game::TYPE_MULTI));
     conf.SetCurrentFileInfo(lists.front());
 
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "loadFirstMap file: %s name: %s",
-                        lists.front().file.c_str(), lists.front().name.c_str());
+    VERBOSE_LOG("loadMap file: " << lists.front().file.c_str() << " name: "
+                                 << lists.front().name.c_str())
 
     conf.GetPlayers().SetStartGame();
+
     world.LoadMapMP2(conf.MapsFile(), true);
-
-    int32_t mapWidth = World::Get().w();
-    int32_t mapHeight = World::Get().h();
-    int32_t centerTileIndex = static_cast<int32_t>(floor((mapWidth * mapHeight) / 2));
-
-    Maps::ClearFog(centerTileIndex, 200, Players::HumanColors());
 }
 
 void randomizeGameAreaPoint() {
@@ -178,8 +164,8 @@ void updateBrightness() {
     fheroes2::engine().setBrightness(brightnessAlpha);
 }
 
-void rereadConfigs() {
-    VERBOSE_LOG("rereadConfigs")
+void readConfigFile() {
+    VERBOSE_LOG("readConfigFile")
     const std::string configurationFileName(Settings::configFileName);
     const std::string confFile = Settings::GetLastFile("", configurationFileName);
 
@@ -196,20 +182,18 @@ void resizeDisplay() {
 }
 
 void updateConfigs() {
-    rereadConfigs();
+    readConfigFile();
     resizeDisplay();
     updateBrightness();
 }
 
-void onVisibilityChanged() {
+void updateVisibleMapRegion() {
     updateConfigs();
 
     if (shouldUpdateMapRegion()) {
         randomizeGameAreaPoint();
     }
 }
-
-const std::vector<Game::DelayType> delayTypes = {Game::MAPS_DELAY};
 
 void handleSDLEvents(SDL_Event &event, LocalEvent &le, fheroes2::Display &display) {
     while (SDL_PollEvent(&event)) {
@@ -229,7 +213,7 @@ void handleSDLEvents(SDL_Event &event, LocalEvent &le, fheroes2::Display &displa
                 switch (event.key.keysym.sym) {
                     case SDLK_SPACE: {
                         VERBOSE_LOG("Space pressed")
-                        onVisibilityChanged();
+                        updateVisibleMapRegion();
                     }
 
                     case SDLK_F1: {
@@ -243,21 +227,11 @@ void handleSDLEvents(SDL_Event &event, LocalEvent &le, fheroes2::Display &displa
 
 void renderWallpaper() {
     Interface::Basic &interface = Interface::Basic::Get();
-    interface.Reset();
-
-    onVisibilityChanged();
-
-    Settings &conf = Settings::Get();
-    conf.setSystemInfo(false);
-    conf.SetCurrentColor(-1);
-    conf.setHideInterface(true);
-    conf.SetShowControlPanel(false);
-    conf.setVSync(true);
-
     fheroes2::Display &display = fheroes2::Display::instance();
-
-    SDL_Event event;
     LocalEvent &le = LocalEvent::Get();
+    SDL_Event event;
+
+    interface.GetGameArea().generate({display.width(), display.height()}, true);
 
     while (true) {
         handleSDLEvents(event, le, display);
@@ -274,11 +248,20 @@ void renderWallpaper() {
     }
 }
 
+void configure() {
+    Settings &conf = Settings::Get();
+    conf.SetGameType(Game::TYPE_STANDARD);
+    conf.SetCurrentColor(-1);
+    conf.setVSync(true);
+    conf.setSystemInfo(false);
+    conf.setHideInterface(true);
+    conf.SetShowControlPanel(false);
+}
+
 fheroes2::GameMode Game::Wallpaper() {
-    AI::Get().Reset();
-
-    loadFirstMap();
-
+    configure();
+    loadMap();
+    updateVisibleMapRegion();
     renderWallpaper();
 
     return fheroes2::GameMode::END_TURN;
