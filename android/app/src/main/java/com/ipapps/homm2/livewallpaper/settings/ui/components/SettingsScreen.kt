@@ -104,13 +104,13 @@ fun SettingsScreen(
         ) {
             SettingsContainer {
                 item { SettingsCategory(text = stringResource(R.string.preferences_header)) }
-                item {
+                /*item {
                     SettingsItem(
                         title = stringResource(R.string.maps_item),
                         icon = { Icon(Icons.Filled.List, contentDescription = "Maps list") },
                         onClick = { actions.mapsList() }
                     )
-                }
+                }*/
                 item {
                     SettingsDropdown(
                         title = stringResource(R.string.scale_title),
@@ -129,7 +129,7 @@ fun SettingsScreen(
                         onItemSelected = { viewModel.setMapUpdateInterval(it.value) },
                     )
                 }
-                item {
+               /*item {
                     SettingsItem(
                         title = stringResource(R.string.use_scroll_title),
                         subtitle = stringResource(R.string.use_scroll_summary),
@@ -141,7 +141,7 @@ fun SettingsScreen(
                             interactionSource = interactionSource
                         )
                     }
-                }
+                }*/
                 item {
                     SettingsItem(
                         title = stringResource(R.string.brightness_title),
