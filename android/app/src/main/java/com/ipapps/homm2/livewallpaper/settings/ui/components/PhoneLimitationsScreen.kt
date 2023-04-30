@@ -9,12 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.Theme
 import com.ipapps.homm2.livewallpaper.R
 
 @Composable
 fun PhoneLimitations(actions: NavigationActions) {
-    H3lwpnextTheme {
+    Theme {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

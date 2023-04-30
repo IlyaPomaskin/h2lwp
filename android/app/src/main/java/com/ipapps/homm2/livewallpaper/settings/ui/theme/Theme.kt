@@ -6,7 +6,7 @@ import com.homm3.livewallpaper.android.ui.theme.Shapes
 import com.homm3.livewallpaper.android.ui.theme.Typography
 
 @Composable
-fun H3lwpnextTheme(content: @Composable () -> Unit) {
+fun Theme(content: @Composable () -> Unit) {
     MaterialTheme(
         typography = Typography,
         shapes = Shapes,

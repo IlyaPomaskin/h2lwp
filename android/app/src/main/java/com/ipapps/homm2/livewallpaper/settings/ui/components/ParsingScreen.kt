@@ -17,7 +17,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.Theme
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingState
 import com.ipapps.homm2.livewallpaper.settings.data.ParsingViewModel
 import com.ipapps.homm2.livewallpaper.R
@@ -39,7 +39,7 @@ fun ParsingScreen(viewModel: ParsingViewModel, actions: NavigationActions) {
     val openFileSelector = createFileSelector { viewModel.parseFile(it) }
     val parseStatus = viewModel.parsingStateUiModel
 
-    H3lwpnextTheme {
+    Theme {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

@@ -1,16 +1,13 @@
 package com.ipapps.homm2.livewallpaper.settings.ui.components;
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.Theme
 import com.ipapps.homm2.livewallpaper.R
 import com.ipapps.homm2.livewallpaper.settings.data.MapUpdateInterval
 import com.ipapps.homm2.livewallpaper.settings.data.Scale
@@ -62,6 +59,7 @@ fun SettingsScreen(
         SettingsDropdownItem(Scale.X2, "x2"),
         SettingsDropdownItem(Scale.X3, "x3"),
         SettingsDropdownItem(Scale.X4, "x4"),
+        SettingsDropdownItem(Scale.X5, "x5"),
     )
     val mapUpdateIntervalOptions = listOf(
         SettingsDropdownItem(
@@ -87,16 +85,16 @@ fun SettingsScreen(
     )
 
     val prefs by viewModel.settingsUiModel.observeAsState(WallpaperPreferences())
-    var brightnessSliderValue by remember { mutableStateOf(prefs.brightness) }
+    var brightnessSliderValue by remember { mutableStateOf(prefs.brightness.toFloat()) }
 
     // FIXME rewrite setting of initial brightness value
-    if (brightnessSliderValue == WallpaperPreferences.defaultBrightness
+    if (brightnessSliderValue == WallpaperPreferences.defaultBrightness.toFloat()
         && prefs.brightness != WallpaperPreferences.defaultBrightness
     ) {
-        brightnessSliderValue = prefs.brightness
+        brightnessSliderValue = prefs.brightness.toFloat()
     }
 
-    H3lwpnextTheme {
+    Theme {
         Scaffold(
             floatingActionButton = {
                 SetWallpaperFab(onClick = { viewModel.onSetWallpaper() })
@@ -148,11 +146,12 @@ fun SettingsScreen(
                         nextLine = true,
                     ) {
                         Slider(
-                            value = brightnessSliderValue.toFloat() / 100,
-                            valueRange = 0f..1f,
-                            onValueChange = { brightnessSliderValue = (it * 100).toInt() },
-                            onValueChangeFinished = { viewModel.setBrightness(brightnessSliderValue) }
+                            value = brightnessSliderValue,
+                            valueRange = 0f..100f,
+                            onValueChange = { brightnessSliderValue = it },
+                            onValueChangeFinished = { viewModel.setBrightness(brightnessSliderValue.toInt()) }
                         )
+
                     }
                 }
             }

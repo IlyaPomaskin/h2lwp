@@ -11,7 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.ipapps.homm2.livewallpaper.settings.ui.theme.H3lwpnextTheme
+import com.ipapps.homm2.livewallpaper.settings.ui.theme.Theme
 import com.ipapps.homm2.livewallpaper.settings.data.MapReadingException
 import com.ipapps.homm2.livewallpaper.settings.data.MapsViewModel
 import com.ipapps.homm2.livewallpaper.settings.ui.components.settings.SettingsCategory
@@ -66,7 +66,7 @@ fun MapsScreen(viewModel: MapsViewModel) {
         viewModel.updateFilesList()
     }
 
-    H3lwpnextTheme {
+    Theme {
         Scaffold(
             floatingActionButton = {
                 Fab(
