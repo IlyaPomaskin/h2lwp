@@ -241,7 +241,7 @@ public final class ToolsetActivity extends AppCompatActivity {
 
         extractHoMM2AssetsButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
         downloadHoMM2DemoButton.setEnabled(!modelStatus.isBackgroundTaskExecuting);
-        wallpaperSettingsButton.setEnabled(modelStatus.backgroundTaskResult == ToolsetActivityViewModel.RESULT_SUCCESS && modelStatus.isHoMM2AssetsPresent);
+        wallpaperSettingsButton.setEnabled(modelStatus.isHoMM2AssetsPresent);
 
         gameStatusTextView.setVisibility(modelStatus.isHoMM2AssetsPresent ? View.GONE : View.VISIBLE);
         backgroundTaskProgressBar.setVisibility(!modelStatus.isBackgroundTaskExecuting ? View.GONE : View.VISIBLE);
