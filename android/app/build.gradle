@@ -111,7 +111,7 @@ dependencies {
 
     implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
     implementation project(':isotools')
-    implementation project(':sdl2')
+//    implementation project(':sdl2')
 }
 
 task copyH2D(type: Copy) {
