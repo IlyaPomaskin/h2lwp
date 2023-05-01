@@ -10,14 +10,19 @@ import java.io.File
 import java.io.IOException
 import java.lang.Exception
 
-fun getIntParam(lines: List<String>, name: String, defaultValue: Int): Int {
+fun getParam(lines: List<String>, name: String): String? {
     return lines.find { it.startsWith(name) }
         ?.split(" = ")
         ?.get(1)
-        ?.toIntOrNull() ?: defaultValue
 }
 
-fun setIntParam(config: List<String>, name: String, value: Int): List<String> {
+fun getIntParam(lines: List<String>, name: String, defaultValue: Int): Int {
+    return getParam(lines, name)
+        ?.toIntOrNull()
+        ?: defaultValue;
+}
+
+fun setParam(config: List<String>, name: String, value: String): List<String> {
     val exists = config.find { it.startsWith(name) }
 
     if (exists == null) {
@@ -52,6 +57,18 @@ fun writeConfig(file: File?, lines: List<String>) {
 class WallpaperPreferencesRepository(configFile: File?) {
     val preferences = MutableStateFlow(readConfig(configFile))
 
+    private fun getScaleType(value: String?): ScaleType {
+        if (value == "linear") {
+            return ScaleType.LINEAR
+        }
+
+        if (value === "nearest") {
+            return ScaleType.NEAREST
+        }
+
+        return WallpaperPreferences.defaultScaleType
+    }
+
     val preferencesFlow = preferences
         .asStateFlow()
         .onEach { writeConfig(configFile, it) }
@@ -59,6 +76,7 @@ class WallpaperPreferencesRepository(configFile: File?) {
             val brightness =
                 getIntParam(lines, "lwp brightness", WallpaperPreferences.defaultBrightness)
             val scale = getIntParam(lines, "lwp scale", WallpaperPreferences.defaultScale.value)
+            val scaleType = getScaleType(getParam(lines, "screen scaling type"))
             val mapUpdateInterval = getIntParam(
                 lines,
                 "lwp map update interval",
@@ -67,6 +85,7 @@ class WallpaperPreferencesRepository(configFile: File?) {
 
             WallpaperPreferences(
                 scale = Scale.fromInt(scale),
+                scaleType = scaleType,
                 brightness = brightness,
                 mapUpdateInterval = MapUpdateInterval.fromInt(mapUpdateInterval)
             )
@@ -83,17 +102,27 @@ class WallpaperPreferencesRepository(configFile: File?) {
         }
 
     fun setBrightness(value: Int) {
-        preferences.update { setIntParam(it, "lwp brightness", value) }
+        preferences.update { setParam(it, "lwp brightness", value.toString()) }
     }
 
     fun toggleUseScroll() {
     }
 
     fun setScale(scale: Scale) {
-        preferences.update { setIntParam(it, "lwp scale", scale.value) }
+        preferences.update { setParam(it, "lwp scale", scale.value.toString()) }
+    }
+
+    fun setScaleType(scaleType: ScaleType) {
+        val value = if (scaleType == ScaleType.NEAREST) {
+            "nearest"
+        } else {
+            "linear"
+        }
+
+        preferences.update { setParam(it, "screen scaling type", value) }
     }
 
     fun setMapUpdateInterval(interval: MapUpdateInterval) {
-        preferences.update { setIntParam(it, "lwp map update interval", interval.value) }
+        preferences.update { setParam(it, "lwp map update interval", interval.value.toString()) }
     }
 }

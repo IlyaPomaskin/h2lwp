@@ -24,6 +24,12 @@ class SettingsViewModel(
         }
     }
 
+    fun setScaleType(value: ScaleType) {
+        viewModelScope.launch {
+            wallpaperPreferencesRepository.setScaleType(value)
+        }
+    }
+
     fun setMapUpdateInterval(value: MapUpdateInterval) {
         viewModelScope.launch {
             wallpaperPreferencesRepository.setMapUpdateInterval(value)

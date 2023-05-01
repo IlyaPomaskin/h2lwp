@@ -16,6 +16,11 @@ enum class MapUpdateInterval(val value: Int) {
     }
 }
 
+enum class ScaleType {
+    NEAREST,
+    LINEAR;
+}
+
 enum class Scale(val value: Int) {
     DPI(0),
     X1(1),
@@ -35,12 +40,14 @@ enum class Scale(val value: Int) {
 
 data class WallpaperPreferences(
     val scale: Scale = defaultScale,
+    val scaleType: ScaleType = defaultScaleType,
     val mapUpdateInterval: MapUpdateInterval = defaultMapUpdateInterval,
     val useScroll: Boolean = defaultUseScroll,
     val brightness: Int = defaultBrightness,
 ) {
     companion object Defaults {
         val defaultScale = Scale.DPI
+        val defaultScaleType = ScaleType.NEAREST
         val defaultMapUpdateInterval = MapUpdateInterval.MINUTES_10
         const val defaultUseScroll = true
         const val defaultBrightness = 60

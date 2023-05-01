@@ -142,7 +142,6 @@ void Settings::OverrideSettingsForLiveWallpaper()
     SetMusicVolume(0);
     set3DAudio( false );
     setAutoSaveAtBeginningOfTurn(false);
-    setScreenScalingTypeNearest("nearest");
     setHideInterface(false);
 }
 

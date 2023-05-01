@@ -11,6 +11,7 @@ import com.ipapps.homm2.livewallpaper.settings.ui.theme.Theme
 import com.ipapps.homm2.livewallpaper.R
 import com.ipapps.homm2.livewallpaper.settings.data.MapUpdateInterval
 import com.ipapps.homm2.livewallpaper.settings.data.Scale
+import com.ipapps.homm2.livewallpaper.settings.data.ScaleType
 import com.ipapps.homm2.livewallpaper.settings.data.SettingsViewModel
 import com.ipapps.homm2.livewallpaper.settings.data.WallpaperPreferences
 import com.ipapps.homm2.livewallpaper.settings.ui.components.settings.SettingsCategory
@@ -83,6 +84,16 @@ fun SettingsScreen(
             stringResource(R.string.update_timeout_24hours)
         ),
     )
+    val scaleTypeOptions = listOf(
+        SettingsDropdownItem(
+            ScaleType.NEAREST,
+            stringResource(R.string.scale_type_sharp_title)
+        ),
+        SettingsDropdownItem(
+            ScaleType.LINEAR,
+            stringResource(R.string.scale_type_smooth_title)
+        )
+    )
 
     val prefs by viewModel.settingsUiModel.observeAsState(WallpaperPreferences())
     var brightnessSliderValue by remember { mutableStateOf(prefs.brightness.toFloat()) }
@@ -120,6 +131,15 @@ fun SettingsScreen(
                 }
                 item {
                     SettingsDropdown(
+                        title = stringResource(R.string.scale_type_title),
+                        subtitle = scaleTypeOptions.find { it.value == prefs.scaleType }?.title.orEmpty(),
+                        items = scaleTypeOptions,
+                        selectedItemValue = prefs.scaleType,
+                        onItemSelected = { viewModel.setScaleType(it.value) },
+                    )
+                }
+                item {
+                    SettingsDropdown(
                         title = stringResource(R.string.update_time_title),
                         subtitle = mapUpdateIntervalOptions.find { it.value == prefs.mapUpdateInterval }?.title.orEmpty(),
                         items = mapUpdateIntervalOptions,
@@ -127,19 +147,19 @@ fun SettingsScreen(
                         onItemSelected = { viewModel.setMapUpdateInterval(it.value) },
                     )
                 }
-               /*item {
-                    SettingsItem(
-                        title = stringResource(R.string.use_scroll_title),
-                        subtitle = stringResource(R.string.use_scroll_summary),
-                        onClick = { viewModel.toggleUseScroll() },
-                    ) { interactionSource ->
-                        Switch(
-                            checked = prefs.useScroll,
-                            onCheckedChange = { viewModel.toggleUseScroll() },
-                            interactionSource = interactionSource
-                        )
-                    }
-                }*/
+                /*item {
+                     SettingsItem(
+                         title = stringResource(R.string.use_scroll_title),
+                         subtitle = stringResource(R.string.use_scroll_summary),
+                         onClick = { viewModel.toggleUseScroll() },
+                     ) { interactionSource ->
+                         Switch(
+                             checked = prefs.useScroll,
+                             onCheckedChange = { viewModel.toggleUseScroll() },
+                             interactionSource = interactionSource
+                         )
+                     }
+                 }*/
                 item {
                     SettingsItem(
                         title = stringResource(R.string.brightness_title),

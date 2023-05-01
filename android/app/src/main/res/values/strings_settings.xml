@@ -72,6 +72,9 @@
     <string name="wallpaper_change_button">Set wallpaper</string>
     <string name="preferences_header">Preferences</string>
     <string name="scale_title">Scale</string>
+    <string name="scale_type_title">Scale type</string>
+    <string name="scale_type_sharp_title">Sharp</string>
+    <string name="scale_type_smooth_title">Smooth</string>
     <string name="update_time_title">Update timeout</string>
     <string name="use_scroll_title">Scroll map</string>
     <string name="use_scroll_summary">Scroll map while switching screens\nNote: Some phones doesn\'t support it</string>
