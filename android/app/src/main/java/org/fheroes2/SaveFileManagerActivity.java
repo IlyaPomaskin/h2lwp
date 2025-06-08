@@ -50,13 +50,10 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-<<<<<<< HEAD
 import com.ipapps.homm2.livewallpaper.R;
 
 import org.apache.commons.io.IOUtils;
 
-=======
->>>>>>> upstream/master
 public final class SaveFileManagerActivity extends AppCompatActivity
 {
     public static final class SaveFileManagerActivityViewModel extends ViewModel

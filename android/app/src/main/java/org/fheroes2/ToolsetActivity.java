@@ -212,15 +212,14 @@ public final class ToolsetActivity extends AppCompatActivity
     }
 
     @SuppressWarnings( "java:S1172" ) // SonarQube warning "Remove unused method parameter"
-<<<<<<< HEAD
-    public void wallpaperSettingsClicked( final View view )
-    {
-        startActivity( new Intent( this, WebViewActivity.class ) );
-=======
     public void mapFileManagerButtonClicked( final View view )
     {
         startActivity( new Intent( this, MapFileManagerActivity.class ) );
->>>>>>> upstream/master
+    }
+
+    public void wallpaperSettingsClicked( final View view )
+    {
+        startActivity( new Intent( this, WebViewActivity.class ) );
     }
 
     private void updateUI( final ToolsetActivityViewModel.Status modelStatus )
@@ -229,11 +228,8 @@ public final class ToolsetActivity extends AppCompatActivity
         final Button extractHoMM2AssetsButton = findViewById( R.id.activity_toolset_extract_homm2_assets_btn );
         final Button downloadHoMM2DemoButton = findViewById( R.id.activity_toolset_download_homm2_demo_btn );
         final Button saveFileManagerButton = findViewById( R.id.activity_toolset_save_file_manager_btn );
-<<<<<<< HEAD
         final Button wallpaperSettingsButton = findViewById( R.id.activity_toolset_wallpaper_settings_btn );
-=======
         final Button mapFileManagerButton = findViewById( R.id.activity_toolset_map_file_manager_btn );
->>>>>>> upstream/master
 
         final TextView gameStatusTextView = findViewById( R.id.activity_toolset_game_status_lbl );
         final TextView lastTaskStatusTextView = findViewById( R.id.activity_toolset_last_task_status_lbl );
@@ -244,17 +240,14 @@ public final class ToolsetActivity extends AppCompatActivity
         extractHoMM2AssetsButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
         downloadHoMM2DemoButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
         saveFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
-<<<<<<< HEAD
         wallpaperSettingsButton.setEnabled( modelStatus.isHoMM2AssetsPresent );
+        mapFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
 
         Locale currentLocale = getResources().getConfiguration().locale;
         if (currentLocale.getDisplayName().startsWith("ru")) {
             final TextView vpnLabel = findViewById( R.id.activity_toolset_download_with_vpn_label );
             vpnLabel.setVisibility(View.VISIBLE);
         }
-=======
-        mapFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
->>>>>>> upstream/master
 
         switch ( modelStatus.backgroundTaskResult ) {
         case RESULT_NONE:

@@ -39,7 +39,7 @@ import org.libsdl.app.SDLActivity;
 
 public final class GameActivity extends SDLActivity
 {
-    @Override
+//    @Override
     protected void onCreate( final Bundle savedInstanceState )
     {
         final File filesDir = getFilesDir();
@@ -57,19 +57,19 @@ public final class GameActivity extends SDLActivity
             }
         }
 
-        super.onCreate( savedInstanceState );
+//        super.onCreate( savedInstanceState );
 
         // If the minimum set of game assets has not been found, run the toolset activity instead
         if ( !HoMM2AssetManagement.isHoMM2AssetsPresent( externalFilesDir ) ) {
             startActivity( new Intent( this, ToolsetActivity.class ) );
 
             // Replace this activity with the newly launched activity
-            finish();
+//            finish();
         }
     }
 
     @Override
-    protected void onDestroy()
+    public void onDestroy()
     {
         super.onDestroy();
 

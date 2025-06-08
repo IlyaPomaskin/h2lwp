@@ -50,6 +50,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.ipapps.homm2.livewallpaper.R;
+
 public final class MapFileManagerActivity extends AppCompatActivity
 {
     public static final class MapFileManagerActivityViewModel extends ViewModel
