@@ -34,7 +34,6 @@
 #include <vector>
 
 #include "agg_image.h"
-#include "ai.h"
 #include "army.h"
 #include "audio.h"
 #include "audio_manager.h"
@@ -88,25 +87,29 @@
 #include "SDL_system.h"
 #include "SDL_thread.h"
 #include "jni.h"
+#include "SDL_events.h"
 
 uint32_t lwpLastMapUpdate = 0;
 bool forceMapUpdate = true;
 bool forceConfigUpdate = true;
 bool forceUpdateOrientation = true;
 
+#define TILEWIDTH 32
+
 void initWallpaper() {
     Settings &conf = Settings::Get();
 
-    const MapsFileInfoList list = Maps::PrepareMapsFileInfoList(conf.IsGameType(Game::TYPE_MULTI));
+    const MapsFileInfoList list = Maps::getAllMapFileInfos(true, 0);
     const uint32_t randomMapIndex = Rand::Get(0, list.size() - 1);
     const Maps::FileInfo &map = list.at(randomMapIndex);
 
-    conf.SetCurrentFileInfo(map);
+    conf.setCurrentMapInfo(map);
     VERBOSE_LOG("initWallpaper name: " << map.name.c_str() << " file: "
-                                       << map.file.c_str())
+                                       << map.filename.c_str())
     conf.GetPlayers().SetStartGame();
 
-    world.LoadMapMP2(conf.MapsFile(), false);
+//    world.LoadMapMP2(conf.MapsFile(), false);
+    world.LoadMapMP2(map.filename, false);
 }
 
 bool shouldUpdateMapRegion() {
@@ -341,6 +344,9 @@ bool handleSDLEvents() {
 
                 handleKeyUp(event.key.keysym);
             }
+
+            default:
+                break;
         }
     }
 
@@ -367,7 +373,7 @@ fheroes2::GameMode renderWallpaper() {
 void overrideConfiguration() {
     Settings &conf = Settings::Get();
     conf.SetGameType(Game::TYPE_STANDARD);
-    conf.SetCurrentColor(Color::NONE);
+    conf.SetCurrentColor(PlayerColor::NONE);
     conf.setVSync(true);
     conf.setSystemInfo(false);
     conf.setHideInterface(true);
