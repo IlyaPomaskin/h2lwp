@@ -350,7 +350,7 @@ public:
         setStates( DRAG_ONGOING );
     }
 
-    static void HandleRenderDeviceResetEvent();
+    static void onRenderDeviceResetEvent();
 
 private:
     enum class MouseButtonType : uint8_t
@@ -504,8 +504,6 @@ private:
 
     static void StopSounds();
     static void ResumeSounds();
-
-    static void onRenderDeviceResetEvent();
 
     LocalEvent();
 

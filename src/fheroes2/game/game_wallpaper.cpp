@@ -332,7 +332,7 @@ bool handleSDLEvents() {
             }
             case SDL_RENDER_DEVICE_RESET: {
                 VERBOSE_LOG("SDL_RENDER_DEVICE_RESET")
-                LocalEvent::HandleRenderDeviceResetEvent();
+                LocalEvent::onRenderDeviceResetEvent();
                 fheroes2::Display::instance().render();
                 break;
             }
