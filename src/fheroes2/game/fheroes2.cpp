@@ -177,9 +177,9 @@ namespace
                     }
                 }
             }
-            */
 
             display.setResolution( bestResolution );
+            */
 
             fheroes2::engine().setTitle( GetCaption() );
 
