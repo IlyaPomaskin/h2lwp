@@ -673,7 +673,7 @@ typedef union SDL_Event
 } SDL_Event;
 
 /* Make sure we haven't broken binary compatibility */
-SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
+SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof((static_cast<SDL_Event *>(nullptr))->padding));
 
 
 /* Function prototypes */
