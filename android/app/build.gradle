@@ -154,6 +154,13 @@ tasks.register('copyTimidity', Copy) {
     into 'src/main/assets/files/timidity'
 }
 
+tasks.register('copyDefaultConfig', Copy) {
+    from('../../files') {
+        include 'default_fheroes2.cfg'
+    }
+    into 'src/main/assets/files'
+}
+
 tasks.register('copyTranslations', Copy) {
     from('../../files/lang') {
         include '*.mo'
@@ -161,8 +168,15 @@ tasks.register('copyTranslations', Copy) {
     into 'src/main/assets/files/lang'
 }
 
+tasks.register('copyJs', Copy) {
+    dependsOn buildJs
+
+    from '../../h2lwp-settings/build'
+    into 'src/main/assets/www'
+}
+
 tasks.register('generateAssetsDigest') {
-    dependsOn copyFH2M, copyH2D, copyTimidity, copyTranslations
+    dependsOn copyJs, copyDefaultConfig, copyFH2M, copyH2D, copyTimidity, copyTranslations
 
     doLast {
         final java.nio.file.Path assetsDirPath = layout.projectDirectory.getAsFile()
@@ -190,8 +204,5 @@ tasks.register('generateAssetsDigest') {
 }
 
 preBuild {
-    dependsOn buildJs,
-//            copyH2D,
-//            copyTranslations,
-            generateAssetsDigest
+    dependsOn generateAssetsDigest
 }
