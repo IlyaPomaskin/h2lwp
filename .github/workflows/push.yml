@@ -8,6 +8,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+  pull-requests: write
+
 jobs:
   android:
     name: Android
@@ -16,6 +22,22 @@ jobs:
       ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  make:
+    name: Make
+    uses: ./.github/workflows/make.yml
+  msvc:
+    name: MSVC
+    uses: ./.github/workflows/msvc.yml
+  sonarcloud:
+    name: SonarCloud Analyzer
+    uses: ./.github/workflows/sonarcloud.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  pages:
+    name: Build and deploy website
+    needs:
+    - make
+    uses: ./.github/workflows/pages.yml
   translation:
     name: Translation update
     needs:

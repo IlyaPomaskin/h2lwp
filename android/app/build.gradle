@@ -1,10 +1,19 @@
+<<<<<<< HEAD
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
+=======
+import java.nio.file.Files
+import java.security.MessageDigest
+
+plugins {
+    id 'com.android.application'
+}
+>>>>>>> upstream/master
 
 android {
     namespace 'com.ipapps.homm2.livewallpaper'
 
-    compileSdk 34
+    compileSdk 35
 
     buildFeatures {
         compose true
@@ -13,8 +22,8 @@ android {
     defaultConfig {
         applicationId 'com.ipapps.homm2.livewallpaper'
 
-        minSdkVersion 22
-        targetSdkVersion 34
+        minSdk 22
+        targetSdk 35
 
         // These paths are set relative to the android project directory
         versionCode((new File('../version_code.txt')).getText('UTF-8').trim().toInteger())
@@ -85,7 +94,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.0.3'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
 
     implementation 'com.github.andycandy-de:simple-android-bridge:1.0.2'
     implementation "io.github.bhowell2:debouncer:1.1.0"
@@ -93,8 +102,9 @@ dependencies {
     implementation project(':isotools')
 //    implementation project(':sdl2')
 
-    implementation group: 'commons-io', name: 'commons-io', version: '2.13.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.19.0'
 
+<<<<<<< HEAD
     implementation "androidx.core:core-ktx:1.7.0"
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$androidx_compose_version"
@@ -116,6 +126,16 @@ dependencies {
     implementation 'androidx.datastore:datastore:1.0.0'
     implementation "androidx.datastore:datastore-preferences:1.0.0"
     implementation 'com.google.android.material:material:1.9.0'
+=======
+    implementation 'com.google.android.material:material:1.12.0'
+}
+
+tasks.register('copyFH2M', Copy) {
+    from('../../maps') {
+        include '*.fh2m'
+    }
+    into 'src/main/assets/maps'
+>>>>>>> upstream/master
 }
 
 tasks.register('buildJs', Exec) {
@@ -130,6 +150,14 @@ tasks.register('copyH2D', Copy) {
     into 'src/main/assets/files/data'
 }
 
+tasks.register('copyTimidity', Copy) {
+    from('../../files/timidity') {
+        include 'instruments/*.pat'
+        include 'timidity.cfg'
+    }
+    into 'src/main/assets/files/timidity'
+}
+
 tasks.register('copyTranslations', Copy) {
     from('../../files/lang') {
         include '*.mo'
@@ -137,6 +165,39 @@ tasks.register('copyTranslations', Copy) {
     into 'src/main/assets/files/lang'
 }
 
+<<<<<<< HEAD
 preBuild {
     dependsOn buildJs, copyH2D, copyTranslations
+=======
+tasks.register('generateAssetsDigest') {
+    dependsOn copyFH2M, copyH2D, copyTimidity, copyTranslations
+
+    doLast {
+        final java.nio.file.Path assetsDirPath = layout.projectDirectory.getAsFile()
+                .toPath().resolve('src/main/assets')
+        final java.nio.file.Path digestPath = assetsDirPath.resolve('assets.digest')
+        final boolean isDigestExists = Files.exists(digestPath)
+
+        final StringBuilder sb = new StringBuilder()
+
+        fileTree(dir: assetsDirPath).each {
+            final java.nio.file.Path itPath = it.toPath()
+            if (isDigestExists && Files.isSameFile(itPath, digestPath)) {
+                return
+            }
+
+            final byte[] itBuf = Files.readAllBytes(itPath)
+
+            sb.append(String.format('%0128x % 12d %s\n',
+                    new BigInteger(1, MessageDigest.getInstance('SHA-512').digest(itBuf)),
+                    itBuf.length, assetsDirPath.relativize(itPath)))
+        }
+
+        Files.write(digestPath, sb.toString().getBytes('UTF-8'))
+    }
+}
+
+preBuild {
+    dependsOn generateAssetsDigest
+>>>>>>> upstream/master
 }

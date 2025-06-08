@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2023                                             *
+ *   Copyright (C) 2019 - 2025                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,8 +21,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef H2HEROESIND_H
-#define H2HEROESIND_H
+#pragma once
 
 #include <string>
 
@@ -30,7 +29,6 @@
 #include "luck.h"
 #include "math_base.h"
 #include "morale.h"
-#include "screen.h"
 
 namespace fheroes2
 {
@@ -43,74 +41,99 @@ class Heroes;
 class HeroesIndicator
 {
 public:
-    explicit HeroesIndicator( const Heroes * hero = nullptr )
-        : _hero( hero )
-        , _back( fheroes2::Display::instance() )
+    explicit HeroesIndicator( const Heroes * hero );
+
+    const fheroes2::Rect & GetArea() const
     {
-        // Do nothing.
+        return _area;
     }
 
-    const fheroes2::Rect & GetArea() const;
     void SetPos( const fheroes2::Point & pt );
-    void SetHero( const Heroes * hero );
+
+    // Restores the background under this indicator. The indicator itself is not drawn.
+    void redrawOnlyBackground()
+    {
+        _back.restore();
+    }
 
 protected:
     const Heroes * _hero;
-    fheroes2::Rect area;
+    fheroes2::Rect _area;
     fheroes2::ImageRestorer _back;
-    std::string descriptions;
+    std::string _description;
 };
 
-class LuckIndicator : public HeroesIndicator
+class LuckIndicator final : public HeroesIndicator
 {
 public:
-    explicit LuckIndicator( const Heroes * hero = nullptr )
+    explicit LuckIndicator( const Heroes * hero )
         : HeroesIndicator( hero )
     {
-        area.width = 35;
-        area.height = 26;
+        _area.width = 35;
+        _area.height = 26;
     }
 
     void Redraw();
+
     static void QueueEventProcessing( const LuckIndicator & indicator );
 
 private:
-    int luck{ Luck::NORMAL };
+    int _luck{ Luck::NORMAL };
 };
 
-class MoraleIndicator : public HeroesIndicator
+class MoraleIndicator final : public HeroesIndicator
 {
 public:
-    explicit MoraleIndicator( const Heroes * hero = nullptr )
+    explicit MoraleIndicator( const Heroes * hero )
         : HeroesIndicator( hero )
     {
-        area.width = 35;
-        area.height = 26;
+        _area.width = 35;
+        _area.height = 26;
     }
 
     void Redraw();
+
     static void QueueEventProcessing( const MoraleIndicator & indicator );
 
 private:
-    int morale{ Morale::NORMAL };
+    int _morale{ Morale::NORMAL };
 };
 
-class ExperienceIndicator : public HeroesIndicator
+class ExperienceIndicator final : public HeroesIndicator
 {
 public:
-    explicit ExperienceIndicator( const Heroes * hero = nullptr );
+    explicit ExperienceIndicator( const Heroes * hero );
 
     void Redraw() const;
     void QueueEventProcessing() const;
+
+    // Set if default value is used. Use this method only in Editor!
+    void setDefaultState( const bool isDefault )
+    {
+        _isDefault = isDefault;
+    }
+
+private:
+    // This state is used in Editor to show that default value is used.
+    bool _isDefault{ false };
 };
 
-class SpellPointsIndicator : public HeroesIndicator
+class SpellPointsIndicator final : public HeroesIndicator
 {
 public:
-    explicit SpellPointsIndicator( const Heroes * hero = nullptr );
+    explicit SpellPointsIndicator( const Heroes * hero );
 
-    void Redraw() const;
+    void Redraw();
     void QueueEventProcessing() const;
-};
 
-#endif
+    // Set if default value is used. Use this method only in Editor!
+    void setDefaultState( const bool isDefault )
+    {
+        _isDefault = isDefault;
+    }
+
+private:
+    // This state is used in Editor to show that default value is used.
+    bool _isDefault{ false };
+    bool _needBackgroundRestore{ false };
+};

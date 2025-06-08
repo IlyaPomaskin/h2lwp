@@ -1,6 +1,6 @@
 :: ###########################################################################
 :: #   fheroes2: https://github.com/ihhub/fheroes2                           #
-:: #   Copyright (C) 2022 - 2023                                             #
+:: #   Copyright (C) 2022 - 2025                                             #
 :: #                                                                         #
 :: #   This program is free software; you can redistribute it and/or modify  #
 :: #   it under the terms of the GNU General Public License as published by  #
@@ -23,7 +23,7 @@
 set DST_DIR=%~dp0\..\..\android
 
 set PKG_FILE=android.zip
-set PKG_FILE_SHA256=EE7B465DDCE33B34FB1D389D36203441CBC28A56CAAF24F3F0BA6AD60D1A3A22
+set PKG_FILE_SHA256=09624282AEAA4C41A35E51A3A426E7E8CF469C64BC1003AE5E6BFE16DC395D5B
 set PKG_URL=https://github.com/fheroes2/fheroes2-prebuilt-deps/releases/download/android-deps/%PKG_FILE%
 set PKG_TLS=[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 

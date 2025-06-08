@@ -92,7 +92,7 @@ android/.idea
 android/.gradle
 
 # Automatically created Android assets
-android/app/src/main/assets/files/
+android/app/src/main/assets/
 
 # Mac magic folders
 .DS_Store
@@ -101,6 +101,8 @@ android/app/src/main/assets/files/
 .idea
 *.sublime-project
 *.sublime-workspace
-/fheroes2
-/src/dist/fheroes2
-android/app/release/app-release.aab
+# Web build artifacts
+fheroes2.data
+fheroes2.js
+fheroes2.wasm
+fheroes2.wasm.map

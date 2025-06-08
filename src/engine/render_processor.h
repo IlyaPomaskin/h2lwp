@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2023                                                    *
+ *   Copyright (C) 2023 - 2025                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -62,11 +62,19 @@ namespace fheroes2
         }
 
         bool preRenderAction( std::vector<uint8_t> & palette );
-        void postRenderAction();
+
+        void postRenderAction() const;
 
         void startColorCycling()
         {
+            if ( _enableCycling ) {
+                return;
+            }
+
             _enableCycling = true;
+
+            // Since we are restarting the cycling, we have to reset the timer.
+            _cyclingTimer.reset();
         }
 
         void stopColorCycling()
@@ -85,13 +93,13 @@ namespace fheroes2
         std::function<void()> _preRenderer;
         std::function<void()> _postRenderer;
 
-        bool _enableRenderers{ false };
-        bool _enableCycling{ false };
-
         fheroes2::Time _cyclingTimer;
         fheroes2::Time _lastRenderCall;
 
         uint32_t _cyclingCounter{ 0 };
+
+        bool _enableRenderers{ false };
+        bool _enableCycling{ false };
 
         static const uint64_t _cyclingInterval{ 220 };
     };

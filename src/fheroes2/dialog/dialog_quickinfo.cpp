@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2023                                             *
+ *   Copyright (C) 2019 - 2025                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,7 +21,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
@@ -38,10 +37,9 @@
 #include "castle.h"
 #include "color.h"
 #include "cursor.h"
-#include "dialog.h"
+#include "dialog.h" // IWYU pragma: associated
 #include "game.h"
 #include "game_interface.h"
-#include "gamedefs.h"
 #include "ground.h"
 #include "heroes.h"
 #include "heroes_base.h"
@@ -57,6 +55,7 @@
 #include "maps_tiles_helper.h"
 #include "math_base.h"
 #include "mp2.h"
+#include "pal.h"
 #include "profit.h"
 #include "resource.h"
 #include "screen.h"
@@ -66,12 +65,13 @@
 #include "tools.h"
 #include "translations.h"
 #include "ui_castle.h"
+#include "ui_map_interface.h"
 #include "ui_text.h"
 #include "world.h"
 
 namespace
 {
-    void outputInTextSupportMode( const Maps::Tiles & tile, const std::string & info )
+    void outputInTextSupportMode( const Maps::Tile & tile, const std::string & info )
     {
         START_TEXT_SUPPORT_MODE
 
@@ -126,7 +126,7 @@ namespace
         fheroes2::ImageRestorer _restorer;
     };
 
-    std::string getMinesIncomeString( const int32_t resourceType )
+    std::string getMineIncomeString( const int32_t resourceType )
     {
         const Funds income = ProfitConditions::FromMine( resourceType );
         const int32_t value = income.Get( resourceType );
@@ -145,26 +145,26 @@ namespace
         return res;
     }
 
-    std::string showMineInfo( const Maps::Tiles & tile, const bool isOwned )
+    std::string showMineInfo( const Maps::Tile & tile, const bool isOwned )
     {
         const int32_t resourceType = getDailyIncomeObjectResources( tile ).getFirstValidResource().first;
-        std::string objectInfo = Maps::GetMinesName( resourceType );
+        std::string objectInfo = Maps::GetMineName( resourceType );
 
         if ( isOwned ) {
             // TODO: we should use the value from funds.
-            objectInfo.append( getMinesIncomeString( resourceType ) );
+            objectInfo.append( getMineIncomeString( resourceType ) );
         }
 
         return objectInfo;
     }
 
-    std::string showGuardiansInfo( const Maps::Tiles & tile, const bool isOwned )
+    std::string showGuardiansInfo( const Maps::Tile & tile, const bool isOwned )
     {
-        const MP2::MapObjectType objectType = tile.GetObject( false );
+        const MP2::MapObjectType objectType = tile.getMainObjectType( false );
 
         std::string str;
 
-        if ( objectType == MP2::OBJ_MINES ) {
+        if ( objectType == MP2::OBJ_MINE ) {
             str = showMineInfo( tile, isOwned );
         }
         else {
@@ -195,7 +195,7 @@ namespace
         return str;
     }
 
-    std::string showMonsterInfo( const Maps::Tiles & tile, const bool isVisibleFromCrystalBall )
+    std::string showMonsterInfo( const Maps::Tile & tile, const bool isVisibleFromCrystalBall )
     {
         const Troop & troop = getTroopFromTile( tile );
 
@@ -216,9 +216,9 @@ namespace
         return Army::TroopSizeString( troop );
     }
 
-    std::string showDwellingInfo( const Maps::Tiles & tile, const bool isOwned )
+    std::string showDwellingInfo( const Maps::Tile & tile, const bool isOwned )
     {
-        std::string str = MP2::StringObject( tile.GetObject( false ) );
+        std::string str = MP2::StringObject( tile.getMainObjectType( false ) );
 
         if ( isOwned ) {
             str += "\n\n";
@@ -237,9 +237,9 @@ namespace
         return str;
     }
 
-    std::string showShrineInfo( const Maps::Tiles & tile, const bool isVisited )
+    std::string showShrineInfo( const Maps::Tile & tile, const bool isVisited )
     {
-        const MP2::MapObjectType objectType = tile.GetObject( false );
+        const MP2::MapObjectType objectType = tile.getMainObjectType( false );
 
         std::string str = MP2::StringObject( objectType );
 
@@ -262,9 +262,47 @@ namespace
         return str;
     }
 
-    std::string showWitchHutInfo( const Maps::Tiles & tile, const bool isVisited )
+    std::string showTreeOfKnowledgeInfo( const Maps::Tile & tile, const bool isVisited )
     {
-        std::string str = MP2::StringObject( tile.GetObject( false ) );
+        const MP2::MapObjectType objectType = tile.getMainObjectType( false );
+        std::string str = MP2::StringObject( objectType );
+        const Heroes * hero = Interface::GetFocusHeroes();
+
+        if ( isVisited ) {
+            const Funds & payment = getTreeOfKnowledgeRequirement( tile );
+            str.append( "\n\n(" );
+            if ( payment.GetValidItemsCount() == 0 ) {
+                str.append( _( "treeOfKnowledge|free" ) );
+            }
+            else {
+                const auto rc = payment.getFirstValidResource();
+                str.append( std::to_string( rc.second ) );
+                str += ' ';
+                str.append( Translation::StringLower( Resource::String( rc.first ) ) );
+            }
+            str += ')';
+
+            if ( hero ) {
+                str.append( "\n(" );
+                str.append( hero->isVisited( tile ) ? _( "already claimed" ) : _( "not claimed" ) );
+                str += ')';
+            }
+        }
+        else {
+            if ( hero ) {
+                str.append( "\n\n(" );
+                // In case another player visited this tree with this hero.
+                str.append( hero->isVisited( tile ) ? _( "already claimed" ) : _( "not claimed" ) );
+                str += ')';
+            }
+        }
+
+        return str;
+    }
+
+    std::string showWitchHutInfo( const Maps::Tile & tile, const bool isVisited )
+    {
+        std::string str = MP2::StringObject( tile.getMainObjectType( false ) );
 
         if ( isVisited ) {
             const Skill::Secondary & skill = getSecondarySkillFromWitchsHut( tile );
@@ -296,9 +334,9 @@ namespace
         return str;
     }
 
-    std::string showLocalVisitTileInfo( const Maps::Tiles & tile )
+    std::string showLocalVisitTileInfo( const Maps::Tile & tile )
     {
-        std::string str = MP2::StringObject( tile.GetObject( false ) );
+        std::string str = MP2::StringObject( tile.getMainObjectType( false ) );
         const Heroes * hero = Interface::GetFocusHeroes();
         if ( hero ) {
             str.append( "\n\n" );
@@ -330,10 +368,10 @@ namespace
         return str;
     }
 
-    std::string showBarrierInfo( const Maps::Tiles & tile, const Kingdom & kingdom )
+    std::string showBarrierInfo( const Maps::Tile & tile, const Kingdom & kingdom )
     {
         std::string str = _( "%{color} Barrier" );
-        const int32_t barrierColor = getColorFromTile( tile );
+        const int32_t barrierColor = getBarrierColorFromTile( tile );
         StringReplace( str, "%{color}", fheroes2::getBarrierColorName( barrierColor ) );
 
         if ( kingdom.IsVisitTravelersTent( barrierColor ) ) {
@@ -344,10 +382,10 @@ namespace
         return str;
     }
 
-    std::string showTentInfo( const Maps::Tiles & tile, const Kingdom & kingdom )
+    std::string showTentInfo( const Maps::Tile & tile, const Kingdom & kingdom )
     {
         std::string str = _( "%{color} Tent" );
-        const int32_t tentColor = getColorFromTile( tile );
+        const int32_t tentColor = getBarrierColorFromTile( tile );
         StringReplace( str, "%{color}", fheroes2::getTentColorName( tentColor ) );
 
         if ( kingdom.IsVisitTravelersTent( tentColor ) ) {
@@ -358,9 +396,9 @@ namespace
         return str;
     }
 
-    std::string showGroundInfo( const Maps::Tiles & tile )
+    std::string showGroundInfo( const Maps::Tile & tile )
     {
-        const MP2::MapObjectType objectType = tile.GetObject( false );
+        const MP2::MapObjectType objectType = tile.getMainObjectType( false );
         const bool isRoad = tile.isRoad();
 
         std::string str;
@@ -377,7 +415,7 @@ namespace
         str.append( "\n\n" );
 
         // Original Editor allows to put an Ultimate Artifact on an invalid tile. So checking tile index solves this issue.
-        if ( tile.GoodForUltimateArtifact() || world.GetUltimateArtifact().getPosition() == tile.GetIndex() ) {
+        if ( tile.isSuitableForUltimateArtifact() || world.GetUltimateArtifact().getPosition() == tile.GetIndex() ) {
             str.append( _( "(digging ok)" ) );
         }
         else {
@@ -404,30 +442,14 @@ namespace
             return { position.x - imageBox.width(), position.y, imageBox.width(), imageBox.height() };
         }
 
-        // place box next to mouse cursor
-        const fheroes2::Point & mp = le.GetMouseCursor();
-
-        const int32_t mx = ( ( mp.x - BORDERWIDTH ) / TILEWIDTH ) * TILEWIDTH;
-        const int32_t my = ( ( mp.y - BORDERWIDTH ) / TILEWIDTH ) * TILEWIDTH;
-
-        const Interface::GameArea & gamearea = Interface::AdventureMap::Get().getGameArea();
-        const fheroes2::Rect & ar = gamearea.GetROI();
-
-        int32_t xpos = mx + TILEWIDTH - ( imageBox.width() / 2 );
-        int32_t ypos = my + TILEWIDTH - ( imageBox.height() / 2 );
-
-        // clamp box to edges of adventure screen game area
-        assert( ar.width >= imageBox.width() && ar.height >= imageBox.height() );
-        xpos = std::clamp( xpos, BORDERWIDTH, ( ar.width - imageBox.width() ) + BORDERWIDTH );
-        ypos = std::clamp( ypos, BORDERWIDTH, ( ar.height - imageBox.height() ) + BORDERWIDTH );
-
-        return { xpos, ypos, imageBox.width(), imageBox.height() };
+        return Interface::getPopupWindowPosition( le.getMouseCursorPos(), Interface::AdventureMap::Get().getGameArea().GetROI(),
+                                                  { imageBox.width(), imageBox.height() } );
     }
 
-    std::string getQuickInfoText( const Maps::Tiles & tile )
+    std::string getQuickInfoText( const Maps::Tile & tile )
     {
-        const int32_t playerColor = Settings::Get().CurrentColor();
-        const MP2::MapObjectType objectType = tile.GetObject( false );
+        const PlayerColor playerColor = Settings::Get().CurrentColor();
+        const MP2::MapObjectType objectType = tile.getMainObjectType( false );
 
         if ( objectType == MP2::OBJ_ABANDONED_MINE || isCaptureObjectProtected( tile ) ) {
             return showGuardiansInfo( tile, playerColor == getColorFromTile( tile ) );
@@ -439,25 +461,25 @@ namespace
         case MP2::OBJ_MONSTER:
             return showMonsterInfo( tile, kingdom.IsTileVisibleFromCrystalBall( tile.GetIndex() ) );
 
+        case MP2::OBJ_COAST:
         case MP2::OBJ_EVENT:
         case MP2::OBJ_NONE:
-        case MP2::OBJ_COAST:
             return showGroundInfo( tile );
 
-        case MP2::OBJ_DERELICT_SHIP:
-        case MP2::OBJ_SHIPWRECK:
-        case MP2::OBJ_GRAVEYARD:
-        case MP2::OBJ_DAEMON_CAVE:
-        case MP2::OBJ_SPHINX:
-        case MP2::OBJ_PYRAMID:
-        case MP2::OBJ_WAGON:
-        case MP2::OBJ_SKELETON:
-        case MP2::OBJ_LEAN_TO:
-        case MP2::OBJ_WINDMILL:
-        case MP2::OBJ_WATER_WHEEL:
-        case MP2::OBJ_MAGIC_GARDEN:
         case MP2::OBJ_ARTESIAN_SPRING:
+        case MP2::OBJ_DAEMON_CAVE:
+        case MP2::OBJ_DERELICT_SHIP:
+        case MP2::OBJ_GRAVEYARD:
+        case MP2::OBJ_LEAN_TO:
+        case MP2::OBJ_MAGIC_GARDEN:
         case MP2::OBJ_OBELISK:
+        case MP2::OBJ_PYRAMID:
+        case MP2::OBJ_SHIPWRECK:
+        case MP2::OBJ_SKELETON:
+        case MP2::OBJ_SPHINX:
+        case MP2::OBJ_WAGON:
+        case MP2::OBJ_WATER_WHEEL:
+        case MP2::OBJ_WINDMILL:
             return showObjectVisitInfo( objectType, kingdom.isVisited( tile ) );
 
         case MP2::OBJ_MAGELLANS_MAPS:
@@ -470,7 +492,7 @@ namespace
             return Resource::String( funds.getFirstValidResource().first );
         }
 
-        case MP2::OBJ_MINES:
+        case MP2::OBJ_MINE:
             return showMineInfo( tile, playerColor == getColorFromTile( tile ) );
 
         case MP2::OBJ_ALCHEMIST_LAB:
@@ -481,58 +503,58 @@ namespace
                 assert( funds.GetValidItemsCount() == 1 );
 
                 // TODO: we should use the value from funds.
-                objectInfo.append( getMinesIncomeString( funds.getFirstValidResource().first ) );
+                objectInfo.append( getMineIncomeString( funds.getFirstValidResource().first ) );
             }
             return objectInfo;
         }
 
         // join army
-        case MP2::OBJ_WATCH_TOWER:
-        case MP2::OBJ_EXCAVATION:
-        case MP2::OBJ_CAVE:
-        case MP2::OBJ_TREE_HOUSE:
         case MP2::OBJ_ARCHER_HOUSE:
-        case MP2::OBJ_GOBLIN_HUT:
+        case MP2::OBJ_CAVE:
         case MP2::OBJ_DWARF_COTTAGE:
+        case MP2::OBJ_EXCAVATION:
+        case MP2::OBJ_GOBLIN_HUT:
         case MP2::OBJ_HALFLING_HOLE:
         case MP2::OBJ_PEASANT_HUT:
+        case MP2::OBJ_TREE_HOUSE:
+        case MP2::OBJ_WATCH_TOWER:
         // recruit army
+        case MP2::OBJ_DESERT_TENT:
         case MP2::OBJ_RUINS:
         case MP2::OBJ_TREE_CITY:
         case MP2::OBJ_WAGON_CAMP:
-        case MP2::OBJ_DESERT_TENT:
         // battle and recruit army
-        case MP2::OBJ_DRAGON_CITY:
-        case MP2::OBJ_CITY_OF_DEAD:
-        case MP2::OBJ_TROLL_BRIDGE:
-        case MP2::OBJ_BARROW_MOUNDS:
         case MP2::OBJ_AIR_ALTAR:
-        case MP2::OBJ_FIRE_ALTAR:
+        case MP2::OBJ_BARROW_MOUNDS:
+        case MP2::OBJ_CITY_OF_DEAD:
+        case MP2::OBJ_DRAGON_CITY:
         case MP2::OBJ_EARTH_ALTAR:
+        case MP2::OBJ_FIRE_ALTAR:
+        case MP2::OBJ_TROLL_BRIDGE:
         case MP2::OBJ_WATER_ALTAR:
             return showDwellingInfo( tile, kingdom.isVisited( tile ) );
 
-        case MP2::OBJ_GAZEBO:
         case MP2::OBJ_FORT:
-        case MP2::OBJ_XANADU:
+        case MP2::OBJ_GAZEBO:
         case MP2::OBJ_MERCENARY_CAMP:
-        case MP2::OBJ_WITCH_DOCTORS_HUT:
         case MP2::OBJ_STANDING_STONES:
-        case MP2::OBJ_TREE_OF_KNOWLEDGE:
+        case MP2::OBJ_WITCH_DOCTORS_HUT:
+        case MP2::OBJ_XANADU:
             return showLocalVisitTileInfo( tile );
 
-        case MP2::OBJ_MAGIC_WELL:
-        case MP2::OBJ_FOUNTAIN:
-        case MP2::OBJ_FAERIE_RING:
-        case MP2::OBJ_IDOL:
-        case MP2::OBJ_OASIS:
-        case MP2::OBJ_TEMPLE:
-        case MP2::OBJ_BUOY:
-        case MP2::OBJ_MERMAID:
-        case MP2::OBJ_WATERING_HOLE:
         case MP2::OBJ_ARENA:
-        case MP2::OBJ_STABLES:
+        case MP2::OBJ_BLACK_CAT:
+        case MP2::OBJ_BUOY:
+        case MP2::OBJ_FAERIE_RING:
+        case MP2::OBJ_FOUNTAIN:
+        case MP2::OBJ_IDOL:
+        case MP2::OBJ_MAGIC_WELL:
+        case MP2::OBJ_MERMAID:
+        case MP2::OBJ_OASIS:
         case MP2::OBJ_SIRENS:
+        case MP2::OBJ_STABLES:
+        case MP2::OBJ_TEMPLE:
+        case MP2::OBJ_WATERING_HOLE:
             return showLocalVisitObjectInfo( objectType );
 
         case MP2::OBJ_SHRINE_FIRST_CIRCLE:
@@ -549,9 +571,12 @@ namespace
         case MP2::OBJ_TRAVELLER_TENT:
             return showTentInfo( tile, kingdom );
 
-        // These objects does not have extra text for quick info.
-        case MP2::OBJ_CAMPFIRE:
+        case MP2::OBJ_TREE_OF_KNOWLEDGE:
+            return showTreeOfKnowledgeInfo( tile, kingdom.isVisited( tile ) );
+        // These objects do not have extra text for quick info.
         case MP2::OBJ_ARTIFACT:
+        case MP2::OBJ_BARREL:
+        case MP2::OBJ_CAMPFIRE:
         default:
             return MP2::StringObject( objectType );
         }
@@ -559,7 +584,7 @@ namespace
 
     void showQuickInfo( const Castle & castle, const fheroes2::Point & position, const bool showOnRadar, const fheroes2::Rect & areaToRestore )
     {
-        const CursorRestorer cursorRestorer( false, Cursor::POINTER );
+        const CursorRestorer cursorRestorer( false );
 
         // Update radar if needed
         RadarUpdater radarUpdater( showOnRadar, castle.GetCenter(), areaToRestore );
@@ -593,42 +618,17 @@ namespace
         fheroes2::drawCastleIcon( castle, display, fheroes2::Point( dst_pt.x + 4, dst_pt.y + 4 ) );
 
         // color flags
-        uint32_t index = 0;
-        switch ( castle.GetColor() ) {
-        case Color::BLUE:
-            index = 0;
-            break;
-        case Color::GREEN:
-            index = 2;
-            break;
-        case Color::RED:
-            index = 4;
-            break;
-        case Color::YELLOW:
-            index = 6;
-            break;
-        case Color::ORANGE:
-            index = 8;
-            break;
-        case Color::PURPLE:
-            index = 10;
-            break;
-        case Color::NONE:
-            index = 12;
-            break;
-        default:
-            break;
-        }
+        const uint32_t flagIcnIndex = fheroes2::getCastleLeftFlagIcnIndex( castle.GetColor() );
 
         const fheroes2::Point flagOffset( 5, 4 );
 
-        const fheroes2::Sprite & l_flag = fheroes2::AGG::GetICN( ICN::FLAG32, index );
+        const fheroes2::Sprite & l_flag = fheroes2::AGG::GetICN( ICN::FLAG32, flagIcnIndex );
         fheroes2::Blit( l_flag, display, dst_pt.x - flagOffset.x - l_flag.width(), dst_pt.y + flagOffset.y );
 
-        const fheroes2::Sprite & r_flag = fheroes2::AGG::GetICN( ICN::FLAG32, index + 1 );
+        const fheroes2::Sprite & r_flag = fheroes2::AGG::GetICN( ICN::FLAG32, flagIcnIndex + 1 );
         fheroes2::Blit( r_flag, display, dst_pt.x + flagOffset.x + castleIcon.width(), dst_pt.y + flagOffset.y );
 
-        const int currentColor = conf.CurrentColor();
+        const PlayerColor currentColor = conf.CurrentColor();
         const Kingdom & kingdom = world.GetKingdom( currentColor );
 
         const bool isDetailedView = castle.isFriends( currentColor ) || kingdom.IsTileVisibleFromCrystalBall( castle.GetIndex() );
@@ -666,7 +666,7 @@ namespace
         display.render();
 
         // quick info loop
-        while ( le.HandleEvents() && le.MousePressRight() )
+        while ( le.HandleEvents() && le.isMouseRightButtonPressed() )
             ;
 
         // restore background
@@ -681,7 +681,7 @@ namespace
     void showQuickInfo( const HeroBase & hero, const fheroes2::Point & position, const bool showOnRadar, const fheroes2::Rect & areaToRestore,
                         const std::optional<bool> showFullInfo )
     {
-        const CursorRestorer cursorRestorer( false, Cursor::POINTER );
+        const CursorRestorer cursorRestorer( false );
 
         // Update radar if needed
         RadarUpdater radarUpdater( showOnRadar, hero.GetCenter(), areaToRestore );
@@ -701,7 +701,7 @@ namespace
 
         const Settings & conf = Settings::Get();
 
-        const bool isNeutralHero = ( hero.GetColor() == Color::NONE );
+        const bool isNeutralHero = ( hero.GetColor() == PlayerColor::NONE );
         const bool isFullInfo = [&hero, showFullInfo, &conf, isNeutralHero]() {
             if ( showFullInfo ) {
                 return *showFullInfo;
@@ -720,19 +720,20 @@ namespace
 
         const bool isActiveHero = ( activeHero != nullptr );
 
-        std::string message;
         // hero's name
+        const fheroes2::FontType smallWhite = fheroes2::FontType::smallWhite();
+        fheroes2::Text text( hero.GetName(), smallWhite );
+        // hero's level
         if ( isFullInfo && isActiveHero ) {
-            message = _( "%{name} (Level %{level})" );
-            StringReplace( message, "%{name}", hero.GetName() );
-            StringReplace( message, "%{level}", activeHero->GetLevel() );
-        }
-        else {
-            message = hero.GetName();
+            std::string heroLevel = _( "heroQuickInfo|(Level %{level})" );
+            StringReplace( heroLevel, "%{level}", activeHero->GetLevel() );
+            heroLevel.insert( 0, " " );
+            // if Identify Hero has been cast then we want to know the hero's level rather than name.
+            const int32_t boxShadowAndBorder = 39;
+            text.fitToOneRow( box.width() - boxShadowAndBorder - fheroes2::Text{ heroLevel, smallWhite }.width() );
+            text.set( text.text() + heroLevel, smallWhite );
         }
 
-        const fheroes2::FontType smallWhite = fheroes2::FontType::smallWhite();
-        fheroes2::Text text( message, smallWhite );
         dst_pt.x = cur_rt.x + ( cur_rt.width - text.width() ) / 2;
         dst_pt.y = cur_rt.y + 2;
         text.draw( dst_pt.x, dst_pt.y, display );
@@ -763,7 +764,20 @@ namespace
         // morale
         if ( isFullInfo ) {
             const int32_t morale = hero.GetMorale();
-            const fheroes2::Sprite & sprite = fheroes2::AGG::GetICN( ICN::MINILKMR, ( 0 > morale ? 3 : ( 0 < morale ? 4 : 5 ) ) );
+
+            uint32_t spriteInx = 5;
+            if ( morale < 0 ) {
+                spriteInx = 3;
+            }
+            else if ( morale > 0 ) {
+                spriteInx = 4;
+            }
+
+            fheroes2::Sprite sprite = fheroes2::AGG::GetICN( ICN::MINILKMR, spriteInx );
+            if ( hero.GetArmy().AllTroopsAreUndead() ) {
+                fheroes2::ApplyPalette( sprite, PAL::GetPalette( PAL::PaletteType::GRAY ) );
+                fheroes2::ApplyPalette( sprite, PAL::GetPalette( PAL::PaletteType::DARKENING ) );
+            }
             uint32_t count = ( 0 == morale ? 1 : std::abs( morale ) );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y = cur_rt.y + ( count == 1 ? 20 : 13 );
@@ -778,36 +792,14 @@ namespace
 
         // color flags, except for neutral heroes
         if ( !isNeutralHero ) {
-            uint32_t index = 0;
+            // Use castle flags to show hero's color flags.
+            const uint32_t flagIcnIndex = fheroes2::getCastleLeftFlagIcnIndex( hero.GetColor() );
 
-            switch ( hero.GetColor() ) {
-            case Color::BLUE:
-                index = 0;
-                break;
-            case Color::GREEN:
-                index = 2;
-                break;
-            case Color::RED:
-                index = 4;
-                break;
-            case Color::YELLOW:
-                index = 6;
-                break;
-            case Color::ORANGE:
-                index = 8;
-                break;
-            case Color::PURPLE:
-                index = 10;
-                break;
-            default:
-                break;
-            }
-
-            const fheroes2::Sprite & l_flag = fheroes2::AGG::GetICN( ICN::FLAG32, index );
+            const fheroes2::Sprite & l_flag = fheroes2::AGG::GetICN( ICN::FLAG32, flagIcnIndex );
             dst_pt.x = cur_rt.x + ( cur_rt.width - 40 ) / 2 - l_flag.width();
             fheroes2::Blit( l_flag, display, dst_pt.x, dst_pt.y );
 
-            const fheroes2::Sprite & r_flag = fheroes2::AGG::GetICN( ICN::FLAG32, index + 1 );
+            const fheroes2::Sprite & r_flag = fheroes2::AGG::GetICN( ICN::FLAG32, flagIcnIndex + 1 );
             dst_pt.x = cur_rt.x + ( cur_rt.width + 40 ) / 2;
             fheroes2::Blit( r_flag, display, dst_pt.x, dst_pt.y );
         }
@@ -820,6 +812,7 @@ namespace
             text.set( _( "Attack:" ), smallWhite );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y += heroPortraitFrame.height();
+            text.fitToOneRow( statNumberColumn );
             text.draw( dst_pt.x, dst_pt.y, display );
 
             text.set( std::to_string( hero.GetAttack() ), smallWhite );
@@ -830,6 +823,7 @@ namespace
             text.set( _( "Defense:" ), smallWhite );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y += statRow;
+            text.fitToOneRow( statNumberColumn );
             text.draw( dst_pt.x, dst_pt.y, display );
 
             text.set( std::to_string( hero.GetDefense() ), smallWhite );
@@ -840,6 +834,7 @@ namespace
             text.set( _( "Spell Power:" ), smallWhite );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y += statRow;
+            text.fitToOneRow( statNumberColumn );
             text.draw( dst_pt.x, dst_pt.y, display );
 
             text.set( std::to_string( hero.GetPower() ), smallWhite );
@@ -850,6 +845,7 @@ namespace
             text.set( _( "Knowledge:" ), smallWhite );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y += statRow;
+            text.fitToOneRow( statNumberColumn );
             text.draw( dst_pt.x, dst_pt.y, display );
 
             text.set( std::to_string( hero.GetKnowledge() ), smallWhite );
@@ -860,6 +856,7 @@ namespace
             text.set( _( "Spell Points:" ), smallWhite );
             dst_pt.x = cur_rt.x + 10;
             dst_pt.y += statRow;
+            text.fitToOneRow( statNumberColumn );
             text.draw( dst_pt.x, dst_pt.y, display );
 
             text.set( std::to_string( hero.GetSpellPoints() ) + "/" + std::to_string( hero.GetMaxSpellPoints() ), smallWhite );
@@ -871,6 +868,7 @@ namespace
                 text.set( _( "Move Points:" ), smallWhite );
                 dst_pt.x = cur_rt.x + 10;
                 dst_pt.y += statRow;
+                text.fitToOneRow( statNumberColumn );
                 text.draw( dst_pt.x, dst_pt.y, display );
 
                 text.set( std::to_string( activeHero->GetMovePoints() ) + "/" + std::to_string( activeHero->GetMaxMovePoints() ), smallWhite );
@@ -888,7 +886,7 @@ namespace
         display.render();
 
         // quick info loop
-        while ( le.HandleEvents() && le.MousePressRight() )
+        while ( le.HandleEvents() && le.isMouseRightButtonPressed() )
             ;
 
         // restore background
@@ -901,54 +899,29 @@ namespace
     }
 }
 
-void Dialog::QuickInfo( const Maps::Tiles & tile )
+void Dialog::QuickInfo( const Maps::Tile & tile )
 {
-    const CursorRestorer cursorRestorer( false, Cursor::POINTER );
-
-    fheroes2::Display & display = fheroes2::Display::instance();
-
-    // image box
-    const fheroes2::Sprite & box = fheroes2::AGG::GetICN( ICN::QWIKINFO, 0 );
-
-    LocalEvent & le = LocalEvent::Get();
-    const fheroes2::Rect pos = makeRectQuickInfo( le, box );
-
-    fheroes2::ImageRestorer restorer( display, pos.x, pos.y, pos.width, pos.height );
-    fheroes2::Blit( box, display, pos.x, pos.y );
-
     std::string infoString;
 
-    const int32_t playerColor = Settings::Get().CurrentColor();
+    const PlayerColor playerColor = Settings::Get().CurrentColor();
 
-    if ( ( playerColor != 0 ) && tile.isFog( playerColor ) ) {
+    if ( ( playerColor != PlayerColor::NONE ) && tile.isFog( playerColor ) ) {
         infoString = _( "Uncharted Territory" );
     }
     else {
-        const int32_t mainTileIndex = Maps::Tiles::getIndexOfMainTile( tile );
+        const int32_t mainTileIndex = Maps::Tile::getIndexOfMainTile( tile );
 
         if ( mainTileIndex != -1 ) {
-            infoString = getQuickInfoText( world.GetTiles( mainTileIndex ) );
+            infoString = getQuickInfoText( world.getTile( mainTileIndex ) );
         }
         else {
             infoString = getQuickInfoText( tile );
         }
     }
 
-    const int32_t objectTextBorderedWidth = pos.width - 2 * BORDERWIDTH;
-    const fheroes2::Text text( infoString, fheroes2::FontType::smallWhite() );
-    text.draw( pos.x + 22, pos.y - 6 + ( ( pos.height - text.height( objectTextBorderedWidth ) ) / 2 ), objectTextBorderedWidth, display );
-
     outputInTextSupportMode( tile, infoString );
 
-    display.render( restorer.rect() );
-
-    // quick info loop
-    while ( le.HandleEvents() && le.MousePressRight() )
-        ;
-
-    // restore background
-    restorer.restore();
-    display.render( restorer.rect() );
+    Interface::displayStandardPopupWindow( std::move( infoString ), Interface::AdventureMap::Get().getGameArea().GetROI() );
 }
 
 void Dialog::QuickInfo( const Castle & castle )

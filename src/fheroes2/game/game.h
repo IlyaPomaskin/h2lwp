@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2023                                             *
+ *   Copyright (C) 2019 - 2025                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,12 +21,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef H2GAME_H
-#define H2GAME_H
+#pragma once
 
 #include <cstdint>
 #include <string>
 
+#include "color.h"
 #include "game_mode.h"
 
 class Players;
@@ -37,7 +37,6 @@ namespace Game
 {
     void Init();
 
-    // type_t
     enum
     {
         TYPE_MENU = 0,
@@ -53,11 +52,11 @@ namespace Game
         TYPE_MULTI = TYPE_HOTSEAT
     };
 
-    void mainGameLoop( bool isFirstGameRun );
+    void mainGameLoop( bool isFirstGameRun, bool isProbablyDemoVersion );
 
-    fheroes2::GameMode MainMenu( bool isFirstGameRun );
     fheroes2::GameMode Wallpaper();
-    fheroes2::GameMode NewGame();
+    fheroes2::GameMode MainMenu( const bool isFirstGameRun );
+    fheroes2::GameMode NewGame( const bool isProbablyDemoVersion );
     fheroes2::GameMode LoadGame();
     fheroes2::GameMode Credits();
     fheroes2::GameMode NewStandard();
@@ -72,9 +71,8 @@ namespace Game
     fheroes2::GameMode LoadCampaign();
     fheroes2::GameMode LoadMulti();
     fheroes2::GameMode LoadHotseat();
-    fheroes2::GameMode ScenarioInfo();
     fheroes2::GameMode SelectCampaignScenario( const fheroes2::GameMode prevMode, const bool allowToRestart );
-    fheroes2::GameMode SelectScenario();
+    fheroes2::GameMode SelectScenario( const uint8_t humanPlayerCount );
     fheroes2::GameMode StartGame();
     fheroes2::GameMode StartBattleOnly();
     fheroes2::GameMode DisplayLoadGameDialog();
@@ -84,6 +82,7 @@ namespace Game
     bool isSuccessionWarsCampaignPresent();
     bool isPriceOfLoyaltyCampaignPresent();
 
+    // Starts playback of ambient sounds produced by surrounding objects located in an area close to the current game focus.
     void EnvironmentSoundMixer();
     void restoreSoundsForCurrentFocus();
 
@@ -96,27 +95,33 @@ namespace Game
     // If display fade-in state is set reset it to false and return true. Otherwise return false.
     bool validateDisplayFadeIn();
 
-    int GetKingdomColors();
-    int GetActualKingdomColors();
-    void DialogPlayers( int color, std::string title, std::string message );
+    PlayerColorsSet GetKingdomColors();
+    PlayerColorsSet GetActualKingdomColors();
+    void DialogPlayers( const PlayerColor color, std::string title, std::string message );
 
     uint32_t getAdventureMapAnimationIndex();
-
     void updateAdventureMapAnimationIndex();
 
     uint32_t GetRating();
     uint32_t getGameOverScoreFactor();
     uint32_t GetLostTownDays();
     uint32_t GetWhirlpoolPercent();
-    uint32_t SelectCountPlayers();
+    uint8_t SelectCountPlayers();
+
     void PlayPickupSound();
+
     void OpenHeroesDialog( Heroes & hero, bool updateFocus, const bool renderBackgroundDialog, const bool disableDismiss = false );
     void OpenCastleDialog( Castle & castle, bool updateFocus = true, const bool renderBackgroundDialog = true );
-    // Returns the difficulty level based on the type of game.
-    int getDifficulty();
+
     void LoadPlayers( const std::string & mapFileName, Players & players );
-    void saveDifficulty( const int difficulty );
     void SavePlayers( const std::string & mapFileName, const Players & players );
+
+    // Returns true if the currently active game is a campaign, otherwise returns false
+    bool isCampaign();
+
+    // Returns the difficulty level of the currently active game, depending on its type (see the implementation for details)
+    int getDifficulty();
+    void saveDifficulty( const int difficulty );
 
     int32_t GetStep4Player( const int32_t currentId, const int32_t width, const int32_t totalCount );
 
@@ -124,5 +129,3 @@ namespace Game
     // (unless the abbreviated number is requested), otherwise, a qualitative estimate is returned (Few, Several, etc).
     std::string formatMonsterCount( const uint32_t count, const bool isDetailedView, const bool abbreviateNumber = false );
 }
-
-#endif

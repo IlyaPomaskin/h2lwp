@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2023                                             *
+ *   Copyright (C) 2019 - 2025                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,8 +21,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef H2SETTINGS_H
-#define H2SETTINGS_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -37,7 +36,12 @@
 #include "screen.h"
 #include "tinyconfig.h"
 
-class StreamBase;
+class IStreamBase;
+class OStreamBase;
+
+enum class PlayerColor : uint8_t;
+
+inline constexpr int defaultBattleSpeed{ 4 };
 
 enum AdventureMapScrollSpeed : int
 {
@@ -72,6 +76,13 @@ enum MapUpdateInterval : uint32_t
     HOURS_24 = 4
 };
 
+enum class InterfaceType : uint8_t
+{
+    GOOD = 0,
+    EVIL = 1,
+    DYNAMIC = 2
+};
+
 class Settings
 {
 public:
@@ -89,16 +100,17 @@ public:
     bool Save( const std::string_view fileName ) const;
 
     std::string String() const;
-    void SetCurrentFileInfo( const Maps::FileInfo & );
 
-    const Maps::FileInfo & CurrentFileInfo() const
+    void setCurrentMapInfo( Maps::FileInfo fi );
+
+    const Maps::FileInfo & getCurrentMapInfo() const
     {
-        return current_maps_file;
+        return _currentMapInfo;
     }
 
-    bool isCurrentMapPriceOfLoyalty() const
+    Maps::FileInfo & getCurrentMapInfo()
     {
-        return current_maps_file.version == GameVersion::PRICE_OF_LOYALTY;
+        return _currentMapInfo;
     }
 
     int HeroesMoveSpeed() const
@@ -123,7 +135,7 @@ public:
 
     int GameDifficulty() const
     {
-        return game_difficulty;
+        return _gameDifficulty;
     }
 
     const std::string & getGameLanguage() const
@@ -197,7 +209,19 @@ public:
     bool isBattleShowDamageInfoEnabled() const;
     bool isHideInterfaceEnabled() const;
     bool isEvilInterfaceEnabled() const;
-    bool isEditorEnabled() const;
+
+    void setInterfaceType( InterfaceType type )
+    {
+        _interfaceType = type;
+    }
+
+    InterfaceType getInterfaceType() const
+    {
+        return _interfaceType;
+    }
+
+    bool isEditorAnimationEnabled() const;
+    bool isEditorPassabilityEnabled() const;
 
     bool LoadedGameVersion() const
     {
@@ -227,7 +251,7 @@ public:
 
     void SetGameDifficulty( const int difficulty )
     {
-        game_difficulty = difficulty;
+        _gameDifficulty = difficulty;
     }
 
     void SetBattleGrid( bool );
@@ -257,7 +281,6 @@ public:
     void setAutoSaveAtBeginningOfTurn( const bool enable );
     void setBattleDamageInfo( const bool enable );
     void setHideInterface( const bool enable );
-    void setEvilInterface( const bool enable );
     void setScreenScalingTypeNearest( const bool enable );
 
     void SetSoundVolume( int v );
@@ -269,6 +292,9 @@ public:
     }
 
     bool setGameLanguage( const std::string & language );
+
+    void setEditorAnimation( const bool enable );
+    void setEditorPassability( const bool enable );
 
     int SoundVolume() const
     {
@@ -312,113 +338,20 @@ public:
         return players;
     }
 
-    int CurrentColor() const
+    PlayerColor CurrentColor() const
     {
         return players.getCurrentColor();
     }
 
     // The color should belong to one player or be NONE (neutral player).
-    void SetCurrentColor( const int color )
+    void SetCurrentColor( const PlayerColor color )
     {
         players.setCurrentColor( color );
-    }
-
-    int PreferablyCountPlayers() const
-    {
-        return preferably_count_players;
-    }
-
-    void SetPreferablyCountPlayers( int );
-
-    // from maps info
-    bool AllowChangeRace( int f ) const
-    {
-        return ( current_maps_file.colorsOfRandomRaces & f ) != 0;
-    }
-
-    const std::string & MapsFile() const
-    {
-        return current_maps_file.file;
-    }
-
-    const std::string & MapsName() const
-    {
-        return current_maps_file.name;
-    }
-
-    const std::string & MapsDescription() const
-    {
-        return current_maps_file.description;
-    }
-
-    int MapsDifficulty() const
-    {
-        return current_maps_file.difficulty;
-    }
-
-    fheroes2::Size MapsSize() const
-    {
-        return { current_maps_file.width, current_maps_file.height };
-    }
-
-    bool GameStartWithHeroes() const
-    {
-        return current_maps_file.startWithHeroInEachCastle;
-    }
-
-    uint32_t ConditionWins() const
-    {
-        return current_maps_file.ConditionWins();
-    }
-
-    uint32_t ConditionLoss() const
-    {
-        return current_maps_file.ConditionLoss();
-    }
-
-    bool WinsCompAlsoWins() const
-    {
-        return current_maps_file.WinsCompAlsoWins();
-    }
-
-    int WinsFindArtifactID() const
-    {
-        return current_maps_file.WinsFindArtifactID();
-    }
-
-    bool WinsFindUltimateArtifact() const
-    {
-        return current_maps_file.WinsFindUltimateArtifact();
-    }
-
-    uint32_t getWinningGoldAccumulationValue() const
-    {
-        return current_maps_file.getWinningGoldAccumulationValue();
-    }
-
-    fheroes2::Point WinsMapsPositionObject() const
-    {
-        return current_maps_file.WinsMapsPositionObject();
-    }
-
-    fheroes2::Point LossMapsPositionObject() const
-    {
-        return current_maps_file.LossMapsPositionObject();
-    }
-
-    uint32_t LossCountDays() const
-    {
-        return current_maps_file.LossCountDays();
     }
 
     int controllerPointerSpeed() const
     {
         return _controllerPointerSpeed;
-    }
-
-    void SetMapsFile( const std::string & file )
-    {
-        current_maps_file.file = file;
     }
 
     ZoomLevel ViewWorldZoomLevel() const
@@ -473,7 +406,7 @@ public:
         _viewWorldZoomLevel = zoomLevel;
     }
 
-    void SetProgramPath( const char * );
+    void SetProgramPath( const char * path );
 
     static std::string GetVersion();
 
@@ -484,26 +417,29 @@ public:
     static std::string GetLastFile( const std::string & prefix, const std::string & name );
 
 private:
-    friend StreamBase & operator<<( StreamBase &, const Settings & );
-    friend StreamBase & operator>>( StreamBase &, Settings & );
+    friend OStreamBase & operator<<( OStreamBase & stream, const Settings & conf );
+    friend IStreamBase & operator>>( IStreamBase & stream, Settings & conf );
 
     Settings();
 
     static void setDebug( int debug );
 
-    // Global game options (GLOBAL_)
-    BitModes _optGlobal;
+    // Game related options.
+    BitModes _gameOptions;
+
+    // Editor related options.
+    BitModes _editorOptions;
 
     fheroes2::ResolutionInfo _resolutionInfo;
-    int game_difficulty;
+    int _gameDifficulty;
 
-    std::string path_program;
+    std::string _programPath;
 
     std::string _gameLanguage;
     // Not saved in the config file or savefile
     std::string _loadedFileLanguage;
 
-    Maps::FileInfo current_maps_file;
+    Maps::FileInfo _currentMapInfo;
 
     int sound_volume;
     int music_volume;
@@ -519,8 +455,8 @@ private:
     int lwp_scale = 5;
 
     int game_type;
-    int preferably_count_players;
     ZoomLevel _viewWorldZoomLevel{ ZoomLevel::ZoomLevel1 };
+    InterfaceType _interfaceType{ InterfaceType::GOOD };
 
     fheroes2::Point pos_radr{ -1, -1 };
     fheroes2::Point pos_bttn{ -1, -1 };
@@ -534,7 +470,5 @@ private:
     void OverrideSettingsForLiveWallpaper();
 };
 
-StreamBase & operator<<( StreamBase &, const Settings & );
-StreamBase & operator>>( StreamBase &, Settings & );
-
-#endif
+OStreamBase & operator<<( OStreamBase & stream, const Settings & conf );
+IStreamBase & operator>>( IStreamBase & stream, Settings & conf );

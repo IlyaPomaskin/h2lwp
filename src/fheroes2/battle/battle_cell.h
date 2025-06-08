@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2023                                             *
+ *   Copyright (C) 2019 - 2025                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -21,8 +21,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef H2BATTLE_CELL_H
-#define H2BATTLE_CELL_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -31,14 +30,11 @@
 
 #include "math_base.h"
 
-#define CELLW 44
-#define CELLH 52
-
 namespace Battle
 {
     class Unit;
 
-    enum direction_t
+    enum CellDirection : int
     {
         UNKNOWN = 0x00,
         TOP_LEFT = 0x01,
@@ -53,47 +49,88 @@ namespace Battle
         AROUND = RIGHT_SIDE | LEFT_SIDE
     };
 
-    class Cell
+    class Cell final
     {
     public:
-        explicit Cell( const int32_t idx );
+        // Width of the rendered cell in pixels
+        static constexpr int widthPx{ 44 };
+        // Height of the rendered cell in pixels
+        static constexpr int heightPx{ 52 };
+
+        explicit Cell( const int32_t idx )
+            : _index( idx )
+        {
+            SetArea( {} );
+        }
+
         Cell( const Cell & ) = delete;
         Cell( Cell && ) = default;
+
+        ~Cell() = default;
 
         Cell & operator=( const Cell & ) = delete;
         Cell & operator=( Cell && ) = delete;
 
-        int32_t GetIndex() const;
-        const fheroes2::Rect & GetPos() const;
-        int GetObject() const;
+        int32_t GetIndex() const
+        {
+            return _index;
+        }
 
-        const Unit * GetUnit() const;
-        Unit * GetUnit();
+        const fheroes2::Rect & GetPos() const
+        {
+            return _pos;
+        }
 
-        direction_t GetTriangleDirection( const fheroes2::Point & dst ) const;
+        int GetObject() const
+        {
+            return _object;
+        }
+
+        const Unit * GetUnit() const
+        {
+            return _unit;
+        }
+
+        Unit * GetUnit()
+        {
+            return _unit;
+        }
+
+        CellDirection GetTriangleDirection( const fheroes2::Point & dst ) const;
 
         bool isPositionIncludePoint( const fheroes2::Point & pt ) const;
 
         void SetArea( const fheroes2::Rect & area );
-        void SetObject( const int object );
-        void SetUnit( Unit * unit );
+
+        void SetObject( const int object )
+        {
+            _object = object;
+        }
+
+        void SetUnit( Unit * unit )
+        {
+            _unit = unit;
+        }
 
         // Checks that the cell is passable for a given unit located in a certain adjacent cell
         bool isPassableFromAdjacent( const Unit & unit, const Cell & adjacent ) const;
         // Checks that the cell is passable for a given unit, i.e. unit can occupy it with his head or tail
         bool isPassableForUnit( const Unit & unit ) const;
         // Checks that the cell is passable, i.e. does not contain an obstacle or (optionally) a unit
-        bool isPassable( const bool checkForUnit ) const;
+        bool isPassable( const bool checkForUnit ) const
+        {
+            return _object == 0 && ( !checkForUnit || _unit == nullptr );
+        }
 
     private:
         int32_t _index;
         fheroes2::Rect _pos;
-        int _object;
-        Unit * _unit;
+        int _object{ 0 };
+        Unit * _unit{ nullptr };
         std::array<fheroes2::Point, 7> _coord;
     };
 
-    class Position : protected std::pair<Cell *, Cell *>
+    class Position final : protected std::pair<Cell *, Cell *>
     {
     public:
         Position()
@@ -117,16 +154,41 @@ namespace Battle
         // the position reachability instead of the speed returned by 'unit'.
         static Position GetReachable( const Unit & unit, const int32_t dst, const std::optional<uint32_t> speed = {} );
 
+        bool isEmpty() const;
+
+        bool isValidForUnit( const Unit & unit ) const;
+
+        bool isValidForUnit( const Unit * unit ) const
+        {
+            if ( unit == nullptr ) {
+                return false;
+            }
+
+            return isValidForUnit( *unit );
+        }
+
         fheroes2::Rect GetRect() const;
 
-        const Cell * GetHead() const;
-        const Cell * GetTail() const;
+        const Cell * GetHead() const
+        {
+            return first;
+        }
 
-        Cell * GetHead();
-        Cell * GetTail();
+        const Cell * GetTail() const
+        {
+            return second;
+        }
+
+        Cell * GetHead()
+        {
+            return first;
+        }
+
+        Cell * GetTail()
+        {
+            return second;
+        }
 
         bool operator<( const Position & other ) const;
     };
 }
-
-#endif
