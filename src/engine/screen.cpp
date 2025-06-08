@@ -976,6 +976,8 @@ namespace
 
         fheroes2::Size _windowedSize;
 
+        int _brightness;
+
         bool _isVSyncEnabled{ false };
 
         RenderEngine() = default;
