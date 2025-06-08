@@ -1,14 +1,11 @@
-<<<<<<< HEAD
-apply plugin: 'com.android.application'
-apply plugin: 'org.jetbrains.kotlin.android'
-=======
 import java.nio.file.Files
 import java.security.MessageDigest
 
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
->>>>>>> upstream/master
 
 android {
     namespace 'com.ipapps.homm2.livewallpaper'
@@ -91,9 +88,13 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:1.16.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
 
     implementation 'com.github.andycandy-de:simple-android-bridge:1.0.2'
@@ -104,15 +105,12 @@ dependencies {
 
     implementation group: 'commons-io', name: 'commons-io', version: '2.19.0'
 
-<<<<<<< HEAD
     implementation "androidx.core:core-ktx:1.7.0"
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling:$androidx_compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.compose.runtime:runtime:$compose_version"
-    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation "androidx.compose.material:material:$androidx_compose_version"
-    implementation "androidx.compose.animation:animation:$androidx_compose_version"
+    implementation "androidx.compose.ui:ui:1.8.2"
+    implementation "androidx.compose.runtime:runtime:1.8.2"
+    implementation "androidx.compose.runtime:runtime-livedata:1.8.2"
+    implementation "androidx.compose.material:material:1.8.2"
+    implementation "androidx.compose.animation:animation:1.8.2"
     implementation "androidx.preference:preference-ktx:1.1.1"
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.activity:activity-compose:1.4.0'
@@ -125,8 +123,6 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
     implementation 'androidx.datastore:datastore:1.0.0'
     implementation "androidx.datastore:datastore-preferences:1.0.0"
-    implementation 'com.google.android.material:material:1.9.0'
-=======
     implementation 'com.google.android.material:material:1.12.0'
 }
 
@@ -135,12 +131,12 @@ tasks.register('copyFH2M', Copy) {
         include '*.fh2m'
     }
     into 'src/main/assets/maps'
->>>>>>> upstream/master
+
 }
 
 tasks.register('buildJs', Exec) {
     workingDir '../../h2lwp-settings'
-    commandLine 'npm', 'run', 'build'
+    commandLine '/opt/homebrew/bin/npm', 'run', 'build'
 }
 
 tasks.register('copyH2D', Copy) {
@@ -165,10 +161,6 @@ tasks.register('copyTranslations', Copy) {
     into 'src/main/assets/files/lang'
 }
 
-<<<<<<< HEAD
-preBuild {
-    dependsOn buildJs, copyH2D, copyTranslations
-=======
 tasks.register('generateAssetsDigest') {
     dependsOn copyFH2M, copyH2D, copyTimidity, copyTranslations
 
@@ -198,6 +190,8 @@ tasks.register('generateAssetsDigest') {
 }
 
 preBuild {
-    dependsOn generateAssetsDigest
->>>>>>> upstream/master
+    dependsOn buildJs,
+//            copyH2D,
+//            copyTranslations,
+            generateAssetsDigest
 }
