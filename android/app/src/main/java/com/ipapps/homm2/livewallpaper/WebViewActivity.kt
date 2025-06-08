@@ -87,7 +87,8 @@ class WebViewActivity : AppCompatActivity() {
         assets.open("files/data/resurrection.h2d").use {
             copyFile(it, "resurrection.h2d", "files/data")
         }
-        assets.open("default_fheroes2.cfg").use {
+
+        assets.open("files/default_fheroes2.cfg").use {
             copyFile(it, "fheroes2.cfg", null)
         }
 
