@@ -52,8 +52,7 @@
             android:minWidth="256dp"
             android:onClick="wallpaperSettingsClicked"
             android:padding="8dp"
-            android:text="@string/activity_toolset_wallpaper_settings_btn_text"
-            tools:text="@string/activity_toolset_wallpaper_settings_btn_text" />
+            android:text="@string/activity_toolset_wallpaper_settings_btn_text" />
 
         <Button
             android:id="@+id/activity_toolset_start_game_btn"
