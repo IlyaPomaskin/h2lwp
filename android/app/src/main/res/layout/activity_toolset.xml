@@ -101,6 +101,7 @@
             android:minWidth="256dp"
             android:onClick="saveFileManagerButtonClicked"
             android:padding="8dp"
+            android:visibility="gone"
             android:text="@string/activity_toolset_save_file_manager_btn_text" />
 
         <Button
