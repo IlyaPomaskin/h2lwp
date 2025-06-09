@@ -26,14 +26,12 @@ function startApp(callback: () => void) {
 
 type BridgeContextValue = {
   settings: WallpaperSettings | undefined;
-  mapsList: WallpaperMapItem[];
   ready: boolean;
   androidInterface: AndroidInterface | undefined;
 };
 
 const bridgeContext = createContext<BridgeContextValue>({
   settings: undefined,
-  mapsList: [],
   ready: false,
   androidInterface: undefined,
 });
@@ -46,7 +44,6 @@ export const BridgeContextProvider: React.FC<Props> = ({ children }) => {
   const [settings, setSettings] = useState<WallpaperSettings | undefined>(
     undefined
   );
-  const [mapsList, setMapsList] = useState<WallpaperMapItem[]>([]);
   const [ready, setReady] = useState(false);
   const [androidInterface, setAndroidInterface] = useState<
     AndroidInterface | undefined
@@ -61,10 +58,6 @@ export const BridgeContextProvider: React.FC<Props> = ({ children }) => {
       if (message.type === "settings") {
         setSettings(message.payload);
       }
-
-      if (message.type === "maps-list") {
-        setMapsList(message.payload);
-      }
     };
 
     startApp(() => {
@@ -77,7 +70,6 @@ export const BridgeContextProvider: React.FC<Props> = ({ children }) => {
     <bridgeContext.Provider
       value={{
         settings,
-        mapsList,
         ready,
         androidInterface,
       }}
