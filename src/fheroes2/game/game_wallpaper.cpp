@@ -312,6 +312,10 @@ void handleKeyUp(SDL_Keysym keysym) {
             return;
         }
 
+        case SDL_SCANCODE_ESCAPE: {
+            exit(0);
+        }
+
         default: {
         }
     }
