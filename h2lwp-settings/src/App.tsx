@@ -17,7 +17,7 @@ export function App() {
 
           {ready && (
             <>
-              <Route path="/maps-list" element={<MapsListPage />} />
+              {/* <Route path="/maps-list" element={<MapsListPage />} /> */}
               <Route path="*" element={<SettingsPage />} />
             </>
           )}

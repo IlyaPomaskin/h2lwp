@@ -1,8 +1,8 @@
-import MapIcon from "@mui/icons-material/Map";
-import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+// import MapIcon from "@mui/icons-material/Map";
+// import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import List from "@mui/material/List";
 import ListSubheader from "@mui/material/ListSubheader";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { useBridgeContext } from "../BridgeContext";
 import { Brightness } from "./Brightness";
 import { MapUpdateInterval } from "./MapUpdateInterval";
@@ -18,13 +18,13 @@ export const Settings = () => {
 
   return (
     <List subheader={<ListSubheader>Settings</ListSubheader>} disablePadding>
-      <ListItemButton component={Link} to="/maps-list">
+      {/* <ListItemButton component={Link} to="/maps-list">
         <ListItemIcon>
           <MapIcon />
         </ListItemIcon>
 
         <ListItemText primary="Maps list" />
-      </ListItemButton>
+      </ListItemButton> */}
 
       <ScaleType value={settings.scaleType} />
 
