@@ -22,7 +22,6 @@ package org.fheroes2;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Locale;
 import java.util.Objects;
 
 import android.app.AlertDialog;
@@ -242,12 +241,6 @@ public final class ToolsetActivity extends AppCompatActivity
         saveFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
         wallpaperSettingsButton.setEnabled( modelStatus.isHoMM2AssetsPresent );
         mapFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
-
-        Locale currentLocale = getResources().getConfiguration().locale;
-        if (currentLocale.getDisplayName().startsWith("ru")) {
-            final TextView vpnLabel = findViewById( R.id.activity_toolset_download_with_vpn_label );
-            vpnLabel.setVisibility(View.VISIBLE);
-        }
 
         switch ( modelStatus.backgroundTaskResult ) {
         case RESULT_NONE:
