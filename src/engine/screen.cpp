@@ -1166,6 +1166,8 @@ namespace
                 return false;
             }
 
+            SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+
             if ( const int returnCode = SDL_SetRenderDrawColor( _renderer, 0, 0, 0, SDL_ALPHA_OPAQUE ); returnCode < 0 ) {
                 ERROR_LOG( "Failed to set default color for renderer. The error value: " << returnCode << ", description: " << SDL_GetError() )
             }

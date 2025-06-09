@@ -108,7 +108,6 @@ void initWallpaper() {
                                        << map.filename.c_str())
     conf.GetPlayers().SetStartGame();
 
-//    world.LoadMapMP2(conf.MapsFile(), false);
     world.LoadMapMP2(map.filename, false);
 }
 
@@ -171,7 +170,7 @@ void randomizeGameAreaPoint() {
 
 void updateBrightness() {
     int brightness = Settings::Get().GetLWPBrightness();
-    int brightnessAlpha = static_cast<uint8_t>(floor((100 - brightness * 255) / 100));
+    int brightnessAlpha = static_cast<int>(floor((100 - brightness) * 255 / 100));
     VERBOSE_LOG("updateBrightness value: " << brightness << " alpha: " << brightnessAlpha)
     fheroes2::engine().setBrightness(brightnessAlpha);
 }
