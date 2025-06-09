@@ -187,17 +187,15 @@ void readConfigFile() {
 
 void resizeDisplay() {
     fheroes2::Display &display = fheroes2::Display::instance();
-    int scale = Settings::Get().GetLWPScale();
+    int const scale = Settings::Get().GetLWPScale();
     VERBOSE_LOG("resizeDisplay scale: " << scale)
 
-    fheroes2::ResolutionInfo nextResolution = display.getScaledScreenSize(scale);
+    display.setResolution(display.getScaledScreenSize(scale));
 
-    if (nextResolution.screenWidth != display.width() ||
-        nextResolution.screenHeight != display.height()) {
-        display.setResolution(nextResolution);
-        Interface::AdventureMap::Get().getGameArea().generate({display.width(), display.height()},
-                                                              true);
-    }
+    Interface::AdventureMap::Get().getGameArea().generate(
+            {display.width(), display.height()},
+            true
+    );
 }
 
 void renderMap() {
