@@ -3,7 +3,6 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { useBridgeContext } from "./BridgeContext";
 import { LoadingPage } from "./LoadingPage";
-import { MapsListPage } from "./MapsListPage";
 import { SettingsPage } from "./SettingsPage";
 
 export function App() {
@@ -15,12 +14,7 @@ export function App() {
         <Routes>
           {!ready && <Route path="*" element={<LoadingPage />} />}
 
-          {ready && (
-            <>
-              {/* <Route path="/maps-list" element={<MapsListPage />} /> */}
-              <Route path="*" element={<SettingsPage />} />
-            </>
-          )}
+          {ready && <Route path="*" element={<SettingsPage />} />}
         </Routes>
       </Grid>
     </HashRouter>
