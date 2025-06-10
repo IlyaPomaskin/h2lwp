@@ -366,12 +366,14 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         @Override
         public void onVisibilityChanged(boolean visible) {
             Log.v(TAG, "onVisibilityChange " + (visible ? "true" : "false"));
+            nativeOnVisibilityChange(visible);
+            nativeUpdateConfigs();
 
             if (visible) {
                 debouncer.cancel("visibility-off");
                 debouncer.cancel("native-pause");
                 SDLActivity.nativeResume();
-                nativeUpdateConfigs();
+//                nativeUpdateConfigs();
             } else {
                 debouncer.addRunLast(400, TimeUnit.MILLISECONDS, "visibility-off", k1 -> {
                     nativeUpdateVisibleMapRegion();
@@ -635,6 +637,8 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     public static native void nativeUpdateVisibleMapRegion();
 
     public static native void nativeUpdateConfigs();
+
+    public static native void nativeOnVisibilityChange(boolean isVisible);
 
     public static native int nativeSetupJNI();
 

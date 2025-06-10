@@ -93,22 +93,26 @@ uint32_t lwpLastMapUpdate = 0;
 bool forceMapUpdate = true;
 bool forceConfigUpdate = true;
 bool forceUpdateOrientation = true;
+bool isVisible = false;
 
-#define TILEWIDTH 32
+void renderMap();
 
-void initWallpaper() {
+constexpr int TILE_WIDTH = 32;
+
+void loadRandomMap() {
     Settings &conf = Settings::Get();
 
-    const MapsFileInfoList list = Maps::getAllMapFileInfos(true, 0);
-    const uint32_t randomMapIndex = Rand::Get(0, list.size() - 1);
-    const Maps::FileInfo &map = list.at(randomMapIndex);
+    const MapsFileInfoList mapsList = Maps::getAllMapFileInfos(true, 0);
+    const uint32_t randomMapIndex = Rand::Get(0, mapsList.size() - 1);
+    const Maps::FileInfo &nextMap = mapsList.at(randomMapIndex);
+    const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
 
-    conf.setCurrentMapInfo(map);
-    VERBOSE_LOG("initWallpaper name: " << map.name.c_str() << " file: "
-                                       << map.filename.c_str())
-    conf.GetPlayers().SetStartGame();
-
-    world.LoadMapMP2(map.filename, false);
+    if (currentMap.filename.empty() || currentMap.filename != nextMap.filename) {
+        VERBOSE_LOG("map changed to file: " << nextMap.filename.c_str())
+        conf.setCurrentMapInfo(nextMap);
+        conf.GetPlayers().SetStartGame();
+        world.LoadMapMP2(nextMap.filename, false);
+    }
 }
 
 bool shouldUpdateMapRegion() {
@@ -132,7 +136,7 @@ void randomizeGameAreaPoint() {
     }
 
     if (lwpLastMapUpdate != 0) {
-        initWallpaper();
+        loadRandomMap();
     }
 
     lwpLastMapUpdate = std::time(nullptr);
@@ -144,8 +148,8 @@ void randomizeGameAreaPoint() {
     int32_t mapWidth = World::Get().w();
     int32_t mapHeight = World::Get().h();
 
-    int32_t screenHeight = static_cast<int32_t>(floor(displayHeight / TILEWIDTH));
-    int32_t screenWidth = static_cast<int32_t>(floor(displayWidth / TILEWIDTH));
+    int32_t screenHeight = static_cast<int32_t>(floor(displayHeight / TILE_WIDTH));
+    int32_t screenWidth = static_cast<int32_t>(floor(displayWidth / TILE_WIDTH));
 
     int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
     int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
@@ -166,6 +170,8 @@ void randomizeGameAreaPoint() {
     VERBOSE_LOG("Next point x: " << x << " y: " << y)
 
     Interface::AdventureMap::Get().getGameArea().SetCenter({x, y});
+
+    renderMap();
 }
 
 void updateBrightness() {
@@ -256,11 +262,19 @@ Java_org_libsdl_app_SDLActivity_nativeUpdateConfigs([[maybe_unused]] JNIEnv *env
     forceConfigUpdate = true;
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_org_libsdl_app_SDLActivity_nativeOnVisibilityChange([[maybe_unused]] JNIEnv *env,
+                                                         [[maybe_unused]] jclass cls,
+                                                         jboolean nextIsVisible) {
+    VERBOSE_LOG("nativeOnVisibilityChange " << nextIsVisible)
+    isVisible = nextIsVisible;
+}
+
 void handleKeyUp(SDL_Keysym keysym) {
     Settings &conf = Settings::Get();
 
     int const offsetMultiplier = keysym.mod & KMOD_SHIFT ? 10 : 1;
-    int const offset = TILEWIDTH * offsetMultiplier;
+    int const offset = TILE_WIDTH * offsetMultiplier;
 
     switch (keysym.scancode) {
         case SDL_SCANCODE_SPACE: {
@@ -331,10 +345,34 @@ bool handleSDLEvents() {
                 fheroes2::Display::instance().render();
                 break;
             }
+            case SDL_APP_WILLENTERBACKGROUND: {
+                VERBOSE_LOG("SDL_APP_WILLENTERBACKGROUND")
+                break;
+            }
+            case SDL_APP_DIDENTERBACKGROUND: {
+                VERBOSE_LOG("SDL_APP_DIDENTERBACKGROUND")
+                break;
+            }
+            case SDL_APP_WILLENTERFOREGROUND: {
+                VERBOSE_LOG("SDL_APP_WILLENTERFOREGROUND")
+                break;
+            }
+            case SDL_APP_DIDENTERFOREGROUND: {
+                VERBOSE_LOG("SDL_APP_DIDENTERFOREGROUND")
+                break;
+            }
             case SDL_RENDER_DEVICE_RESET: {
                 VERBOSE_LOG("SDL_RENDER_DEVICE_RESET")
                 LocalEvent::onRenderDeviceResetEvent();
                 fheroes2::Display::instance().render();
+                break;
+            }
+            case SDL_DISPLAYEVENT: {
+                VERBOSE_LOG("SDL_DISPLAYEVENT")
+                break;
+            }
+            case SDL_SYSWMEVENT: {
+                VERBOSE_LOG("SDL_SYSWMEVENT")
                 break;
             }
 
@@ -356,6 +394,11 @@ bool handleSDLEvents() {
 
 fheroes2::GameMode renderWallpaper() {
     while (true) {
+        if (!isVisible) {
+            SDL_Delay(100);
+            continue;
+        }
+
         forceUpdates();
 
         const bool isEscapePressed = handleSDLEvents();
@@ -384,7 +427,7 @@ void overrideConfiguration() {
 fheroes2::GameMode Game::Wallpaper() {
     rereadAndApplyConfigs();
     overrideConfiguration();
-    initWallpaper();
+    loadRandomMap();
 
     return renderWallpaper();
 }
