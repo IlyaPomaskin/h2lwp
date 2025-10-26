@@ -1213,14 +1213,71 @@ namespace Maps
         auto sortObjects = []( const IndexedObjectInfo & left, const IndexedObjectInfo & right ) { return left.info->id < right.info->id; };
         std::multiset<IndexedObjectInfo, decltype( sortObjects )> sortedObjects( sortObjects );
 
+#if defined( WITH_DEBUG )
+        std::map<uint32_t, IndexedObjectInfo> objectsUIDs;
+        std::multiset<IndexedObjectInfo, decltype( sortObjects )> incorrectObjects( sortObjects );
+#endif
+
         for ( size_t i = 0; i < tilesConut; ++i ) {
             for ( const auto & object : map.tiles[i].objects ) {
                 IndexedObjectInfo info;
                 info.tileIndex = static_cast<int32_t>( i );
                 info.info = &object;
                 sortedObjects.emplace( info );
+
+#if defined( WITH_DEBUG )
+                if ( object.group != Maps::ObjectGroup::LANDSCAPE_TOWN_BASEMENTS && object.group != Maps::ObjectGroup::LANDSCAPE_FLAGS ) {
+                    const auto [iter, inserted] = objectsUIDs.try_emplace( object.id, info );
+                    if ( !inserted ) {
+                        incorrectObjects.emplace( iter->second );
+                        incorrectObjects.emplace( info );
+                    }
+                }
+#endif
             }
         }
+
+#if defined( WITH_DEBUG )
+        uint32_t uid = 0;
+        for ( const IndexedObjectInfo & info : incorrectObjects ) {
+            if ( info.info->id != uid ) {
+                uid = info.info->id;
+                if ( map.resourceMetadata.find( uid ) != map.resourceMetadata.end() ) {
+                    VERBOSE_LOG( "`resourceMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.castleMetadata.find( uid ) != map.castleMetadata.end() ) {
+                    VERBOSE_LOG( "`castleMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.heroMetadata.find( uid ) != map.heroMetadata.end() ) {
+                    VERBOSE_LOG( "`heroMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.sphinxMetadata.find( uid ) != map.sphinxMetadata.end() ) {
+                    VERBOSE_LOG( "`sphinxMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.signMetadata.find( uid ) != map.signMetadata.end() ) {
+                    VERBOSE_LOG( "`signMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.adventureMapEventMetadata.find( uid ) != map.adventureMapEventMetadata.end() ) {
+                    VERBOSE_LOG( "`adventureMapEventMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.selectionObjectMetadata.find( uid ) != map.selectionObjectMetadata.end() ) {
+                    VERBOSE_LOG( "`selectionObjectMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.capturableObjectsMetadata.find( uid ) != map.capturableObjectsMetadata.end() ) {
+                    VERBOSE_LOG( "`capturableObjectsMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.monsterMetadata.find( uid ) != map.monsterMetadata.end() ) {
+                    VERBOSE_LOG( "`monsterMetadata` belongs to many objects with same UID: " << uid )
+                }
+                if ( map.artifactMetadata.find( uid ) != map.artifactMetadata.end() ) {
+                    VERBOSE_LOG( "`artifactMetadata` belongs to many objects with same UID: " << uid )
+                }
+            }
+
+            VERBOSE_LOG( "Non-unique UID " << info.info->id << " at " << info.tileIndex << " (" << info.tileIndex % map.width << ", " << info.tileIndex / map.width
+                                           << ") tile for object type: " << MP2::StringObject( getObjectInfo( info.info->group, info.info->index ).objectType ) )
+        }
+#endif
 
         for ( const auto & info : sortedObjects ) {
             assert( info.info != nullptr );
@@ -1330,7 +1387,7 @@ namespace Maps
             heroMetadata->second.race = Race::RAND;
         }
         else if ( group == ObjectGroup::MONSTERS ) {
-            const auto [dummy, isMetadataEmplaced] = map.standardMetadata.try_emplace( uid );
+            const auto [dummy, isMetadataEmplaced] = map.monsterMetadata.try_emplace( uid );
             assert( isMetadataEmplaced );
 
 #ifdef NDEBUG
@@ -1392,7 +1449,7 @@ namespace Maps
         else if ( group == ObjectGroup::ADVENTURE_ARTIFACTS ) {
             assert( index < getObjectsByGroup( group ).size() );
 
-            const auto [dummy, isMetadataEmplaced] = map.standardMetadata.try_emplace( uid );
+            const auto [dummy, isMetadataEmplaced] = map.artifactMetadata.try_emplace( uid );
             assert( isMetadataEmplaced );
 
 #ifdef NDEBUG
@@ -1681,10 +1738,15 @@ namespace Maps
         }
         else {
             // No colors are set so no alliances should exist.
-            map.alliances = { 0 };
+            map.alliances.clear();
 
             // No races are set.
             map.playerRace = { 0 };
+        }
+
+        if ( map.alliances.empty() && map.victoryConditionType == FileInfo::VictoryCondition::VICTORY_DEFEAT_OTHER_SIDE ) {
+            // When there are no alliances there are no sides. Reset the victory condition to the default.
+            map.victoryConditionType = FileInfo::VictoryCondition::VICTORY_DEFEAT_EVERYONE;
         }
 
         // Update events according to the possible changes in human and/or AI player colors.

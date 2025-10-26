@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2024                                                    *
+ *   Copyright (C) 2024 - 2025                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -47,6 +47,9 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
@@ -294,6 +297,14 @@ public final class MapFileManagerActivity extends AppCompatActivity
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.activity_map_file_manager );
+
+        ViewCompat.setOnApplyWindowInsetsListener( findViewById( R.id.activity_map_file_manager_root_rl ), ( v, insets ) -> {
+            final Insets paddingInsets = insets.getInsets( WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout() );
+
+            v.setPadding( paddingInsets.left, paddingInsets.top, paddingInsets.right, paddingInsets.bottom );
+
+            return WindowInsetsCompat.CONSUMED;
+        } );
 
         mapFileDir = new File( getExternalFilesDir( null ), "maps" );
 

@@ -103,7 +103,7 @@ dependencies {
     implementation project(':isotools')
 //    implementation project(':sdl2')
 
-    implementation group: 'commons-io', name: 'commons-io', version: '2.19.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.20.0'
 
     implementation "androidx.core:core-ktx:1.7.0"
     implementation "androidx.compose.ui:ui:1.8.2"
@@ -123,7 +123,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
     implementation 'androidx.datastore:datastore:1.0.0'
     implementation "androidx.datastore:datastore-preferences:1.0.0"
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.13.0'
 }
 
 tasks.register('copyFH2M', Copy) {

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fheroes2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-06 02:30+0000\n"
+"POT-Creation-Date: 2025-10-23 23:54+0000\n"
 "PO-Revision-Date: 2022-09-23 16:01+0200\n"
 "Last-Translator: fheroes2 team <fhomm2@gmail.com>\n"
 "Language-Team: \n"
@@ -43,6 +43,9 @@ msgstr "ВЫЙСЦІ"
 msgid "smallerButton|EXIT"
 msgstr "ВЫЙСЦІ"
 
+msgid "OKAY"
+msgstr "ДОБРА"
+
 msgid "HEROES"
 msgstr "ГЕРОІ"
 
@@ -55,9 +58,6 @@ msgstr ""
 
 msgid "CANCEL"
 msgstr "НАЗАД"
-
-msgid "OKAY"
-msgstr "ДОБРА"
 
 msgid "ACCEPT"
 msgstr "ПРЫНЯЦЬ"
@@ -177,12 +177,26 @@ msgstr ""
 "ЗАГРУ-\n"
 "ЗІЦЬ"
 
+#, fuzzy
+msgid ""
+"RESTART\n"
+"GAME"
+msgstr "НАНОВА"
+
 msgid ""
 "SAVE\n"
 "GAME"
 msgstr ""
 "ЗАХА-\n"
 "ВАЦЬ"
+
+#, fuzzy
+msgid ""
+"QUICK\n"
+"SAVE"
+msgstr ""
+"ХУТКІ\n"
+"БОЙ"
 
 msgid "QUIT"
 msgstr ""
@@ -191,17 +205,28 @@ msgstr ""
 
 #, fuzzy
 msgid ""
-"LOAD\n"
+"START\n"
 "MAP"
+msgstr "НАНОВА"
+
+msgid ""
+"MAIN\n"
+"MENU"
 msgstr ""
-"ЗАГРУ-\n"
-"ЗІЦЬ"
 
 #, fuzzy
 msgid ""
 "NEW\n"
 "MAP"
 msgstr "НОВАЯ"
+
+#, fuzzy
+msgid ""
+"LOAD\n"
+"MAP"
+msgstr ""
+"ЗАГРУ-\n"
+"ЗІЦЬ"
 
 #, fuzzy
 msgid ""
@@ -215,18 +240,21 @@ msgid "INFO"
 msgstr "ДАВЕДКА"
 
 msgid ""
-"STANDARD\n"
-"GAME"
-msgstr ""
-"ЗВЫЧАЙНАЯ\n"
-"ГУЛЬНЯ"
-
-msgid ""
 "BATTLE\n"
 "ONLY"
 msgstr ""
 "АСОБНЫ\n"
 "БОЙ"
+
+msgid "SETTINGS"
+msgstr ""
+
+msgid ""
+"STANDARD\n"
+"GAME"
+msgstr ""
+"ЗВЫЧАЙНАЯ\n"
+"ГУЛЬНЯ"
 
 msgid ""
 "CAMPAIGN\n"
@@ -241,23 +269,6 @@ msgstr ""
 "ШМАТ-\n"
 "АСАБОВАЯ\n"
 "ГУЛЬНЯ"
-
-msgid "CONFIG"
-msgstr "НАЛАДЫ"
-
-msgid ""
-"ORIGINAL\n"
-"CAMPAIGN"
-msgstr ""
-"АРЫГІНАЛЬНАЯ\n"
-"КАМПАНІЯ"
-
-msgid ""
-"EXPANSION\n"
-"CAMPAIGN"
-msgstr ""
-"КАМНАНІЯ\n"
-"ДАПАЎНЕННЯ"
 
 msgid "HOT SEAT"
 msgstr ""
@@ -278,6 +289,31 @@ msgstr "5 ГУЛЬЦОЎ"
 
 msgid "6 PLAYERS"
 msgstr "6 ГУЛЬЦОЎ"
+
+msgid ""
+"ORIGINAL\n"
+"CAMPAIGN"
+msgstr ""
+"АРЫГІНАЛЬНАЯ\n"
+"КАМПАНІЯ"
+
+msgid ""
+"EXPANSION\n"
+"CAMPAIGN"
+msgstr ""
+"КАМНАНІЯ\n"
+"ДАПАЎНЕННЯ"
+
+msgid "editorMainMenu|BACK"
+msgstr ""
+
+msgid ""
+"newMap|FROM\n"
+"SCRATCH"
+msgstr ""
+
+msgid "newMap|RANDOM"
+msgstr ""
 
 msgid "DIFFICULTY"
 msgstr "ЦЯЖКАСЦЬ"
@@ -793,6 +829,12 @@ msgstr "Скарыстаць %{spell}"
 msgid "Select spell target"
 msgstr "Выберыце цэль заклінання"
 
+msgid "Are you sure you want to enable the auto combat mode?"
+msgstr "Вы ўпэўнены, што хочаце ўключыць рэжым аўтабою?"
+
+msgid "Are you sure you want to resolve the battle in the quick combat mode?"
+msgstr "Вы ўпэўнены, што хочаце правесці бітву ў рэжыме хуткага бою?"
+
 msgid "View Ballista info"
 msgstr "Інфармацыя пра балісту"
 
@@ -857,12 +899,6 @@ msgstr "Інфармацыйны радок"
 
 msgid "Shows the results of individual monster's actions."
 msgstr "Тут паказваюцца вынікі дзеянняў асобных атрадаў."
-
-msgid "Are you sure you want to enable the auto combat mode?"
-msgstr "Вы ўпэўнены, што хочаце ўключыць рэжым аўтабою?"
-
-msgid "Are you sure you want to resolve the battle in the quick combat mode?"
-msgstr "Вы ўпэўнены, што хочаце правесці бітву ў рэжыме хуткага бою?"
 
 msgid ""
 "AUTO\n"
@@ -2688,14 +2724,16 @@ msgid ""
 "no room for a spell book. Try giving one of your artifacts to another hero."
 msgstr ""
 
-msgid "Click to show next town."
-msgstr ""
+#, fuzzy
+msgid "Click to show the next town."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
 
 msgid "Show next town"
 msgstr ""
 
-msgid "Click to show previous town."
-msgstr ""
+#, fuzzy
+msgid "Click to show the previous town."
+msgstr "Пстрыкні, каб ухваліць абранае раздзяленне."
 
 msgid "Show previous town"
 msgstr ""
@@ -2722,6 +2760,9 @@ msgid "The above spells are available here."
 msgstr ""
 
 msgid "The spells the hero can learn have been added to their book."
+msgstr ""
+
+msgid "Exit Mage Guild"
 msgstr ""
 
 msgid "A generous tip for the barkeep yields the following rumor:"
@@ -2755,19 +2796,9 @@ msgid ""
 "of the castle's side of the battlefield."
 msgstr ""
 
-msgid "Spread Formation"
-msgstr ""
-
-msgid "Grouped Formation"
-msgstr ""
-
 #, fuzzy
-msgid "Click to show the next town."
-msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
-
-#, fuzzy
-msgid "Click to show the previous town."
-msgstr "Пстрыкні, каб ухваліць абранае раздзяленне."
+msgid "Castle Options. Month: %{month}, Week: %{week}, Day: %{day}"
+msgstr "Месяц: %{month}, Тыдзень: %{week}, Дзень: %{day}"
 
 msgid "Set garrison combat formation to 'Spread'"
 msgstr ""
@@ -2778,8 +2809,11 @@ msgstr ""
 msgid "Exit Castle Options"
 msgstr ""
 
-msgid "Castle Options"
-msgstr "Налады замка"
+msgid "Spread Formation"
+msgstr ""
+
+msgid "Grouped Formation"
+msgstr ""
 
 msgid "Not enough resources to recruit creatures."
 msgstr ""
@@ -2974,6 +3008,13 @@ msgstr "У казне: "
 msgid "Need: "
 msgstr "Трэба: "
 
+#, fuzzy
+msgid "Restart Game"
+msgstr "Перазапусціць"
+
+msgid "There was an issue during saving."
+msgstr ""
+
 msgid "New Game"
 msgstr "Новая гульня"
 
@@ -2986,10 +3027,22 @@ msgstr "Загрузіць гульню"
 msgid "Load a previously saved game."
 msgstr "Працягнуць захаваную гульню."
 
+#, fuzzy
+msgid "Restart the scenario."
+msgstr "Пакінуць замак"
+
 msgid "Save Game"
 msgstr "Захаваць гульню"
 
 msgid "Save the current game."
+msgstr "Захаваць бягучую гульню."
+
+#, fuzzy
+msgid "Quick Save"
+msgstr "Хуткі бой"
+
+#, fuzzy
+msgid "Save the current game without name selection."
 msgstr "Захаваць бягучую гульню."
 
 msgid "Quit"
@@ -3363,6 +3416,18 @@ msgstr "Выберыце разрознасць экранa:"
 msgid "Click to apply the selected resolution."
 msgstr "Націсніце, каб ужыць выбраную разрознасць."
 
+#, fuzzy
+msgid "Click to select the maximum amount."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+#, fuzzy
+msgid "Click to select the minimum amount."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+#, fuzzy
+msgid "Click to apply the entered number."
+msgstr "Націсніце, каб ужыць уведзены тэкст."
+
 msgid "Click to apply the entered text."
 msgstr "Націсніце, каб ужыць уведзены тэкст."
 
@@ -3399,6 +3464,12 @@ msgid ""
 "Location: "
 msgstr ""
 
+msgid "saveLoadDialog|Name"
+msgstr ""
+
+msgid "saveLoadDialog|Date"
+msgstr ""
+
 msgid "Are you sure you want to delete file:"
 msgstr ""
 
@@ -3409,6 +3480,20 @@ msgid "Click to save the current game."
 msgstr ""
 
 msgid "Click to load a previously saved game."
+msgstr ""
+
+msgid "Click here if you wish to sort save files by their name."
+msgstr ""
+
+#, fuzzy
+msgid "Sort by Name"
+msgstr "Вашае імя"
+
+msgid ""
+"Click here if you you wish to sort save files by their last modified date."
+msgstr ""
+
+msgid "Sort by Date"
 msgstr ""
 
 msgid "File to Save:"
@@ -3437,6 +3522,10 @@ msgstr ""
 
 msgid "Select Hero:"
 msgstr ""
+
+#, fuzzy
+msgid "Select Monsters:"
+msgstr "Мова"
 
 msgid "race|Random"
 msgstr ""
@@ -3520,6 +3609,10 @@ msgstr ""
 #, fuzzy
 msgid "%{mineName} appearance:"
 msgstr "%{race} %{name}"
+
+#, fuzzy
+msgid "Click to select the color."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
 
 #, fuzzy
 msgid "Click to select %{object} as the resource generator to be placed."
@@ -3645,6 +3738,10 @@ msgstr "Складанасць мапы:"
 
 msgid "N"
 msgstr ""
+
+#, fuzzy
+msgid "Are you sure you want to delete the map:"
+msgstr "Вы сапраўды хочаце адступіць?"
 
 #, fuzzy
 msgid "No maps exist at that size."
@@ -3831,6 +3928,30 @@ msgstr ""
 msgid "Random Town Name"
 msgstr ""
 
+msgid "BANNED SPELLS"
+msgstr ""
+
+#, fuzzy
+msgid "Click to accept the changes made."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+#, fuzzy
+msgid "Exit this dialog, discarding the changes made."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+msgid "Click to ban spells from appearing in the Mage Guild."
+msgstr ""
+
+#, fuzzy
+msgid "Banned Spells"
+msgstr "Выпадковае заклінанне"
+
+msgid "Select spells that will appear in the Mage Guild."
+msgstr ""
+
+msgid "SET SPELLS"
+msgstr ""
+
 #, fuzzy
 msgid "Allow Castle build"
 msgstr "Воблачны замак"
@@ -3854,11 +3975,16 @@ msgstr "Замак"
 msgid "Town Army"
 msgstr "Горад"
 
-msgid "Click to change the Castle name. Right-click to reset to default."
-msgstr ""
+#, fuzzy
+msgid "Click to change the Castle name."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
 
 #, fuzzy
 msgid "Enter Castle name"
+msgstr "Пакінуць замак"
+
+#, fuzzy
+msgid "Reset the Castle name."
 msgstr "Пакінуць замак"
 
 msgid "Allow to build a castle in this town."
@@ -3876,8 +4002,23 @@ msgstr ""
 msgid "Use default defenders army."
 msgstr ""
 
-msgid "Set custom Castle Army. Right-click to reset unit."
+msgid "Reset the army."
 msgstr ""
+
+#, fuzzy
+msgid "Set custom Castle Army."
+msgstr "Замак"
+
+msgid "Set spells to appear in the Mage Guild."
+msgstr ""
+
+#, fuzzy
+msgid "Set Spells"
+msgstr "Прагледзець заклінанні"
+
+#, fuzzy
+msgid "Castle Settings"
+msgstr "Налады гульні"
 
 msgid "Message Text:"
 msgstr ""
@@ -4017,6 +4158,10 @@ msgid ""
 "crosses the event tile."
 msgstr ""
 
+#, fuzzy
+msgid "Click to make selection."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
 msgid "%{objects} cannot be placed on water."
 msgstr ""
 
@@ -4032,6 +4177,9 @@ msgid "Objects cannot be placed outside the map."
 msgstr ""
 
 msgid "Action objects must be placed on clear tiles."
+msgstr ""
+
+msgid "A maximum of %{count} %{objects} can be placed on the map."
 msgstr ""
 
 msgid ""
@@ -4051,17 +4199,6 @@ msgid ""
 "Are you sure you want to create a new map? (Any unsaved changes to the "
 "current map will be lost.)"
 msgstr ""
-
-msgid ""
-"MAIN\n"
-"MENU"
-msgstr ""
-
-#, fuzzy
-msgid ""
-"START\n"
-"MAP"
-msgstr "НАНОВА"
 
 msgid "Main Menu"
 msgstr ""
@@ -4146,6 +4283,11 @@ msgid "Roads"
 msgstr ""
 
 msgid "Streams"
+msgstr ""
+
+msgid ""
+"A maximum of %{count} heroes including jailed heroes can be placed on the "
+"map."
 msgstr ""
 
 msgid ""
@@ -4426,14 +4568,8 @@ msgstr ""
 msgid "View the editor system options, which let you customize the editor."
 msgstr ""
 
-msgid "Create a map that is %{size} squares wide and %{size} squares high."
-msgstr ""
-
 #, fuzzy
-msgid "Cancel back to the New Map menu."
-msgstr "Вярнуцца ў галоўнае меню."
-
-msgid "Cancel back to the main menu."
+msgid "Exit the Editor and return to the game's Main Menu."
 msgstr "Вярнуцца ў галоўнае меню."
 
 msgid "From Scratch"
@@ -4451,9 +4587,15 @@ msgstr ""
 "Выпад-\n"
 "ковы"
 
+msgid "Back"
+msgstr ""
+
 #, fuzzy
-msgid "Cancel back to the Map Editor main menu."
+msgid "Return to the Editor's main menu options."
 msgstr "Вярнуцца ў галоўнае меню."
+
+msgid "Create a map that is %{size} squares wide and %{size} squares high."
+msgstr ""
 
 msgid "No maps available!"
 msgstr ""
@@ -4467,25 +4609,25 @@ msgid "[%{pos}]: %{name}, %{race} hero"
 msgstr "%{race} %{name}"
 
 #, fuzzy
-msgid "[%{pos}]: %{race} town"
+msgid "[%{pos}]: %{race} castle"
 msgstr "%{color} гулец"
 
 #, fuzzy
-msgid "[%{pos}]: %{race} castle"
+msgid "[%{pos}]: %{race} town"
 msgstr "%{color} гулец"
+
+msgid "[%{pos}]: %{name}, %{race} castle"
+msgstr ""
 
 #, fuzzy
 msgid "[%{pos}]: %{name}, %{race} town"
 msgstr "%{race} %{name}"
 
-msgid "[%{pos}]: %{name}, %{race} castle"
-msgstr ""
-
 msgid "None."
 msgstr "Няма."
 
 #, fuzzy
-msgid "One side defeats another."
+msgid "One side defeats the other."
 msgstr "Калі ласка, выбярыце іншага героя."
 
 #, fuzzy
@@ -4617,10 +4759,6 @@ msgid "About"
 msgstr ""
 
 #, fuzzy
-msgid "Click to accept the changes made."
-msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
-
-#, fuzzy
 msgid "Click to edit custom rumors."
 msgstr "Назва абранай мапы."
 
@@ -4678,6 +4816,12 @@ msgid ""
 msgstr ""
 "Складанасць мапы вызначаецца ейным аўтарам. Болей складаныя мапы могуць "
 "утрымліваць больш ворагаў, менш рэсурсаў ці іншыя адмысловыя акалічнасці."
+
+#, fuzzy
+msgid ""
+"editor|%{object}\n"
+"(%{color} player)"
+msgstr "%{color} гулец"
 
 msgid "editor|%{count} %{resource}"
 msgstr ""
@@ -4746,6 +4890,45 @@ msgstr "Вялікія мапы"
 #, fuzzy
 msgid "Click to save the current map."
 msgstr "Назва абранай мапы."
+
+#, fuzzy
+msgid "Click to enable all secondary skills."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+#, fuzzy
+msgid "Enable All Secondary Skills"
+msgstr "Выпадковае заклінанне"
+
+#, fuzzy
+msgid "Click to disable all secondary skills."
+msgstr "Пстрыкні, каб ухваліць абранае раздзяленне."
+
+#, fuzzy
+msgid "Disable All Secondary Skills"
+msgstr "Прагледзець заклінанні"
+
+msgid "Click to show only level %{level} spells."
+msgstr ""
+
+#, fuzzy
+msgid "Spells level"
+msgstr "Няўдалае заклінанне!"
+
+#, fuzzy
+msgid "Click to enable all spells."
+msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
+
+#, fuzzy
+msgid "Enable All Spells"
+msgstr "Выпадковае заклінанне"
+
+#, fuzzy
+msgid "Click to disable all spells."
+msgstr "Пстрыкні, каб ухваліць абранае раздзяленне."
+
+#, fuzzy
+msgid "Disable All Spells"
+msgstr "Прагледзець заклінанні"
 
 msgid "Riddle:"
 msgstr ""
@@ -4897,6 +5080,10 @@ msgstr ""
 
 msgid "The number of days spent on this campaign."
 msgstr ""
+
+#, fuzzy
+msgid "Scenario Title"
+msgstr "Сцэнар"
 
 msgid "Project Coordination and Core Development"
 msgstr ""
@@ -5261,6 +5448,10 @@ msgstr ""
 msgid "hotkey|save game"
 msgstr ""
 
+#, fuzzy
+msgid "hotkey|quick save"
+msgstr "Найлепшыя дасягненні"
+
 msgid "hotkey|next hero"
 msgstr ""
 
@@ -5367,6 +5558,10 @@ msgstr ""
 
 msgid "hotkey|cast battle spell"
 msgstr ""
+
+#, fuzzy
+msgid "hotkey|toggle display of battle turn order"
+msgstr "Звычайная гульня"
 
 msgid "hotkey|dwelling level 1"
 msgstr ""
@@ -5485,16 +5680,6 @@ msgstr ""
 msgid "No save files to load."
 msgstr ""
 
-msgid "Hot Seat"
-msgstr "За адным камп’ютарам"
-
-msgid ""
-"Play a Hot Seat game, where 2 to 6 players play around the same computer, "
-"switching into the 'Hot Seat' when it is their turn."
-msgstr ""
-"Гуляйце за адным камп’ютарам з адным-пяццю іншымі гульцамі, перадаючы "
-"кіраванне па чарзе."
-
 msgid "A single player game playing out a single map."
 msgstr "Гульня для адной асобы на адной мапе."
 
@@ -5514,6 +5699,19 @@ msgid ""
 "A multi-player game, with several human players completing against each "
 "other on a single map."
 msgstr "Супрацьстаянне некалькіх асобаў на адной мапе."
+
+msgid "Hot Seat"
+msgstr "За адным камп’ютарам"
+
+msgid ""
+"Play a Hot Seat game, where 2 to 6 players play around the same computer, "
+"switching into the 'Hot Seat' when it is their turn."
+msgstr ""
+"Гуляйце за адным камп’ютарам з адным-пяццю іншымі гульцамі, перадаючы "
+"кіраванне па чарзе."
+
+msgid "Cancel back to the main menu."
+msgstr "Вярнуцца ў галоўнае меню."
 
 msgid "fheroes2 Resurrection Team presents"
 msgstr "fheroes2 Resurrection Team прадстаўляе"
@@ -5580,37 +5778,7 @@ msgstr ""
 "Бракуе відэя файлаў для абранай кампаніі. Праверце, ці ўсе неабходныя файлы "
 "былі скапіяваны."
 
-msgid ""
-"Either Roland's or Archibald's campaign from the original Heroes of Might "
-"and Magic II."
-msgstr ""
-
-msgid "Original Campaign"
-msgstr "Асноўны сцэнар"
-
-msgid "Expansion Campaign"
-msgstr "Дадатковыя сцэнары"
-
-msgid "One of the four new campaigns from the Price of Loyalty expansion set."
-msgstr ""
-
 msgid "Loading video. Please wait..."
-msgstr ""
-
-msgid "Host"
-msgstr ""
-
-msgid ""
-"The host sets up the game options. There can only be one host per network "
-"game."
-msgstr ""
-
-msgid "Guest"
-msgstr ""
-
-msgid ""
-"The guest waits for the host to set up the game, then is automatically added "
-"in. There can be multiple guests for TCP/IP games."
 msgstr ""
 
 msgid ""
@@ -5631,14 +5799,6 @@ msgstr "Асобны бой"
 
 msgid "Setup and play a battle without loading any map."
 msgstr "Наладзь і згуляй бітву, не загружаючы мапу."
-
-#, fuzzy
-msgid ""
-"Play a Hot Seat game, where 2 to 6 players play on the same device, "
-"switching into the 'Hot Seat' when it is their turn."
-msgstr ""
-"Гуляй за адным кампутарам з адной-пяццю іншымі асобамі, перадаючы кіраванне "
-"па чарзе."
 
 msgid "2 Players"
 msgstr "2 гульцы"
@@ -5677,6 +5837,28 @@ msgstr "6 Гульцоў"
 
 msgid "Play with 6 human players."
 msgstr "Гульня для 6-ці асобаў."
+
+msgid "Original Campaign"
+msgstr "Асноўны сцэнар"
+
+msgid ""
+"Either Roland's or Archibald's campaign from the original Heroes of Might "
+"and Magic II."
+msgstr ""
+
+msgid "Expansion Campaign"
+msgstr "Дадатковыя сцэнары"
+
+msgid "One of the four new campaigns from the Price of Loyalty expansion set."
+msgstr ""
+
+#, fuzzy
+msgid ""
+"Play a Hot Seat game, where 2 to 6 players play on the same device, "
+"switching into the 'Hot Seat' when it is their turn."
+msgstr ""
+"Гуляй за адным кампутарам з адной-пяццю іншымі асобамі, перадаючы кіраванне "
+"па чарзе."
 
 msgid "Dragon city has fallen! You are now the Master of the Dragons."
 msgstr ""
@@ -5863,10 +6045,19 @@ msgstr "Пстрыкні, каб ухваліць налады і пачаць �
 msgid "Click to return to the main menu."
 msgstr "Пстрыкні, каб вярнуцца ў галоўнае меню."
 
+msgid "The map is corrupted or doesn't exist."
+msgstr ""
+
 msgid "Astrologers proclaim the Month of the %{name}."
 msgstr ""
 
+msgid "New Month!"
+msgstr ""
+
 msgid "Astrologers proclaim the Week of the %{name}."
+msgstr ""
+
+msgid "New Week!"
 msgstr ""
 
 msgid "After regular growth, the population of %{monster} is doubled!"
@@ -5885,16 +6076,10 @@ msgstr[2] ""
 msgid "%{monster} growth +%{count}."
 msgstr ""
 
-msgid " All populations are halved."
+msgid "All populations are halved."
 msgstr ""
 
-msgid " All dwellings increase population."
-msgstr ""
-
-msgid "New Month!"
-msgstr ""
-
-msgid "New Week!"
+msgid "All dwellings increase population."
 msgstr ""
 
 msgid "Beware!"
@@ -6044,9 +6229,6 @@ msgid "Are you sure you want to overwrite the save with this name?"
 msgstr ""
 
 msgid "Game saved successfully."
-msgstr ""
-
-msgid "There was an issue during saving."
 msgstr ""
 
 msgid ""
@@ -6303,12 +6485,6 @@ msgstr "Зло"
 msgid ", FPS: "
 msgstr ""
 
-msgid "shipAndGraveyard|%{object} robber"
-msgstr ""
-
-msgid "pyramid|%{object} raided"
-msgstr ""
-
 msgid "Ector"
 msgstr ""
 
@@ -6333,6 +6509,9 @@ msgstr ""
 msgid "Fineous"
 msgstr ""
 
+msgid "Jaclyn"
+msgstr ""
+
 msgid "Jezebel"
 msgstr ""
 
@@ -6340,9 +6519,6 @@ msgid "Atlas"
 msgstr ""
 
 msgid "Ergon"
-msgstr ""
-
-msgid "Jaclyn"
 msgstr ""
 
 msgid "Gem"
@@ -6432,6 +6608,9 @@ msgstr ""
 msgid "Dainwin"
 msgstr ""
 
+msgid "Gallavant"
+msgstr ""
+
 msgid "Joseph"
 msgstr ""
 
@@ -6450,13 +6629,16 @@ msgstr ""
 msgid "Elderian"
 msgstr ""
 
-msgid "Gallavant"
-msgstr ""
-
 msgid "Jarkonas"
 msgstr ""
 
 msgid "Martine"
+msgstr ""
+
+msgid "shipAndGraveyard|%{object} robber"
+msgstr ""
+
+msgid "pyramid|%{object} raided"
 msgstr ""
 
 msgid " gives you maximum morale"
@@ -6914,6 +7096,11 @@ msgstr ""
 msgid ""
 "Discretion is the better part of valor, and you decide to avoid this fight "
 "for today."
+msgstr ""
+
+msgid ""
+"After spending hours trying to fish the chest out of the sea, you open it, "
+"only to find it empty."
 msgstr ""
 
 msgid ""
@@ -7580,7 +7767,7 @@ msgid "Random %{race} hero (Level %{level})"
 msgstr ""
 
 #, fuzzy
-msgid "Hero race:"
+msgid "Hero class:"
 msgstr "Экран героя"
 
 msgid "Are you sure you want to dismiss this Hero?"
@@ -7615,7 +7802,7 @@ msgid "Enter hero's name"
 msgstr ""
 
 #, fuzzy
-msgid "Click to change race."
+msgid "Click to change class."
 msgstr "Пстрыкніце сюды, каб выбраць сцэнар"
 
 msgid ""
@@ -7711,6 +7898,35 @@ msgid ""
 msgstr ""
 
 msgid "%{name1} meets %{name2}"
+msgstr ""
+
+msgid "hero|Level %{level}"
+msgstr ""
+
+msgid "Move all artifacts from %{from_hero_name} to %{to_hero_name}."
+msgstr ""
+
+#, fuzzy
+msgid "Artifact Transfer"
+msgstr "Артэфакты"
+
+#, fuzzy
+msgid "Swap Artifacts"
+msgstr "Прагледзець артэфакты"
+
+msgid "Swap all artifacts between heroes."
+msgstr ""
+
+msgid "Move army from %{from_hero_name} to %{to_hero_name}."
+msgstr ""
+
+msgid "Army Transfer"
+msgstr ""
+
+msgid "Swap Armies"
+msgstr ""
+
+msgid "Swap armies between heroes."
 msgstr ""
 
 msgid "Enemy heroes are now fully identifiable."
@@ -9331,7 +9547,7 @@ msgstr ""
 msgid "Flyer"
 msgstr ""
 
-msgid "Always retaliates"
+msgid "Unlimited retaliation"
 msgstr ""
 
 msgid "Attacks all adjacent enemies"
@@ -10981,10 +11197,12 @@ msgstr ""
 msgid "Dimension Door"
 msgstr ""
 
-msgid "Returns the caster to any town or castle currently owned."
+msgid "Town Gate"
 msgstr ""
 
-msgid "Town Gate"
+msgid ""
+"Returns the caster to the nearest town or castle currently owned. This spell "
+"cannot be cast if the hero is already in a town or a castle."
 msgstr ""
 
 msgid ""
@@ -11187,3 +11405,17 @@ msgstr "Ён сказаў ёй: Бэ бэ бэ... а потым яна сказ�
 
 msgid "An unknown force is being resurrected..."
 msgstr "Адраджаецца невядомая сіла..."
+
+#~ msgid "Castle Options"
+#~ msgstr "Налады замка"
+
+#~ msgid "CONFIG"
+#~ msgstr "НАЛАДЫ"
+
+#, fuzzy
+#~ msgid "Cancel back to the New Map menu."
+#~ msgstr "Вярнуцца ў галоўнае меню."
+
+#, fuzzy
+#~ msgid "Cancel back to the Map Editor main menu."
+#~ msgstr "Вярнуцца ў галоўнае меню."
