@@ -10,7 +10,7 @@ plugins {
 android {
     namespace 'com.ipapps.homm2.livewallpaper'
 
-    compileSdk 35
+    compileSdk 36
 
     buildFeatures {
         compose true

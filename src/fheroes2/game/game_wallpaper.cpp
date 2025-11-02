@@ -192,6 +192,8 @@ void readConfigFile() {
 }
 
 void resizeDisplay() {
+    forceUpdateOrientation = false;
+
     fheroes2::Display &display = fheroes2::Display::instance();
     int const scale = Settings::Get().GetLWPScale();
     VERBOSE_LOG("resizeDisplay scale: " << scale)
@@ -235,7 +237,6 @@ void forceUpdates() {
 
     if (forceUpdateOrientation) {
         resizeDisplay();
-        forceUpdateOrientation = false;
     }
 }
 
@@ -421,6 +422,10 @@ fheroes2::GameMode renderWallpaper() {
         const bool isEscapePressed = handleSDLEvents();
         if (isEscapePressed) {
             return fheroes2::GameMode::QUIT_GAME;
+        }
+
+        if (forceUpdateOrientation) {
+            resizeDisplay();
         }
 
         if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
