@@ -20,6 +20,8 @@
 
 LOCAL_PATH := $(call my-dir)
 
+LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
+
 # Common for both C and C++
 FHEROES2_C_WARN_OPTIONS := \
     -pedantic \

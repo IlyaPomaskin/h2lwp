@@ -20,7 +20,7 @@ android {
         applicationId 'com.ipapps.homm2.livewallpaper'
 
         minSdk 22
-        targetSdk 35
+        targetSdk 36
 
         // These paths are set relative to the android project directory
         versionCode((new File('../version_code.txt')).getText('UTF-8').trim().toInteger())
@@ -28,9 +28,15 @@ android {
 
         externalNativeBuild {
             ndkBuild {
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
                 arguments '-j4'
             }
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
         }
     }
 
@@ -79,7 +85,7 @@ android {
         debug {
             externalNativeBuild {
                 ndkBuild {
-                    cFlags '-DWITH_DEBUG', '-Werror'
+                    cFlags '-DWITH_DEBUG' //, '-Werror'
                 }
             }
         }

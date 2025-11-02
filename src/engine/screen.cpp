@@ -515,24 +515,24 @@ namespace
                 }
             }
 
-            SDL_Cursor * tempCursor = SDL_CreateColorCursor( surface, offsetX, offsetY );
-            if ( tempCursor == nullptr ) {
-                ERROR_LOG( "Failed to create a cursor. The error description: " << SDL_GetError() )
-            }
-            else {
-                SDL_SetCursor( tempCursor );
-            }
+            // SDL_Cursor * tempCursor = SDL_CreateColorCursor( surface, offsetX, offsetY );
+            // if ( tempCursor == nullptr ) {
+            //     ERROR_LOG( "Failed to create a cursor. The error description: " << SDL_GetError() )
+            // }
+            // else {
+            //     SDL_SetCursor( tempCursor );
+            // }
 
-            const int returnCode = SDL_ShowCursor( _show ? SDL_ENABLE : SDL_DISABLE );
-            if ( returnCode < 0 ) {
-                ERROR_LOG( "Failed to set cursor state. The error value: " << returnCode << ", description: " << SDL_GetError() )
-            }
-            SDL_FreeSurface( surface );
+            // const int returnCode = SDL_ShowCursor( _show ? SDL_ENABLE : SDL_DISABLE );
+            // if ( returnCode < 0 ) {
+            //     ERROR_LOG( "Failed to set cursor state. The error value: " << returnCode << ", description: " << SDL_GetError() )
+            // }
+            // SDL_FreeSurface( surface );
 
-            if ( tempCursor != nullptr ) {
-                clear();
-                std::swap( _cursor, tempCursor );
-            }
+            // if ( tempCursor != nullptr ) {
+            //     clear();
+            //     std::swap( _cursor, tempCursor );
+            // }
         }
 
         void enableSoftwareEmulation( const bool enable ) override

@@ -39,9 +39,12 @@ import io.github.bhowell2.debouncer.Debouncer;
  */
 public class SDLActivity extends WallpaperService implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
+    // private static final int SDL_MAJOR_VERSION = 2;
+    // private static final int SDL_MINOR_VERSION = 26;
+    // private static final int SDL_MICRO_VERSION = 5;
     private static final int SDL_MAJOR_VERSION = 2;
-    private static final int SDL_MINOR_VERSION = 26;
-    private static final int SDL_MICRO_VERSION = 5;
+    private static final int SDL_MINOR_VERSION = 32;
+    private static final int SDL_MICRO_VERSION = 10;
 
     public static boolean mIsResumedCalled, mHasFocus;
     public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);

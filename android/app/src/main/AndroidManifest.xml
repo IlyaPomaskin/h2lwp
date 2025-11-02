@@ -41,6 +41,8 @@
         android:supportsRtl="false"
         tools:ignore="UnusedAttribute">
 
+        <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true" />
+
         <service
             android:name="org.libsdl.app.SDLActivity"
             android:exported="true"

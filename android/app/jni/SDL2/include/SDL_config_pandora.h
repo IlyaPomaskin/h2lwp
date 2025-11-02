@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 #define SDL_config_pandora_h_
 #define SDL_config_h_
 
-/* This is a set of defines to overrideConfiguration the SDL features */
+/* This is a set of defines to configure the SDL features */
 
 /* General platform specific identifiers */
 #include "SDL_platform.h"
