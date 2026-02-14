@@ -534,6 +534,7 @@ namespace EventProcessing
                     break;
                 default:
                     // If this assertion blows up then we included an event type but we didn't add logic for it.
+                    VERBOSE_LOG( "Event type: " << event.type << " is not supported." )
                     assert( eventTypeStatus.count( event.type ) == 0 );
 
                     // This is a new event type which we do not handle. It might have been added in a newer version of SDL.

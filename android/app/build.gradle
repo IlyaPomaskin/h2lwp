@@ -142,7 +142,8 @@ tasks.register('copyFH2M', Copy) {
 
 tasks.register('buildJs', Exec) {
     workingDir '../../h2lwp-settings'
-    commandLine '/opt/homebrew/bin/npm', 'run', 'build'
+    // No idea why it can't find `npm` in system env.
+    commandLine '/opt/homebrew/opt/node@22/bin/npm', 'run', 'build'
 }
 
 tasks.register('copyH2D', Copy) {
