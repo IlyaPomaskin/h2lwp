@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2024 - 2025                                             *
+ *   Copyright (C) 2024 - 2026                                             *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -308,10 +308,8 @@ namespace
     {
         // TODO: All these spells are not used by AI at the moment.
         switch ( spellId ) {
-        case Spell::EARTHQUAKE:
         case Spell::HAUNT:
         case Spell::IDENTIFYHERO:
-        case Spell::TELEPORT:
         case Spell::VIEWARTIFACTS:
         case Spell::VIEWHEROES:
         case Spell::VIEWMINES:
@@ -387,13 +385,13 @@ namespace
             assert( art.isValid() );
 
             if ( art.GetID() == Artifact::MAGIC_BOOK && hero.HaveSpellBook() ) {
+                // Heroes cannot have more than 1 Magic Book.
                 return false;
             }
 
             const Maps::ArtifactCaptureCondition condition = getArtifactCaptureCondition( tile );
 
-            if ( condition == Maps::ArtifactCaptureCondition::PAY_2000_GOLD || condition == Maps::ArtifactCaptureCondition::PAY_2500_GOLD_AND_3_RESOURCES
-                 || condition == Maps::ArtifactCaptureCondition::PAY_3000_GOLD_AND_5_RESOURCES ) {
+            if ( condition >= Maps::ArtifactCaptureCondition::PAY_2000_GOLD && condition <= Maps::ArtifactCaptureCondition::PAY_3000_GOLD_AND_5_RESOURCES ) {
                 return kingdom.AllowPayment( getArtifactResourceRequirement( tile ) );
             }
 
@@ -491,13 +489,21 @@ namespace
                 return false;
             }
 
-            if ( army.AllTroopsAreUndead() && skillType == Skill::Secondary::LEADERSHIP ) {
+            if ( ( skillType == Skill::Secondary::LEADERSHIP ) && army.AllTroopsAreUndead() ) {
                 // For undead army it's pointless to have Leadership skill.
                 return false;
             }
 
-            if ( !hero.HaveSpellBook() && ( skillType == Skill::Secondary::MYSTICISM || skillType == Skill::Secondary::EAGLE_EYE ) ) {
+            if ( ( skillType == Skill::Secondary::MYSTICISM || skillType == Skill::Secondary::EAGLE_EYE ) && !hero.HaveSpellBook() ) {
                 // It's useless to have Mysticism with no magic book in hands.
+                return false;
+            }
+
+            if ( ( skillType == Skill::Secondary::NAVIGATION ) && world.getWaterPercentage() < 1 ) {
+                // If this is the Navigation skill and then amount of water on the map is less than 1% then it is a useless skill.
+                //
+                // For example, on the biggest map of 144 x 144 tiles, 1% of water corresponds to 207 tiles.
+                // It is going to be highly unlikely to use this skill for the whole map.
                 return false;
             }
 
@@ -507,7 +513,7 @@ namespace
         case MP2::OBJ_TREE_OF_KNOWLEDGE:
             if ( !hero.isVisited( tile ) ) {
                 const Funds & rc = getTreeOfKnowledgeRequirement( tile );
-                // If the payment is required do not waste all resources from the kingdom. Use them wisely.
+                // If the payment is required, do not waste all resources from the kingdom. Use them wisely.
                 if ( rc.GetValidItemsCount() == 0 || kingdom.AllowPayment( rc * 5 ) ) {
                     return true;
                 }
@@ -555,10 +561,20 @@ namespace
                 return false;
             }
 
-            if ( distance > hero.GetMovePoints() && hero.getDailyRestoredSpellPoints() + hero.GetSpellPoints() >= hero.GetMaxSpellPoints() ) {
-                // The Well is located at a distance which cannot be reached by the hero at the current turn.
-                // But if the hero will restore all spell points by the next day there is no reason to even to visit the Well.
-                return false;
+            if ( distance > hero.GetMovePoints() ) {
+                const auto path = pathfinder.buildPath( index, false );
+                assert( !path.empty() );
+                assert( path.back().GetIndex() == index );
+
+                const int32_t daysToTarget = completedDaysToTarget( path, hero );
+                // If this assertion blows up then the above logic is invalid.
+                assert( daysToTarget > 0 );
+
+                if ( ( static_cast<uint32_t>( daysToTarget ) * hero.getDailyRestoredSpellPoints() ) + hero.GetSpellPoints() >= hero.GetMaxSpellPoints() ) {
+                    // The Well is located at a distance which cannot be reached by the hero at the current turn.
+                    // But if the hero will restore all spell points by the next day there is no reason to even to visit the Well.
+                    return false;
+                }
             }
 
             return true;
@@ -642,7 +658,7 @@ namespace
                 return false;
             }
 
-            const int daysActive = numOfDaysPerWeek - world.GetDay() + 1;
+            const uint32_t daysActive = numOfDaysPerWeek - world.GetDay() + 1;
             const double movementBonus = daysActive * GameStatic::getMovementPointBonus( objectType ) - 2.0 * distance;
 
             return movementBonus > 0;
@@ -1614,7 +1630,7 @@ double AI::Planner::getGeneralObjectValue( const Heroes & hero, const int32_t in
         return 100;
     }
     case MP2::OBJ_STABLES: {
-        const int daysActive = numOfDaysPerWeek - world.GetDay() + 1;
+        const uint32_t daysActive = numOfDaysPerWeek - world.GetDay() + 1;
         double movementBonus = daysActive * GameStatic::getMovementPointBonus( objectType ) - 2.0 * distanceToObject;
 
         const double upgradeValue = getMonsterUpgradeValue( hero.GetArmy(), Monster::CHAMPION );
@@ -2491,7 +2507,11 @@ int AI::Planner::getPriorityTarget( Heroes & hero, double & maxPriority )
                     extraValue = valueStorage.value( pair, 0 );
                 }
                 else {
-                    const int32_t daysToReachObject = completedDaysToTarget( _pathfinder.buildPath( pair.first ), hero );
+                    const auto path = _pathfinder.buildPath( pair.first, false );
+                    assert( !path.empty() );
+                    assert( path.back().GetIndex() == pair.first );
+
+                    const int32_t daysToReachObject = completedDaysToTarget( path, hero );
                     if ( daysToReachObject < dayToBecomeValid ) {
                         extraValue = valueStorage.futureValue( pair, 0 );
                     }
@@ -2571,7 +2591,11 @@ int AI::Planner::getPriorityTarget( Heroes & hero, double & maxPriority )
         }
 
         if ( !isCurrentlyValid ) {
-            const int32_t daysToReachObject = completedDaysToTarget( _pathfinder.buildPath( idx ), hero );
+            const auto path = _pathfinder.buildPath( idx, false );
+            assert( !path.empty() );
+            assert( path.back().GetIndex() == idx );
+
+            const int32_t daysToReachObject = completedDaysToTarget( path, hero );
             if ( daysToReachObject < daysToBeAvailable ) {
                 // Only objects that are not reachable at the moment can be predicted.
                 continue;
@@ -3090,6 +3114,12 @@ fheroes2::GameMode AI::Planner::HeroesTurn( VecHeroes & heroes, uint32_t & curre
                     continue;
                 }
 
+                if ( hero->Modes( Heroes::PATROL ) && ( hero->GetPatrolCenter() == hero->GetCenter() ) ) {
+                    // Heroes on patrol are restricted in movement so it is assumed that they aren't blocking the way.
+                    // They actually could block the way but this is done deliberately by the map maker.
+                    continue;
+                }
+
                 const int targetIndex = _pathfinder.getNearestTileToMove( *hero );
                 if ( targetIndex != -1 ) {
                     bestTargetIndex = targetIndex;
@@ -3141,7 +3171,7 @@ fheroes2::GameMode AI::Planner::HeroesTurn( VecHeroes & heroes, uint32_t & curre
 
                 if ( dimensionDoorDist > 0 ) {
                     // The rest of the path the hero should do by foot.
-                    bestHero->GetPath().setPath( _pathfinder.buildPath( bestTargetIndex ) );
+                    bestHero->GetPath().setPath( _pathfinder.buildPath( bestTargetIndex, true ) );
 
                     const fheroes2::GameMode gameState = HeroesMove( *bestHero );
                     if ( gameState != fheroes2::GameMode::END_TURN ) {
@@ -3151,7 +3181,7 @@ fheroes2::GameMode AI::Planner::HeroesTurn( VecHeroes & heroes, uint32_t & curre
                 }
             }
             else {
-                bestHero->GetPath().setPath( _pathfinder.buildPath( bestTargetIndex ) );
+                bestHero->GetPath().setPath( _pathfinder.buildPath( bestTargetIndex, true ) );
 
                 const fheroes2::GameMode gameState = HeroesMove( *bestHero );
                 if ( gameState != fheroes2::GameMode::END_TURN ) {

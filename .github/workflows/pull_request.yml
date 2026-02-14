@@ -88,3 +88,18 @@ jobs:
     needs:
     - msvc
     uses: ./.github/workflows/android.yml
+  cmake:
+    name: CMake
+    needs:
+    - msvc
+    uses: ./.github/workflows/cmake.yml
+  make:
+    name: Make
+    needs:
+    - msvc
+    uses: ./.github/workflows/make.yml
+  ios:
+    name: iOS
+    needs:
+    - msvc
+    uses: ./.github/workflows/ios.yml

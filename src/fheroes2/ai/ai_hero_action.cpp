@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2025                                             *
+ *   Copyright (C) 2019 - 2026                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2010 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -114,11 +114,11 @@ namespace
     // Never cache the value of this function as it depends on hero's path and location.
     bool AIIsShowAnimationForHero( const Heroes & hero, const PlayerColorsSet colors )
     {
-        if ( Settings::Get().AIMoveSpeed() == 0 ) {
+        if ( colors == 0 ) {
             return false;
         }
 
-        if ( colors == 0 ) {
+        if ( Settings::Get().AIMoveSpeed() == 0 ) {
             return false;
         }
 
@@ -143,11 +143,11 @@ namespace
 
     bool AIIsShowAnimationForTile( const Maps::Tile & tile, const PlayerColorsSet colors )
     {
-        if ( Settings::Get().AIMoveSpeed() == 0 ) {
+        if ( colors == 0 ) {
             return false;
         }
 
-        if ( colors == 0 ) {
+        if ( Settings::Get().AIMoveSpeed() == 0 ) {
             return false;
         }
 
@@ -265,14 +265,34 @@ namespace
         // Shuffle spells as all of them seem to be equal in power.
         Rand::Shuffle( spells );
 
-        const int32_t spellMultiplier = Difficulty::getGuardianSpellMultiplier( Game::getDifficulty() );
+        double spellMultiplier = Difficulty::getGuardianSpellMultiplier( Game::getDifficulty() );
+
+        // Adjust spell multiplier based on hero's AI role.
+        switch ( hero.getAIRole() ) {
+        case Heroes::Role::SCOUT:
+            // A hero with almost no army risking his life and most likely going to be killed.
+            spellMultiplier = std::min( 1.0, spellMultiplier / 5 );
+            break;
+        case Heroes::Role::COURIER:
+            // A hero who usually delivers army. Might have some army to battle with but he is not a fighter and can be easily defeated.
+            spellMultiplier = std::min( 1.0, spellMultiplier / 3 );
+            break;
+        case Heroes::Role::HUNTER:
+            // A normal hero with normal stuff to do. Not so strong and not so weak.
+            spellMultiplier = std::min( 1.0, spellMultiplier / 2 );
+            break;
+        default:
+            // The rest of heroes are fighters and should keep their spell points for battles.
+            break;
+        }
 
         for ( const Spell spell : spells ) {
             if ( hero.CanCastSpell( spell ) && hero.GetSpellPoints() > spellMultiplier * spell.spellPoints( &hero ) ) {
                 // Looks like this hero knows the spell and casting it won't take too many spell points.
                 // So, let's do it!
-                hero.ActionSpellCast( spell );
-                return;
+                if ( hero.ActionSpellCast( spell ) ) {
+                    return;
+                }
             }
         }
     }
@@ -298,7 +318,8 @@ namespace
 
         assert( hero.CanCastSpell( spellToUse ) );
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        const auto allianceColors = AIGetAllianceColors();
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
             hero.FadeOut( Game::AIHeroAnimSpeedMultiplier() );
         }
@@ -308,7 +329,7 @@ namespace
         hero.SpellCasted( spellToUse );
         hero.GetPath().Reset();
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
             hero.FadeIn( Game::AIHeroAnimSpeedMultiplier() );
         }
@@ -729,7 +750,7 @@ namespace
                         // If AI is extremely low on gold consider taking it
                         if ( kingdomGold < 3000 ) {
                             // Safeguard the calculation since we're working with unsigned values
-                            return ( std::max( exp, 500U ) - 500 ) / 15;
+                            return ( std::max<uint32_t>( exp, 500U ) - 500 ) / 15;
                         }
 
                         // Otherwise Champion always picks experience
@@ -740,7 +761,7 @@ namespace
                         return ( role == Heroes::Role::FIGHTER && exp >= 1500 ) ? 10 : 0;
                     }
 
-                    uint32_t value = std::max( exp, 500U ) - 500;
+                    uint32_t value = std::max<uint32_t>( exp, 500U ) - 500;
                     if ( role == Heroes::Role::FIGHTER ) {
                         value += 500;
                     }
@@ -964,7 +985,8 @@ namespace
 
         assert( world.getTile( indexTo ).getMainObjectType() != MP2::OBJ_HERO );
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        const auto allianceColors = AIGetAllianceColors();
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             // AI-controlled hero cannot activate Stone Liths from the same tile, but should move to this tile from some
             // other tile first, so there is no need to re-center the game area on the hero before his disappearance
             hero.FadeOut( Game::AIHeroAnimSpeedMultiplier() );
@@ -974,7 +996,7 @@ namespace
         hero.Move2Dest( indexTo );
         hero.GetPath().Reset();
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
             hero.FadeIn( Game::AIHeroAnimSpeedMultiplier() );
         }
@@ -1029,7 +1051,8 @@ namespace
             return;
         }
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        const auto allianceColors = AIGetAllianceColors();
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             // AI-controlled hero cannot activate Whirlpool from the same tile, but should move to this tile from some
             // other tile first, so there is no need to re-center the game area on the hero before his disappearance
             hero.FadeOut( Game::AIHeroAnimSpeedMultiplier() );
@@ -1041,7 +1064,7 @@ namespace
 
         AIWhirlpoolTroopLoseEffect( hero );
 
-        if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+        if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
             Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
             hero.FadeIn( Game::AIHeroAnimSpeedMultiplier() );
         }
@@ -2377,7 +2400,8 @@ void AI::HeroesCastDimensionDoor( Heroes & hero, const int32_t targetIndex )
         return;
     }
 
-    if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+    const auto allianceColors = AIGetAllianceColors();
+    if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
         Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
         hero.FadeOut( Game::AIHeroAnimSpeedMultiplier() );
     }
@@ -2388,7 +2412,7 @@ void AI::HeroesCastDimensionDoor( Heroes & hero, const int32_t targetIndex )
     hero.setDimensionDoorUsage( hero.getDimensionDoorUses() + 1 );
     hero.GetPath().Reset();
 
-    if ( AIIsShowAnimationForHero( hero, AIGetAllianceColors() ) ) {
+    if ( AIIsShowAnimationForHero( hero, allianceColors ) ) {
         Interface::AdventureMap::Get().getGameArea().SetCenter( hero.GetCenter() );
         hero.FadeIn( Game::AIHeroAnimSpeedMultiplier() );
     }
@@ -2418,7 +2442,8 @@ int32_t AI::HeroesCastSummonBoat( Heroes & hero, const int32_t boatDestinationIn
 
     Maps::Tile & tileSource = world.getTile( boatSource );
 
-    if ( AIIsShowAnimationForTile( tileSource, AIGetAllianceColors() ) ) {
+    const auto allianceColors = AIGetAllianceColors();
+    if ( AIIsShowAnimationForTile( tileSource, allianceColors ) ) {
         gameArea.SetCenter( Maps::GetPoint( boatSource ) );
         gameArea.runSingleObjectAnimation( std::make_shared<Interface::ObjectFadingOutInfo>( tileSource.getMainObjectPart()._uid, boatSource, MP2::OBJ_BOAT ) );
     }
@@ -2432,7 +2457,7 @@ int32_t AI::HeroesCastSummonBoat( Heroes & hero, const int32_t boatDestinationIn
     tileDest.setBoat( Direction::RIGHT, heroColor );
     tileSource.resetBoatOwnerColor();
 
-    if ( AIIsShowAnimationForTile( tileDest, AIGetAllianceColors() ) ) {
+    if ( AIIsShowAnimationForTile( tileDest, allianceColors ) ) {
         gameArea.SetCenter( Maps::GetPoint( boatDestinationIndex ) );
         gameArea.runSingleObjectAnimation( std::make_shared<Interface::ObjectFadingInInfo>( tileDest.getMainObjectPart()._uid, boatDestinationIndex, MP2::OBJ_BOAT ) );
     }
