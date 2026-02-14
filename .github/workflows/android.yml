@@ -36,6 +36,7 @@ jobs:
       working-directory: ./h2lwp-settings
     - name: Install dependencies
       run: |
+        bash script/android/install_packages.sh
         sudo apt-get -y update
         sudo apt-get -y install gettext
     - name: Generate translations
@@ -82,7 +83,7 @@ jobs:
         path: android/isotools/build/reports/
     - name: Create packages
       run: |
-        7z a -bb1 -tzip -- fheroes2_android.zip LICENSE fheroes2.apk
+        7z a -bb1 -tzip -- fheroes2_android.zip LICENSE changelog.txt fheroes2.apk ./docs/README.txt ./docs/README_android.md
         7z a -bb1 -tzip -- fheroes2_android_aab.zip LICENSE fheroes2.aab
     - uses: actions/upload-artifact@v6
       if: ${{ github.event_name == 'pull_request' }}
