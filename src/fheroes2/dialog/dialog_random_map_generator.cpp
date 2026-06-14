@@ -22,7 +22,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <functional>
 #include <string>
 #include <utility>
 
@@ -40,115 +39,13 @@
 #include "translations.h"
 #include "ui_button.h"
 #include "ui_dialog.h"
-#include "ui_scrollbar.h"
+#include "ui_slider.h"
 #include "ui_text.h"
-#include "ui_tool.h"
 #include "ui_window.h"
 
 namespace
 {
-    class HorizontalSlider final
-    {
-    public:
-        ~HorizontalSlider() = default;
-        HorizontalSlider( const HorizontalSlider & ) = delete;
-        HorizontalSlider & operator=( const HorizontalSlider & ) = delete;
-
-        HorizontalSlider( const fheroes2::Point position, const int minIndex, const int maxIndex, const int currentIndex )
-            : _timedButtonLeft( [this]() { return _buttonLeft.isPressed(); } )
-            , _timedButtonRight( [this]() { return _buttonRight.isPressed(); } )
-        {
-            assert( minIndex <= maxIndex );
-            assert( currentIndex >= minIndex && currentIndex <= maxIndex );
-
-            fheroes2::Display & display = fheroes2::Display::instance();
-            const int tradpostIcnId = Settings::Get().isEvilInterfaceEnabled() ? ICN::TRADPOSE : ICN::TRADPOST;
-            const fheroes2::Sprite & bar = fheroes2::AGG::GetICN( tradpostIcnId, 1 );
-            fheroes2::Blit( bar, display, position.x, position.y );
-
-            constexpr int32_t buttonWidth{ 15 };
-            _buttonLeft.setPosition( position.x + 6, position.y + 1 );
-            _buttonLeft.setICNInfo( tradpostIcnId, 3, 4 );
-            _buttonLeft.subscribe( &_timedButtonLeft );
-            _buttonLeft.draw( display );
-            _buttonRight.setPosition( position.x + bar.width() - buttonWidth, position.y + 1 );
-            _buttonRight.setICNInfo( tradpostIcnId, 5, 6 );
-            _buttonRight.subscribe( &_timedButtonRight );
-            _buttonRight.draw( display );
-
-            constexpr int32_t sliderLength{ 187 };
-            const fheroes2::Sprite & originalSlider = fheroes2::AGG::GetICN( tradpostIcnId, 2 );
-            const fheroes2::Image scrollbarSlider = fheroes2::generateScrollbarSlider( originalSlider, true, sliderLength, 1, static_cast<int32_t>( maxIndex + 1 ),
-                                                                                       { 0, 0, 2, originalSlider.height() }, { 2, 0, 8, originalSlider.height() } );
-            _scrollbar.setImage( scrollbarSlider );
-            _scrollbar.setArea( { position.x + buttonWidth + 9, position.y + 3, sliderLength, 11 } );
-            _scrollbar.setRange( minIndex, maxIndex );
-            _scrollbar.moveToIndex( currentIndex );
-
-            _scrollbar.show();
-        }
-
-        int getCurrentValue() const
-        {
-            return _scrollbar.currentIndex();
-        }
-
-        void setRange( const int minIndex, const int maxIndex )
-        {
-            _scrollbar.setImage( fheroes2::generateScrollbarSlider( _scrollbar, true, _scrollbar.getArea().width, 1, maxIndex + 1, { 0, 0, 2, _scrollbar.height() },
-                                                                    { 2, 0, 8, _scrollbar.height() } ) );
-
-            const int currentIndex = std::min( _scrollbar.currentIndex(), maxIndex );
-            _scrollbar.setRange( minIndex, maxIndex );
-            _scrollbar.moveToIndex( currentIndex );
-        }
-
-        bool processEvents( LocalEvent & le )
-        {
-            _buttonLeft.drawOnState( le.isMouseLeftButtonPressedAndHeldInArea( _buttonLeft.area() ) );
-            _buttonRight.drawOnState( le.isMouseLeftButtonPressedAndHeldInArea( _buttonRight.area() ) );
-
-            if ( le.isMouseLeftButtonPressedInArea( _scrollbar.getArea() ) ) {
-                const int prevPosX = _scrollbar.x();
-                _scrollbar.moveToPos( le.getMouseCursorPos() );
-
-                // Return true only if the slider position has changed.
-                return ( prevPosX != _scrollbar.x() );
-            }
-
-            if ( _scrollbar.updatePosition() ) {
-                return true;
-            }
-
-            if ( le.MouseClickLeft( _buttonLeft.area() ) || le.isMouseWheelDownInArea( _scrollbar.getArea() ) || _timedButtonLeft.isDelayPassed() ) {
-                if ( _scrollbar.currentIndex() == _scrollbar.minIndex() ) {
-                    return false;
-                }
-
-                _scrollbar.backward();
-                return true;
-            }
-
-            if ( le.MouseClickLeft( _buttonRight.area() ) || le.isMouseWheelUpInArea( _scrollbar.getArea() ) || _timedButtonRight.isDelayPassed() ) {
-                if ( _scrollbar.currentIndex() == _scrollbar.maxIndex() ) {
-                    return false;
-                }
-
-                _scrollbar.forward();
-                return true;
-            }
-
-            return false;
-        }
-
-    private:
-        fheroes2::Scrollbar _scrollbar;
-        fheroes2::Button _buttonLeft;
-        fheroes2::Button _buttonRight;
-
-        fheroes2::TimedEventValidator _timedButtonLeft;
-        fheroes2::TimedEventValidator _timedButtonRight;
-    };
+    constexpr int32_t sliderWidth{ 187 };
 
     class TextRestorer final
     {
@@ -185,6 +82,7 @@ bool fheroes2::randomMapGeneratorDialog( Maps::Random_Generator::Configuration &
     configuration.playerCount = std::min<int32_t>( 6, configuration.playerCount );
 
     const int32_t originalWaterPercentageLimit{ Maps::Random_Generator::calculateMaximumWaterPercentage( configuration.playerCount, mapWidth ) };
+    int32_t currentWaterPercentageLimit = originalWaterPercentageLimit;
     configuration.waterPercentage = std::min( configuration.waterPercentage, originalWaterPercentageLimit );
 
     Display & display = Display::instance();
@@ -220,15 +118,15 @@ bool fheroes2::randomMapGeneratorDialog( Maps::Random_Generator::Configuration &
     int32_t positionY = activeArea.y + 70;
 
     // Map configuration options.
-    text.set( _( "rmg|Player count" ), FontType::normalWhite() );
+    text.set( _( "rmg|Player count:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
-    HorizontalSlider playerCountSlider{ { inputPositionX, positionY }, 2, 6, configuration.playerCount };
+    fheroes2::HorizontalSlider playerCountSlider{ sliderWidth, { inputPositionX, positionY }, 2, 6, configuration.playerCount };
     TextRestorer playerCountValue{ display, valuePositionX, positionY };
     playerCountValue.render( std::to_string( configuration.playerCount ), display );
 
     positionY += ySpacing;
 
-    text.set( _( "rmg|Map layout" ), FontType::normalWhite() );
+    text.set( _( "rmg|Map layout:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
 
     // Dropdown with map layout selection.
@@ -255,32 +153,32 @@ bool fheroes2::randomMapGeneratorDialog( Maps::Random_Generator::Configuration &
 
     positionY += ySpacing;
 
-    text.set( _( "rmg|Water percentage" ), FontType::normalWhite() );
+    text.set( _( "rmg|Water percentage:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
 
-    HorizontalSlider waterSlider{ { inputPositionX, positionY }, 0, originalWaterPercentageLimit, configuration.waterPercentage };
+    fheroes2::HorizontalSlider waterSlider{ sliderWidth, { inputPositionX, positionY }, 0, originalWaterPercentageLimit, configuration.waterPercentage };
     TextRestorer waterValue{ display, valuePositionX, positionY };
-    waterValue.render( std::to_string( configuration.waterPercentage ), display );
+    waterValue.render( std::to_string( configuration.waterPercentage ) + '/' + std::to_string( currentWaterPercentageLimit ) + '%', display );
 
     positionY += ySpacing;
 
-    text.set( _( "rmg|Monster strength" ), FontType::normalWhite() );
+    text.set( _( "rmg|Monster strength:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
-    HorizontalSlider monsterSlider{ { inputPositionX, positionY }, 0, 3, static_cast<int>( configuration.monsterStrength ) };
+    fheroes2::HorizontalSlider monsterSlider{ sliderWidth, { inputPositionX, positionY }, 0, 3, static_cast<int>( configuration.monsterStrength ) };
     TextRestorer monsterValue{ display, valuePositionX, positionY };
     monsterValue.render( Maps::Random_Generator::monsterStrengthToString( configuration.monsterStrength ), display );
 
     positionY += ySpacing;
 
-    text.set( _( "rmg|Resource availability" ), FontType::normalWhite() );
+    text.set( _( "rmg|Resource availability:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
-    HorizontalSlider resourceSlider{ { inputPositionX, positionY }, 0, 2, static_cast<int>( configuration.resourceDensity ) };
+    fheroes2::HorizontalSlider resourceSlider{ sliderWidth, { inputPositionX, positionY }, 0, 2, static_cast<int>( configuration.resourceDensity ) };
     TextRestorer resourceValue{ display, valuePositionX, positionY };
     resourceValue.render( Maps::Random_Generator::resourceDensityToString( configuration.resourceDensity ), display );
 
     positionY += ySpacing + 10;
 
-    text.set( _( "rmg|Map seed" ), FontType::normalWhite() );
+    text.set( _( "rmg|Map seed:" ), FontType::normalWhite() );
     text.draw( positionX + ( settingDescriptionWidth - text.width() ) / 2, positionY, display );
 
     ValueSelectionDialogElement mapSeedSelection{ 0, 999999, configuration.seed, 1, { positionX + settingDescriptionWidth + 4, positionY - 5 } };
@@ -321,14 +219,15 @@ bool fheroes2::randomMapGeneratorDialog( Maps::Random_Generator::Configuration &
             const int32_t newLimit = Maps::Random_Generator::calculateMaximumWaterPercentage( configuration.playerCount, mapWidth );
             configuration.waterPercentage = std::min( configuration.waterPercentage, newLimit );
             waterSlider.setRange( 0, newLimit );
+            currentWaterPercentageLimit = newLimit;
 
             playerCountValue.render( std::to_string( configuration.playerCount ), display );
-            waterValue.render( std::to_string( configuration.waterPercentage ), display );
+            waterValue.render( std::to_string( configuration.waterPercentage ) + '/' + std::to_string( currentWaterPercentageLimit ) + '%', display );
             display.render( window.activeArea() );
         }
         else if ( waterSlider.processEvents( le ) ) {
             configuration.waterPercentage = waterSlider.getCurrentValue();
-            waterValue.render( std::to_string( configuration.waterPercentage ), display );
+            waterValue.render( std::to_string( configuration.waterPercentage ) + '/' + std::to_string( currentWaterPercentageLimit ) + '%', display );
             display.render( window.activeArea() );
         }
         else if ( monsterSlider.processEvents( le ) ) {

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   fheroes2: https://github.com/ihhub/fheroes2                           *
- *   Copyright (C) 2019 - 2025                                             *
+ *   Copyright (C) 2019 - 2026                                             *
  *                                                                         *
  *   Free Heroes2 Engine: http://sourceforge.net/projects/fheroes2         *
  *   Copyright (C) 2009 by Andrey Afletdinov <fheroes2@gmail.com>          *
@@ -140,6 +140,7 @@ namespace
         LOCALE_DA,
         LOCALE_DE,
         LOCALE_EL,
+        LOCALE_EO,
         LOCALE_ES,
         LOCALE_ET,
         LOCALE_EU,
@@ -199,6 +200,9 @@ namespace
                                                                                   // Greek
                                                                                   { "el", LocaleType::LOCALE_EL },
                                                                                   { "greek", LocaleType::LOCALE_EL },
+                                                                                  // Esperanto
+                                                                                  { "eo", LocaleType::LOCALE_EO },
+                                                                                  { "esperanto", LocaleType::LOCALE_EO },
                                                                                   // Spanish
                                                                                   { "es", LocaleType::LOCALE_ES },
                                                                                   { "spanish", LocaleType::LOCALE_ES },
@@ -334,7 +338,7 @@ namespace
         return pos ? ++pos : str;
     }
 
-    class MOFile
+    class MOFile final
     {
     public:
         MOFile() = default;
@@ -621,6 +625,11 @@ const char * Translation::gettext( const char * str )
     return current ? current->ngettext( str, 0 ) : stripContext( str );
 }
 
+const char * Translation::getNonTranslated( const char * str )
+{
+    return stripContext( str );
+}
+
 const char * Translation::ngettext( const char * str, const char * plural, const size_t n )
 {
     if ( current ) {
@@ -629,6 +638,7 @@ const char * Translation::ngettext( const char * str, const char * plural, const
         case LocaleType::LOCALE_BG:
         case LocaleType::LOCALE_DA:
         case LocaleType::LOCALE_DE:
+        case LocaleType::LOCALE_EO:
         case LocaleType::LOCALE_ES:
         case LocaleType::LOCALE_ET:
         case LocaleType::LOCALE_EU:

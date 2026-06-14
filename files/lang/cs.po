@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fheroes2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-31 01:21+0000\n"
+"POT-Creation-Date: 2026-06-10 08:09+0000\n"
 "PO-Revision-Date: 2025-04-09 11:06+0200\n"
 "Last-Translator: fheroes2 team <fhomm2@gmail.com>\n"
 "Language-Team: Czech <george.king@seznam.cz>\n"
@@ -20,6 +20,9 @@ msgstr ""
 
 msgid "SELECT"
 msgstr "ZVOLIT"
+
+msgid "ABOUT"
+msgstr ""
 
 msgid "S"
 msgstr "S"
@@ -213,6 +216,11 @@ msgid ""
 msgstr ""
 "HLAVNÍ\n"
 "MENU"
+
+msgid ""
+"AUTO\n"
+"PLAY-TEST"
+msgstr ""
 
 msgid ""
 "NEW\n"
@@ -491,7 +499,8 @@ msgstr "Poslední jednotku nelze přesunout"
 msgid "Move the %{name}"
 msgstr "Přesunout %{name}"
 
-msgid "Set %{monster} Count"
+#, fuzzy
+msgid "Set %{monster} Count:"
 msgstr "Nastavit počet %{monster}"
 
 msgid "%{name} destroys half the enemy troops!"
@@ -539,11 +548,22 @@ msgstr ""
 "Příkop přeruší jakýkoli pohyb skrz něj a snižuje obrannou sílu jednotek, "
 "které se v něm nacházejí, o %{count}."
 
-msgid "Speed: %{speed}"
+#, fuzzy
+msgid "battleAnimation|Speed: %{speed}"
 msgstr "Rychlost: %{speed}"
 
-msgid "Speed"
-msgstr "Rychlost"
+#, fuzzy
+msgid "battleAnimation|Speed"
+msgstr "Animace"
+
+msgid "Interface"
+msgstr "Rozhraní"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Auto Spell Casting"
+msgstr "Automické Kouzlení"
 
 msgid "Off"
 msgstr "Vyp"
@@ -551,41 +571,14 @@ msgstr "Vyp"
 msgid "On"
 msgstr "Zap"
 
-msgid "Turn Order"
-msgstr "Pořadí tahu"
-
-msgid "Auto Spell Casting"
-msgstr "Automické Kouzlení"
-
-msgid "Grid"
-msgstr "Mřížka"
-
-msgid "Shadow Movement"
-msgstr "Stín pohybu"
-
-msgid "Shadow Cursor"
-msgstr "Stín kurzoru"
-
-msgid "Audio"
-msgstr "Zvuk"
-
-msgid "Settings"
-msgstr "Nastavení"
-
-msgid "Configure"
-msgstr "Konfigurovat"
-
-msgid "Hot Keys"
-msgstr "Kláv. zkratky"
-
-msgid "Damage Info"
-msgstr "Škody"
-
 msgid "Set the speed of combat actions and animations."
 msgstr "Nastavit rychlost akcí a animací v bitvě."
 
-msgid "Toggle to display the turn order during the battle."
-msgstr "Zap/Vyp zobrazení pořadí tahu jednotek v bitvě."
+msgid "Change the interface settings of the game."
+msgstr "Změnit grafické nastavení hry."
+
+msgid "Interface Settings"
+msgstr "Grafické Nastavení"
 
 msgid ""
 "Toggle whether or not the computer will cast spells for you when auto combat "
@@ -596,21 +589,8 @@ msgstr ""
 "(Pozn.: Toto nijak neovlivňuje sesílání kouzel pro počítačem ovládané hráče, "
 "ani rychlý boj.)"
 
-msgid ""
-"Toggle the hex grid on or off. The hex grid always underlies movement, even "
-"if turned off. This switch only determines if the grid is visible."
-msgstr ""
-"Zap/Vyp hexagonální mřížku. Mřížka vždy ohraničuje pohyb i když je vypnutá. "
-"Tento přepínač pouze ovládá, zda bude mřížka viditelná."
-
-msgid ""
-"Toggle on or off shadows showing where your creatures can move and attack."
-msgstr "Za/Vyp stín možného pohybu resp. útoku tvých jednotek."
-
-msgid ""
-"Toggle on or off a shadow showing the current hex location of the mouse "
-"cursor."
-msgstr "Zap/Vyp stín aktuální pozice kurzoru myši na mřížce."
+msgid "Audio"
+msgstr "Zvuk"
 
 msgid "Change the audio settings of the game."
 msgstr "Změnit nastavení zvuku."
@@ -618,8 +598,8 @@ msgstr "Změnit nastavení zvuku."
 msgid "Check and configure all the hot keys present in the game."
 msgstr "Zkontrolujte a nastavte všechny klávesové zkratky dostupné ve hře."
 
-msgid "Toggle to display damage information during the battle."
-msgstr "Přepnout zobrazení informací o poškození během bitvy."
+msgid "Hot Keys"
+msgstr "Kláv. zkratky"
 
 msgid "Exit this menu."
 msgstr "Odejít z menu."
@@ -1091,6 +1071,56 @@ msgstr "Zabije: %{max}"
 msgid "Perish: %{min} - %{max}"
 msgstr "Zabije: %{min} - %{max}"
 
+msgid "battle_turn_order|Top"
+msgstr ""
+
+msgid "battle_turn_order|Bottom"
+msgstr ""
+
+msgid "Turn Order"
+msgstr "Pořadí tahu"
+
+msgid "Grid"
+msgstr "Mřížka"
+
+msgid "Damage Info"
+msgstr "Škody"
+
+msgid "Shadow Movement"
+msgstr "Stín pohybu"
+
+msgid "Shadow Cursor"
+msgstr "Stín kurzoru"
+
+#, fuzzy
+msgid "Movement Area"
+msgstr "Pohyb hrdiny"
+
+msgid "Toggle to display the turn order during the battle."
+msgstr "Zap/Vyp zobrazení pořadí tahu jednotek v bitvě."
+
+msgid ""
+"Toggle the hex grid on or off. The hex grid always underlies movement, even "
+"if turned off. This switch only determines if the grid is visible."
+msgstr ""
+"Zap/Vyp hexagonální mřížku. Mřížka vždy ohraničuje pohyb i když je vypnutá. "
+"Tento přepínač pouze ovládá, zda bude mřížka viditelná."
+
+msgid "Toggle to display damage information during the battle."
+msgstr "Přepnout zobrazení informací o poškození během bitvy."
+
+msgid ""
+"Toggle on or off shadows showing where your creatures can move and attack."
+msgstr "Za/Vyp stín možného pohybu resp. útoku tvých jednotek."
+
+msgid ""
+"Toggle on or off a shadow showing the current hex location of the mouse "
+"cursor."
+msgstr "Zap/Vyp stín aktuální pozice kurzoru myši na mřížce."
+
+msgid "Toggle showing the movement area of a highlighted creature on or off."
+msgstr ""
+
 msgid ""
 "Through eagle-eyed observation, %{name} is able to learn the magic spell "
 "%{spell}."
@@ -1101,12 +1131,12 @@ msgstr ""
 msgid "Human"
 msgstr "Člověk"
 
-msgid "AI"
-msgstr "AI"
-
 #, fuzzy
 msgid "Terrain"
 msgstr "Režim terénu"
+
+msgid "Battle Only"
+msgstr "Pouze bitva"
 
 msgid "Start"
 msgstr "Start"
@@ -1137,11 +1167,15 @@ msgid "Please select another hero."
 msgstr "Vyber jiného hrdinu."
 
 #, fuzzy
-msgid "Click to set this hero to be human-controlled."
+msgid "Click to select a hero."
 msgstr "Kliknout pro výběr barvy."
 
+msgid "Hero"
+msgstr "Hrdina"
+
 #, fuzzy
-msgid "Click to set this hero to be AI-controlled."
+msgid ""
+"If this checkbox is checked, the defending hero is going be human-controlled."
 msgstr "Kliknout pro výběr barvy."
 
 msgid "%{race1} %{name1} vs %{race2} %{name2}"
@@ -2892,6 +2926,9 @@ msgstr "Škody"
 msgid "HP"
 msgstr "Zdravi"
 
+msgid "Speed"
+msgstr "Rychlost"
+
 msgid "Growth"
 msgstr "Růst"
 
@@ -3116,15 +3153,6 @@ msgstr "Ukončit"
 msgid "Quit out of Heroes of Might and Magic II."
 msgstr "Ukončit Heroes of Might and Magic II."
 
-msgid "Language"
-msgstr "Jazyk"
-
-msgid "Graphics"
-msgstr "Grafika"
-
-msgid "Text Support"
-msgstr "Textová podpora"
-
 msgid "Change the language of the game."
 msgstr "Změnit jazyk hry."
 
@@ -3133,6 +3161,9 @@ msgstr "Vybrat jazyk hry"
 
 msgid "Change the graphics settings of the game."
 msgstr "Změnit grafické nastavení hry."
+
+msgid "Graphics"
+msgstr "Grafika"
 
 msgid "Mouse Cursor"
 msgstr "Kurzor"
@@ -3145,6 +3176,9 @@ msgstr "Rozhraní"
 
 msgid "Toggle the type of interface you want to use."
 msgstr "Přepněte typ rozhraní, které chcete používat."
+
+msgid "Text Support"
+msgstr "Textová podpora"
 
 msgid ""
 "Toggle text support mode to output extra information about windows and "
@@ -3194,6 +3228,13 @@ msgid ""
 msgstr ""
 "Podmínky\n"
 "prohry"
+
+msgid "About"
+msgstr ""
+
+#, fuzzy
+msgid "Click to read notes from the map creator."
+msgstr "Klikni pro návrat do hlavního menu."
 
 msgid "Map Description"
 msgstr "Popis mapy"
@@ -3290,9 +3331,6 @@ msgstr "Skrýt"
 
 msgid "Show"
 msgstr "Zobrazit"
-
-msgid "Interface"
-msgstr "Rozhraní"
 
 #, fuzzy
 msgid "Army Estimation"
@@ -3493,24 +3531,25 @@ msgid "Random Map Generator"
 msgstr "Náhodná jednotka"
 
 #, fuzzy
-msgid "rmg|Player count"
+msgid "rmg|Player count:"
 msgstr "Ikona hráče"
 
-msgid "rmg|Map layout"
-msgstr ""
+#, fuzzy
+msgid "rmg|Map layout:"
+msgstr "Ikona hráče"
 
 #, fuzzy
-msgid "rmg|Water percentage"
+msgid "rmg|Water percentage:"
 msgstr "Vodní Elementál"
 
 #, fuzzy
-msgid "rmg|Monster strength"
+msgid "rmg|Monster strength:"
 msgstr "Náhodná jednotka - silná"
 
-msgid "rmg|Resource availability"
+msgid "rmg|Resource availability:"
 msgstr ""
 
-msgid "rmg|Map seed"
+msgid "rmg|Map seed:"
 msgstr ""
 
 #, fuzzy
@@ -3722,6 +3761,10 @@ msgstr "Vybrat hrdinu:"
 msgid "Select Monsters:"
 msgstr "Vybrat jednotku:"
 
+#, fuzzy
+msgid "Select Artifacts:"
+msgstr "Vybrat arkefakt:"
+
 msgid "race|Random"
 msgstr "Náhodný"
 
@@ -3746,7 +3789,8 @@ msgstr "Vyberte poklad:"
 msgid "Select Ocean Object:"
 msgstr "Vyberte oceánský objekt:"
 
-msgid "Castle/town placing"
+#, fuzzy
+msgid "Castle/town placing:"
 msgstr "Umístění hradu/města"
 
 msgid "doubleLinedRace|Neutral"
@@ -3779,7 +3823,8 @@ msgstr "Vybrat jednotku:"
 msgid "Select Landscape Object:"
 msgstr "Vybrat object krajiny:"
 
-msgid "Mine placing"
+#, fuzzy
+msgid "Mine placing:"
 msgstr "Umístění dolu"
 
 msgid ""
@@ -3813,7 +3858,7 @@ msgid "Select Adventure Object:"
 msgstr "Vyberte dobrodružný objekt:"
 
 #, fuzzy
-msgid "Select color"
+msgid "Select color:"
 msgstr "Vybrat jednotku:"
 
 msgid "Players Icon"
@@ -4004,12 +4049,6 @@ msgstr ""
 "Nastavte rychlost pohybu počítačem ovládaných hrdinů. Můžete také zvolit, že "
 "vůbec nechcete sledovat pohyb počítače."
 
-msgid "Change the interface settings of the game."
-msgstr "Změnit grafické nastavení hry."
-
-msgid "Interface Settings"
-msgstr "Grafické Nastavení"
-
 msgid "Toggle instant battle mode."
 msgstr "Přepněte režim okamžité bitvy."
 
@@ -4139,10 +4178,15 @@ msgid "Town Army"
 msgstr "Armáda města"
 
 #, fuzzy
+msgid "You have unsaved changes. Do you wish to proceed?"
+msgstr "Kolik jednotek si přeješ přesunout?"
+
+#, fuzzy
 msgid "Click to change the Castle name."
 msgstr "Klikněte pro změnu názvu mapy."
 
-msgid "Enter Castle name"
+#, fuzzy
+msgid "Enter Castle name:"
 msgstr "Zadejte název hradu"
 
 #, fuzzy
@@ -4221,6 +4265,10 @@ msgstr ""
 "Pokud je toto zaškrtávací políčko označeno, tato událost se spustí pro "
 "%{color} hráče, pokud ho ovládá počítač."
 
+#, fuzzy
+msgid "Set %{resource-type} Count:"
+msgstr "Nastavit počet %{resource-type}"
+
 msgid "Message:"
 msgstr "Zpráva:"
 
@@ -4245,7 +4293,8 @@ msgstr "Text události"
 msgid "Day: %{day}"
 msgstr "Den: %{day}"
 
-msgid "Daily Events"
+#, fuzzy
+msgid "Daily events:"
 msgstr "Denní události"
 
 msgid "Click to save the events."
@@ -4281,7 +4330,8 @@ msgstr "Zrušit událost po první návštěvě"
 msgid "Computer colors allowed to get the event:"
 msgstr "Barvy počítače, kterým je povoleno získat událost:"
 
-msgid "Set Experience value"
+#, fuzzy
+msgid "Set Experience value:"
 msgstr "Nastavte hodnotu zkušeností"
 
 msgid "Artifact"
@@ -4338,7 +4388,8 @@ msgstr "Ultimátní artefakt lze umístit pouze na terén, kde je možné kopat.
 msgid "%{objects} must be placed on water."
 msgstr "%{objects} musí být umístěny na vodě."
 
-msgid "Objects cannot be placed outside the map."
+#, fuzzy
+msgid "Action objects cannot be placed outside the map."
 msgstr "Objekty nelze umístit mimo mapu."
 
 msgid "Action objects must be placed on clear tiles."
@@ -4347,6 +4398,22 @@ msgstr "Akční objekty musí být umístěny na prázdných polích."
 #, fuzzy
 msgid "A maximum of %{count} %{objects} can be placed on the map."
 msgstr "Na mapě může být umístěno maximálně %{count} obelisků."
+
+#, fuzzy
+msgid ""
+"To exit fheroes2, press the Home button or swipe up. (Any unsaved changes to "
+"the current map will be lost.)"
+msgstr ""
+"Opravdu si přejete načíst novou mapu? (Všechny neuložené změny na aktuální "
+"mapě budou ztraceny.)"
+
+#, fuzzy
+msgid ""
+"Are you sure you want to quit? (Any unsaved changes to the current map will "
+"be lost.)"
+msgstr ""
+"Opravdu si přejete vytvořit novou mapu? (Všechny neuložené změny na aktuální "
+"mapě budou ztraceny.)"
 
 msgid "Not able to generate a map with given parameters."
 msgstr ""
@@ -4385,29 +4452,6 @@ msgstr ""
 "Přejete si vrátit se do hlavního menu hry? (Všechny neuložené změny na "
 "aktuální mapě budou ztraceny.)"
 
-msgid "Unsaved Changes"
-msgstr "Neuložené změny"
-
-msgid ""
-"This map has either terrain changes, undo history or has not yet been saved "
-"to a file.\n"
-"\n"
-"Do you wish to save the current map?"
-msgstr ""
-"Tato mapa obsahuje změny terénu, historii akcí nebo ještě nebyla uložena do "
-"souboru.\n"
-"\n"
-"Přejete si uložit aktuální mapu?"
-
-msgid "Unplayable Map"
-msgstr "Nehratelná mapa"
-
-msgid ""
-"This map is not playable. You need at least one human player for the map to "
-"be playable."
-msgstr ""
-"Tato mapa není hratelná. Pro její spuštění je potřeba alespoň jeden člověk."
-
 msgid "Start Map"
 msgstr "Spustit mapu"
 
@@ -4439,16 +4483,25 @@ msgstr "Uložit aktuální mapu."
 msgid "Quit out of the map editor."
 msgstr "Ukončit editor map."
 
+#, fuzzy
+msgid "Auto Playtest"
+msgstr "Testeři"
+
+msgid "Run an automatic playtest of the map."
+msgstr ""
+
 msgid "Return to the game's Main Menu."
 msgstr "Vrátit se do hlavního menu hry."
 
 msgid "Leave the Editor and play the map in the Standard Game mode."
 msgstr "Opustit editor a spustit mapu v režimu standardní hry."
 
-msgid "Input %{object} text"
+#, fuzzy
+msgid "Input %{object} text:"
 msgstr "Zadejte text %{object}"
 
-msgid "Set Random Ultimate Artifact Radius"
+#, fuzzy
+msgid "Set Random Ultimate Artifact Radius:"
 msgstr "Nastavit náhodný rádius Ultimátního artefaktu"
 
 msgid "%{object} has no properties to change."
@@ -4488,6 +4541,10 @@ msgstr "Na mapě může být umístěn pouze jeden náhodný Ultimátní artefak
 msgid "A maximum of %{count} obelisks can be placed on the map."
 msgstr "Na mapě může být umístěno maximálně %{count} obelisků."
 
+#, fuzzy
+msgid "The same object exists on the tile."
+msgstr "Tato odpověď již existuje v seznamu."
+
 msgid "The map is corrupted."
 msgstr "Mapa je poškozena."
 
@@ -4509,6 +4566,29 @@ msgstr "Mapa uložena do: "
 msgid "Failed to save the map."
 msgstr "Uložení mapy se nezdařilo."
 
+msgid "Unsaved Changes"
+msgstr "Neuložené změny"
+
+msgid ""
+"This map has either terrain changes, undo history or has not yet been saved "
+"to a file.\n"
+"\n"
+"Do you wish to save the current map?"
+msgstr ""
+"Tato mapa obsahuje změny terénu, historii akcí nebo ještě nebyla uložena do "
+"souboru.\n"
+"\n"
+"Přejete si uložit aktuální mapu?"
+
+msgid ""
+"This map is not playable. You need at least one human player for the map to "
+"be playable."
+msgstr ""
+"Tato mapa není hratelná. Pro její spuštění je potřeba alespoň jeden člověk."
+
+msgid "Unplayable Map"
+msgstr "Nehratelná mapa"
+
 msgid "Used to place %{object}."
 msgstr "Používá se k umístění %{object}."
 
@@ -4528,13 +4608,6 @@ msgid ""
 msgstr ""
 "Klikněte zde\n"
 "pro další jednotky."
-
-msgid ""
-"Cell\n"
-"Details"
-msgstr ""
-"Podrobnosti\n"
-"buňky"
 
 msgid "Erase"
 msgstr "Vymazat"
@@ -4575,7 +4648,32 @@ msgstr "Hrdinové"
 msgid "Towns"
 msgstr "Města"
 
-msgid "editorErasure|Landscape objects"
+#, fuzzy
+msgid "editorDetailMode|Edit"
+msgstr "Detailní ežim"
+
+#, fuzzy
+msgid "editorDetailMode|Move"
+msgstr "Detailní ežim"
+
+#, fuzzy
+msgid "editorDetailMode|Copy"
+msgstr "Detailní ežim"
+
+#, fuzzy
+msgid "editorErasure|Mountains"
+msgstr "Jednotky"
+
+#, fuzzy
+msgid "editorErasure|Rocks"
+msgstr "Cesty"
+
+#, fuzzy
+msgid "editorErasure|Trees"
+msgstr "Hrdinové"
+
+#, fuzzy
+msgid "editorErasure|Miscellaneous and Water landscape objects"
 msgstr "Krajinné objekty"
 
 msgid "editorErasure|Adventure non pickable objects"
@@ -4647,6 +4745,15 @@ msgstr "Překonatelné pouze lodí."
 msgid "No special modifiers."
 msgstr "Žádné speciální modifikátory."
 
+msgid "Edit objects on the Adventure Map."
+msgstr ""
+
+msgid "Move objects on the Adventure Map."
+msgstr ""
+
+msgid "Copy objects on the Adventure Map."
+msgstr ""
+
 msgid "Toggle the erasure of %{type} objects."
 msgstr "Přepnout mazání objektů typu %{type}."
 
@@ -4685,7 +4792,8 @@ msgstr ""
 msgid "Detail Mode"
 msgstr "Detailní ežim"
 
-msgid "Used for special editing of action objects."
+#, fuzzy
+msgid "Used for moving or customizing objects."
 msgstr "Používá se pro speciální úpravy akčních objektů."
 
 msgid "Adventure Objects Mode"
@@ -4767,8 +4875,11 @@ msgid "View the editor system options, which let you customize the editor."
 msgstr "Zobrazí systémové menu, s volbami pro úpravu chování hry."
 
 #, fuzzy
-msgid "Supported languages"
+msgid "Supported languages:"
 msgstr "Podpořte nás na"
+
+msgid "Language"
+msgstr "Jazyk"
 
 #, fuzzy
 msgid "This language already exists in the list."
@@ -4963,16 +5074,18 @@ msgstr "UDÁLOSTI"
 msgid "LANGUAGE"
 msgstr "JAZYK"
 
-msgid "ABOUT"
+msgid "map|ABOUT"
 msgstr ""
 
-msgid "Change Map Name"
+#, fuzzy
+msgid "Change Map Name:"
 msgstr "Změnit název mapy"
 
-msgid "Change Map Description"
+#, fuzzy
+msgid "Change Map Description:"
 msgstr "Změnit popis mapy"
 
-msgid "About"
+msgid "map|About"
 msgstr ""
 
 msgid "Click to edit custom rumors."
@@ -5045,6 +5158,10 @@ msgstr "Přepnout animaci objektů."
 
 msgid "Toggle display of objects' passability."
 msgstr "Přepnout zobrazení průchodnosti objektů."
+
+#, fuzzy
+msgid "Rumors:"
+msgstr "Pověsti"
 
 msgid "Rumor:"
 msgstr "Pověst:"
@@ -5212,6 +5329,66 @@ msgstr "Expert"
 msgid "difficulty|Impossible"
 msgstr "Nehratelná"
 
+#, fuzzy
+msgid "Auto Playtest Results"
+msgstr "Testeři"
+
+msgid "1 playthrough"
+msgid_plural "%{count} playthroughs"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+msgid " playthrough(s) reached the specified time limit"
+msgstr ""
+
+#, fuzzy
+msgid "Click to close the dialog."
+msgstr "Kliknout pro výběr barvy."
+
+msgid "Won %{percent}% of playthroughs."
+msgstr ""
+
+#, fuzzy
+msgid "Failed to prepare the map for auto playtest."
+msgstr "Uložení mapy se nezdařilo."
+
+msgid "autoPlaytest|Number of playthroughs:"
+msgstr ""
+
+msgid "autoPlaytest|Max days per playthrough:"
+msgstr ""
+
+#, fuzzy
+msgid "autoPlaytest|Animation"
+msgstr "Animace"
+
+#, fuzzy
+msgid "autoPlaytest|Animation speed:"
+msgstr "Animace"
+
+msgid "autoPlaytest|Sound Effects"
+msgstr ""
+
+msgid "Left-clicking at any point will interrupt the playtest."
+msgstr ""
+
+#, fuzzy
+msgid "Click to run an automated map playtest."
+msgstr "Klikni pro návrat do hlavního menu."
+
+msgid ""
+"Auto playtest\n"
+"(playthrough %{current} of %{total})"
+msgstr ""
+
+#, fuzzy
+msgid ""
+"Do you want to interrupt the automatic playtest? The effect will take place "
+"only on the next turn."
+msgstr ""
+"Chcete převzít kontrolu zpět od AI? Změna se projeví až v příštím tahu."
+
 msgid "and more..."
 msgstr "a víc..."
 
@@ -5345,8 +5522,8 @@ msgstr "Vývoj a podpora"
 msgid "Special Thanks to"
 msgstr "Speciální poděkování"
 
-msgid "and many-many other contributors and supporters!"
-msgstr "a mnoho dalších přispěvatelů a podporovatelů!"
+msgid "and all the people who have helped make the project possible!"
+msgstr ""
 
 msgid "Support us at"
 msgstr "Podpořte nás na"
@@ -5480,6 +5657,12 @@ msgstr "Návrháři map"
 msgid "Package Design"
 msgstr "Návrh obalu"
 
+msgid "To exit fheroes2, press the Home button or swipe up."
+msgstr ""
+
+msgid "Are you sure you want to quit?"
+msgstr "Opravdu si přejete ukončit hru?"
+
 msgid "High Scores"
 msgstr "Nejlepší výsledky"
 
@@ -5528,6 +5711,9 @@ msgstr "Přepnout režim podpory textu"
 msgid "hotkey|toggle developer mode"
 msgstr "přepnout režim vývojáře"
 
+msgid "hotkey|quit"
+msgstr "Ukončit"
+
 msgid "hotkey|new game"
 msgstr "Nová hra"
 
@@ -5551,9 +5737,6 @@ msgstr "Hra více hráčů"
 
 msgid "hotkey|settings"
 msgstr "Nastavení"
-
-msgid "hotkey|quit"
-msgstr "Ukončit"
 
 msgid "hotkey|select map"
 msgstr "Výběr mapy"
@@ -5613,12 +5796,20 @@ msgid "hotkey|toggle passability"
 msgstr "Přepnout průchodnost"
 
 #, fuzzy
+msgid "hotkey|auto playtest"
+msgstr "Vlevo"
+
+#, fuzzy
 msgid "hotkey|re-generate random map"
 msgstr "Nová náhodná mapa"
 
 #, fuzzy
 msgid "hotkey|re-configure random map"
 msgstr "Nová náhodná mapa"
+
+#, fuzzy
+msgid "hotkey|output all text"
+msgstr "Posun vlevo"
 
 msgid "hotkey|roland campaign"
 msgstr "Rolandova kampaň"
@@ -5838,6 +6029,14 @@ msgstr "Obrazovka výstavby"
 msgid "hotkey|buy all monsters in well"
 msgstr "Koupit všechny jednotky ve studni"
 
+#, fuzzy
+msgid "hotkey|merge troops with hero"
+msgstr "Následující hrdina"
+
+#, fuzzy
+msgid "hotkey|merge troops with garrison"
+msgstr "Opakovat poslední akci"
+
 msgid "hotkey|split stack by half"
 msgstr "Rozdělit jednotku napůl"
 
@@ -6030,9 +6229,6 @@ msgid ""
 "on a single map."
 msgstr ""
 "Hra pro více hráčů, kde několik hráčů soutěží proti sobě na jedné mapě."
-
-msgid "Battle Only"
-msgstr "Pouze bitva"
 
 msgid "Setup and play a battle without loading any map."
 msgstr "Nastavte a zahrajte si bitvu bez načítání jakékoli mapy."
@@ -6513,12 +6709,6 @@ msgstr ""
 "Jeden nebo více hrdinů se ještě může pohybovat, určitě chceš ukončit svůj "
 "tah?"
 
-msgid "To exit fheroes2, press the Home button or swipe up."
-msgstr ""
-
-msgid "Are you sure you want to quit?"
-msgstr "Opravdu si přejete ukončit hru?"
-
 msgid "Are you sure you want to restart? (Your current game will be lost.)"
 msgstr "Opravdu si přejete restartovat? (Vaše aktuální hra bude ztracena.)"
 
@@ -6660,7 +6850,8 @@ msgstr ""
 "Výchozí\n"
 "hodnota"
 
-msgid "Set %{skill} Skill"
+#, fuzzy
+msgid "Set %{skill} Skill:"
 msgstr "Nastavit dovednost %{skill}"
 
 msgid "Set %{skill} base value. Right-click to reset all skills to default."
@@ -6681,14 +6872,58 @@ msgstr ""
 msgid "The available values range from %{min} to %{max}."
 msgstr "Dostupné hodnoty se pohybují v rozmezí od %{min} do %{max}."
 
+msgid "Uppercase"
+msgstr ""
+
+#, fuzzy
+msgid "Click to switch to uppercase letters."
+msgstr "Klikněte pro uložení vlastnosti události."
+
 msgid "Keyboard|123"
 msgstr "123"
+
+#, fuzzy
+msgid "Keyboard type"
+msgstr "123"
+
+msgid "Click to switch between keyboard types."
+msgstr ""
 
 msgid "Keyboard|SPACE"
 msgstr "Mezerník"
 
+#, fuzzy
+msgid "Change language"
+msgstr "Změnit název mapy"
+
+#, fuzzy
+msgid "Click to switch between languages."
+msgstr "Kliknutím vybereš zvolený jazyk."
+
+msgid "Backspace"
+msgstr ""
+
+#, fuzzy
+msgid "Click to remove characters."
+msgstr "Kliknutím se rozlišení změní na vybrané."
+
+#, fuzzy
+msgid "Lowercase"
+msgstr "Květiny"
+
+#, fuzzy
+msgid "Click to switch to lowercase letters."
+msgstr "Klikněte pro uložení vlastnosti události."
+
 msgid "Keyboard|ABC"
 msgstr "ABC"
+
+#, fuzzy
+msgid "Swap sign"
+msgstr "Návrháři map"
+
+msgid "Click to switch between signed and unsigned numbers."
+msgstr ""
 
 msgid "The entered value is invalid."
 msgstr "Vložená hodnota není platná."
@@ -6777,6 +7012,9 @@ msgstr "Větnamština"
 msgid "Greek"
 msgstr "Zelený"
 
+msgid "Esperanto"
+msgstr ""
+
 msgid "Slow"
 msgstr "Pomalá"
 
@@ -6800,6 +7038,9 @@ msgstr "Černobílý"
 
 msgid "Color"
 msgstr "Barevný"
+
+msgid "Configure"
+msgstr "Konfigurovat"
 
 msgid ", FPS: "
 msgstr ", FPS: "
@@ -8360,13 +8601,13 @@ msgstr "Toto kouzlo mohou sesílat pouze hrdinové."
 msgid "This hero is not able to cast adventure spells."
 msgstr "Tento hrdina nemůže sesílat kouzla."
 
+msgid "This spell cannot be cast on a boat."
+msgstr "Toto kouzlo nelze seslat na lodi."
+
 msgid "Your hero is too tired to cast this spell today. Try again tomorrow."
 msgstr ""
 "Tvůj hrdina je příliš unavený na to, aby dnes toto kouzlo seslal. Zkuste to "
 "znovu zítra."
-
-msgid "This spell cannot be cast on a boat."
-msgstr "Toto kouzlo nelze seslat na lodi."
 
 msgid "This spell can only be cast near an ocean."
 msgstr "Toto kouzlo lze seslat pouze v blízkosti oceánu."
@@ -8482,16 +8723,19 @@ msgstr ""
 "Změňte hodnotu bodů magie. Klikněte pravým tlačítkem pro obnovení na výchozí "
 "hodnotu."
 
-msgid "Set Spell Points value"
+#, fuzzy
+msgid "Set Spell Points value:"
 msgstr "Nastavte hodnotu bodů magie"
 
 msgid "View Spell Points Info"
 msgstr "Zobrazit informace o bodech magie"
 
-msgid "Set patrol radius in tiles"
+#, fuzzy
+msgid "Set patrol radius in tiles:"
 msgstr "Nastavte hlídkový rádius v polích"
 
-msgid "Enter hero's name"
+#, fuzzy
+msgid "Enter hero's name:"
 msgstr "Zadejte jméno hrdiny"
 
 #, fuzzy
@@ -8566,6 +8810,10 @@ msgstr ""
 
 msgid "Click to enable hero's patrol mode."
 msgstr "Klikněte pro povolení režimu hlídkování hrdiny."
+
+#, fuzzy
+msgid "Do you want to save the changes made?"
+msgstr "Klikněte pro potvrzení provedených změn."
 
 msgid "Blood Morale"
 msgstr "Krevní morálka"
@@ -9124,22 +9372,25 @@ msgstr "Skvělé"
 msgid "luck|Irish"
 msgstr "Irské"
 
+#, fuzzy
 msgid ""
-"Negative luck sometimes falls on the hero's units in combat, causing their "
-"attacks to only do half damage."
+"%{luck-type} luck sometimes falls on the hero's units in combat, causing "
+"their attacks to only do half damage."
 msgstr ""
 "Nízké štěstí občas dolehne na tvoje jednotky v bitvě a zapříčíní, že jejich "
 "útok způsobí pouze poloviční škody."
 
+#, fuzzy
 msgid ""
-"Neutral luck means the hero's units will never get lucky or unlucky attacks "
-"on the enemy."
+"%{luck-type} luck means the hero's units will never get lucky or unlucky "
+"attacks on the enemy."
 msgstr ""
 "Neutrální štěstí znamená, že tvoje jednotky nikdy nezasadí nepříteli štastný "
 "ale ani méně povedený úder."
 
+#, fuzzy
 msgid ""
-"Positive luck sometimes lets the hero's units get lucky attacks (double "
+"%{luck-type} luck sometimes lets the hero's units get lucky attacks (double "
 "strength) in combat."
 msgstr ""
 "Vysoké štěstí občas způsobí šťastný úder tvých jednotek (dvojitou silou) v "
@@ -9166,18 +9417,26 @@ msgstr "Skvělá"
 msgid "morale|Blood!"
 msgstr "Krev!"
 
-msgid "Negative morale may cause the hero's units to freeze in combat."
+#, fuzzy
+msgid "%{morale-type} morale may cause the hero's units to freeze in combat."
 msgstr "Zlá morálka může způsobit, že tvé jednotky v bitvě ztuhnou."
 
+#, fuzzy
 msgid ""
-"Neutral morale means the hero's units will never be blessed with extra "
-"attacks or freeze in combat."
+"%{morale-type} morale means the hero's units will never be blessed with "
+"extra attacks or freeze in combat."
 msgstr ""
 "Neutrální morálka znamená, že tvé jednotky neboudou obdařené útokem navíc "
 "ale ani v boji neztuhnou."
 
-msgid "Positive morale may give the hero's units extra attacks in combat."
+#, fuzzy
+msgid ""
+"%{morale-type} morale may give the hero's units extra attacks in combat."
 msgstr "Dobrá morálka může dát tvým jednotkám jeden útok navíc."
+
+#, fuzzy
+msgid "Blood"
+msgstr "Bloodreign"
 
 msgid "Knight"
 msgstr "Rytíř"
@@ -9607,9 +9866,6 @@ msgstr "Náhodná jednotka - silná"
 
 msgid "Random Monster - very strong"
 msgstr "Náhodná jednotka - velmi silná"
-
-msgid "Hero"
-msgstr "Hrdina"
 
 msgid "Nothing Special"
 msgstr "Nic zvláštního"
@@ -12525,9 +12781,18 @@ msgid "An unknown force is being resurrected..."
 msgstr "Neznámá síla se probouzí..."
 
 #~ msgid ""
-#~ "You are about to change the map's language from %{oldLanguage} to "
-#~ "%{newLanguage}. Some texts might not be displayed properly after this. Do "
-#~ "you want to proceed?"
+#~ "Cell\n"
+#~ "Details"
 #~ msgstr ""
-#~ "Chystáte se změnit jazyk mapy z %{oldLanguage} na %{newLanguage}. Některé "
-#~ "texty nemusí být po této změně zobrazeny správně.Chcete pokračovat?"
+#~ "Podrobnosti\n"
+#~ "buňky"
+
+#~ msgid "and many-many other contributors and supporters!"
+#~ msgstr "a mnoho dalších přispěvatelů a podporovatelů!"
+
+#~ msgid "AI"
+#~ msgstr "AI"
+
+#, fuzzy
+#~ msgid "Click to set this hero to be AI-controlled."
+#~ msgstr "Kliknout pro výběr barvy."

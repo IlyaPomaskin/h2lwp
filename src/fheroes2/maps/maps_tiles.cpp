@@ -802,7 +802,8 @@ bool Maps::Tile::isSpriteRoad( const MP2::ObjectIcnType objectIcnType, const uin
 {
     switch ( objectIcnType ) {
     case MP2::OBJ_ICN_TYPE_ROAD: {
-        static const std::set<uint8_t> allowedIndecies{ 0, 2, 3, 4, 5, 6, 7, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21, 26, 28, 29, 30, 31 };
+        static const std::set<uint8_t> allowedIndecies{ 0,  2,  3,  4,  5,  6,  7,  9,  12, 13, 14, 16, 17, 18, 19, 20, 21, 26, 28, 29,
+                                                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48 };
         return ( allowedIndecies.count( imageIndex ) == 1 );
     }
     case MP2::OBJ_ICN_TYPE_OBJNTOWN: {
@@ -1449,11 +1450,6 @@ void Maps::Tile::fixMP2MapTileObjectType( Tile & tile )
 bool Maps::Tile::removeObjectPartsByUID( const uint32_t objectUID )
 {
     bool isObjectPartRemoved = false;
-    if ( _mainObjectPart._uid == objectUID ) {
-        _mainObjectPart = {};
-
-        isObjectPartRemoved = true;
-    }
 
     size_t partCountBefore = _groundObjectPart.size();
     _groundObjectPart.remove_if( [objectUID]( const auto & v ) { return v._uid == objectUID; } );
@@ -1464,6 +1460,16 @@ bool Maps::Tile::removeObjectPartsByUID( const uint32_t objectUID )
     partCountBefore = _topObjectPart.size();
     _topObjectPart.remove_if( [objectUID]( const auto & v ) { return v._uid == objectUID; } );
     if ( partCountBefore != _topObjectPart.size() ) {
+        isObjectPartRemoved = true;
+    }
+
+    if ( _mainObjectPart._uid == objectUID ) {
+        _mainObjectPart = {};
+
+        // We need to sort main and ground object parts if the main part was removed
+        // to properly place the object with the highest priority to the `_mainObjectPart`.
+        sortObjectParts();
+
         isObjectPartRemoved = true;
     }
 

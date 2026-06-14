@@ -59,6 +59,7 @@
     <ClCompile Include="src\fheroes2\battle\battle_dialogs.cpp" />
     <ClCompile Include="src\fheroes2\battle\battle_grave.cpp" />
     <ClCompile Include="src\fheroes2\battle\battle_interface.cpp" />
+    <ClCompile Include="src\fheroes2\battle\battle_interface_settings.cpp" />
     <ClCompile Include="src\fheroes2\battle\battle_main.cpp" />
     <ClCompile Include="src\fheroes2\battle\battle_only.cpp" />
     <ClCompile Include="src\fheroes2\battle\battle_pathfinding.cpp" />
@@ -128,9 +129,11 @@
     <ClCompile Include="src\fheroes2\game\difficulty.cpp" />
     <ClCompile Include="src\fheroes2\game\fheroes2.cpp" />
     <ClCompile Include="src\fheroes2\game\game.cpp" />
+    <ClCompile Include="src\fheroes2\game\game_auto_playtest.cpp" />
     <ClCompile Include="src\fheroes2\game\game_campaign.cpp" />
     <ClCompile Include="src\fheroes2\game\game_credits.cpp" />
     <ClCompile Include="src\fheroes2\game\game_delays.cpp" />
+    <ClCompile Include="src\fheroes2\game\game_exit.cpp" />
     <ClCompile Include="src\fheroes2\game\game_highscores.cpp" />
     <ClCompile Include="src\fheroes2\game\game_hotkeys.cpp" />
     <ClCompile Include="src\fheroes2\game\game_interface.cpp" />
@@ -175,6 +178,7 @@
     <ClCompile Include="src\fheroes2\gui\ui_map_object.cpp" />
     <ClCompile Include="src\fheroes2\gui\ui_monster.cpp" />
     <ClCompile Include="src\fheroes2\gui\ui_scrollbar.cpp" />
+    <ClCompile Include="src\fheroes2\gui\ui_slider.cpp" />
     <ClCompile Include="src\fheroes2\gui\ui_option_item.cpp" />
     <ClCompile Include="src\fheroes2\gui\ui_text.cpp" />
     <ClCompile Include="src\fheroes2\gui\ui_tool.cpp" />
@@ -301,6 +305,7 @@
     <ClInclude Include="src\fheroes2\battle\battle_command.h" />
     <ClInclude Include="src\fheroes2\battle\battle_grave.h" />
     <ClInclude Include="src\fheroes2\battle\battle_interface.h" />
+    <ClInclude Include="src\fheroes2\battle\battle_interface_settings.h" />
     <ClInclude Include="src\fheroes2\battle\battle_only.h" />
     <ClInclude Include="src\fheroes2\battle\battle_pathfinding.h" />
     <ClInclude Include="src\fheroes2\battle\battle_tower.h" />
@@ -345,8 +350,10 @@
     <ClInclude Include="src\fheroes2\editor\history_manager.h" />
     <ClInclude Include="src\fheroes2\game\difficulty.h" />
     <ClInclude Include="src\fheroes2\game\game.h" />
+    <ClInclude Include="src\fheroes2\game\game_auto_playtest.h" />
     <ClInclude Include="src\fheroes2\game\game_credits.h" />
     <ClInclude Include="src\fheroes2\game\game_delays.h" />
+    <ClInclude Include="src\fheroes2\game\game_exit.h" />
     <ClInclude Include="src\fheroes2\game\game_hotkeys.h" />
     <ClInclude Include="src\fheroes2\game\game_interface.h" />
     <ClInclude Include="src\fheroes2\game\game_io.h" />
@@ -390,6 +397,7 @@
     <ClInclude Include="src\fheroes2\gui\ui_monster.h" />
     <ClInclude Include="src\fheroes2\gui\ui_object_rendering.h" />
     <ClInclude Include="src\fheroes2\gui\ui_scrollbar.h" />
+    <ClInclude Include="src\fheroes2\gui\ui_slider.h" />
     <ClInclude Include="src\fheroes2\gui\ui_option_item.h" />
     <ClInclude Include="src\fheroes2\gui\ui_text.h" />
     <ClInclude Include="src\fheroes2\gui\ui_tool.h" />

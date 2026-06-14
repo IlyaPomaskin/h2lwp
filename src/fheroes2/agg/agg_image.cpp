@@ -130,6 +130,8 @@ namespace
                                                 ICN::BUTTON_5_EVIL,
                                                 ICN::BUTTON_MAP_SELECT_GOOD,
                                                 ICN::BUTTON_MAP_SELECT_EVIL,
+                                                ICN::BUTTON_MAP_ABOUT_GOOD,
+                                                ICN::BUTTON_MAP_ABOUT_EVIL,
                                                 ICN::BUTTONS_NEW_GAME_MENU_GOOD,
                                                 ICN::BUTTONS_NEW_GAME_MENU_EVIL,
                                                 ICN::BUTTONS_EDITOR_MENU_GOOD,
@@ -153,6 +155,7 @@ namespace
                                                 ICN::BUTTON_RESET_GOOD,
                                                 ICN::BUTTON_RESET_EVIL,
                                                 ICN::BUTTON_START_GOOD,
+                                                ICN::BUTTON_START_EVIL,
                                                 ICN::BUTTON_GUILDWELL_EXIT,
                                                 ICN::GOOD_CAMPAIGN_BUTTONS,
                                                 ICN::EVIL_CAMPAIGN_BUTTONS,
@@ -261,6 +264,118 @@ namespace
         }
     }
 
+    void applyAbandonedMineMask( const fheroes2::Image & mask, const int32_t maskOffsetX, const fheroes2::Image & existingMine, fheroes2::Image & output )
+    {
+        constexpr int32_t size{ 32 };
+        assert( maskOffsetX >= 0 && maskOffsetX + size <= mask.width() );
+        assert( existingMine.width() == size && existingMine.height() == size );
+        assert( output.width() == size && output.height() == size );
+
+        const uint8_t * maskY = mask.image() + maskOffsetX;
+        const uint8_t * existingMineImage = existingMine.image();
+        uint8_t * outputImage = output.image();
+
+        constexpr uint8_t copyData{ 70 };
+        constexpr uint8_t skipData{ 135 };
+
+        if ( output.singleLayer() ) {
+            assert( existingMine.singleLayer() );
+
+            for ( int32_t y = 0; y < size; ++y, maskY += mask.width() ) {
+                const uint8_t * maskX = maskY;
+                for ( int32_t x = 0; x < size; ++x, ++maskX, ++existingMineImage, ++outputImage ) {
+                    if ( *maskX == copyData ) {
+                        *outputImage = *existingMineImage;
+                    }
+                    else if ( *maskX == skipData ) {
+                        // Keep the same data.
+                    }
+                    else {
+                        *outputImage = *maskX;
+                    }
+                }
+            }
+        }
+        else if ( existingMine.singleLayer() ) {
+            uint8_t * outputTransform = output.transform();
+
+            for ( int32_t y = 0; y < size; ++y, maskY += mask.width() ) {
+                const uint8_t * maskX = maskY;
+                for ( int32_t x = 0; x < size; ++x, ++maskX, ++existingMineImage, ++outputImage, ++outputTransform ) {
+                    if ( *maskX == copyData ) {
+                        *outputImage = *existingMineImage;
+                        *outputTransform = 0;
+                    }
+                    else if ( *maskX == skipData ) {
+                        // Keep the same data.
+                    }
+                    else {
+                        *outputImage = *maskX;
+                        *outputTransform = 0;
+                    }
+                }
+            }
+        }
+        else {
+            const uint8_t * existingMineTransform = existingMine.transform();
+            uint8_t * outputTransform = output.transform();
+
+            for ( int32_t y = 0; y < size; ++y, maskY += mask.width() ) {
+                const uint8_t * maskX = maskY;
+                for ( int32_t x = 0; x < size; ++x, ++maskX, ++existingMineImage, ++existingMineTransform, ++outputImage, ++outputTransform ) {
+                    if ( *maskX == copyData ) {
+                        *outputImage = *existingMineImage;
+                        *outputTransform = *existingMineTransform;
+                    }
+                    else if ( *maskX == skipData ) {
+                        // Keep the same data.
+                    }
+                    else {
+                        *outputImage = *maskX;
+                        *outputTransform = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    void createAbandonedMine( const std::vector<fheroes2::Sprite> & dirtObjects, std::vector<fheroes2::Sprite> & mountainObjects, const size_t startMineIndex,
+                              const std::string & correctionImagePath )
+    {
+        // All mines have the same number of object parts.
+        constexpr size_t mineSpriteCount{ 10 };
+
+        // Verify that the input parameters are valid.
+        assert( dirtObjects.size() > 8 );
+        assert( !mountainObjects.empty() );
+        assert( startMineIndex < mountainObjects.size() );
+        assert( startMineIndex + mineSpriteCount <= mountainObjects.size() );
+        assert( !correctionImagePath.empty() );
+
+        // Resize the original set of objects to add a new Abandoned Mine.
+        const size_t originalSize{ mountainObjects.size() };
+        mountainObjects.resize( originalSize + mineSpriteCount );
+
+        // Copy the existing object parts from a mountain.
+        for ( size_t i = 0; i < mineSpriteCount; ++i ) {
+            mountainObjects[originalSize + i] = mountainObjects[startMineIndex + i];
+        }
+
+        // Load the correction image.
+        fheroes2::Sprite correctionImage;
+        fheroes2::h2d::readImage( correctionImagePath, correctionImage );
+
+        // If this assertion blows up then the game resources are not valid.
+        assert( correctionImage.singleLayer() );
+        assert( correctionImage.height() == 32 && ( correctionImage.width() == 64 || correctionImage.width() == 96 ) );
+
+        applyAbandonedMineMask( correctionImage, correctionImage.width() - 32, dirtObjects[9], mountainObjects[mountainObjects.size() - 1] );
+        applyAbandonedMineMask( correctionImage, correctionImage.width() - 64, dirtObjects[8], mountainObjects[mountainObjects.size() - 2] );
+        if ( correctionImage.width() == 96 ) {
+            applyAbandonedMineMask( correctionImage, 0, dirtObjects[7], mountainObjects[mountainObjects.size() - 3] );
+        }
+    }
+
     // This class serves the purpose of preserving the original alphabet which is loaded from AGG files for cases when we generate new language alphabet.
     class OriginalAlphabetPreserver final
     {
@@ -273,10 +388,8 @@ namespace
 
             fheroes2::AGG::GetICN( ICN::FONT, 0 );
             fheroes2::AGG::GetICN( ICN::SMALFONT, 0 );
-            fheroes2::AGG::GetICN( ICN::BUTTON_GOOD_FONT_RELEASED, 0 );
-            fheroes2::AGG::GetICN( ICN::BUTTON_GOOD_FONT_PRESSED, 0 );
-            fheroes2::AGG::GetICN( ICN::BUTTON_EVIL_FONT_RELEASED, 0 );
-            fheroes2::AGG::GetICN( ICN::BUTTON_EVIL_FONT_PRESSED, 0 );
+            // Do not automatically load resources for button fonts as
+            // they are not stored in the original game resources.
 
             _normalFont = _icnVsSprite[ICN::FONT];
             _smallFont = _icnVsSprite[ICN::SMALFONT];
@@ -633,6 +746,14 @@ namespace
             }
 
             const char * text = fheroes2::getSupportedText( gettext_noop( "SELECT" ), fheroes2::FontType::buttonReleasedWhite() );
+            getTextAdaptedSprite( _icnVsSprite[id][0], _icnVsSprite[id][1], text, ICN::EMPTY_MAP_SELECT_BUTTON, ICN::UNKNOWN );
+
+            break;
+        }
+        case ICN::BUTTON_MAP_ABOUT_GOOD: {
+            _icnVsSprite[id].resize( 2 );
+
+            const char * text = fheroes2::getSupportedText( gettext_noop( "ABOUT" ), fheroes2::FontType::buttonReleasedWhite() );
             getTextAdaptedSprite( _icnVsSprite[id][0], _icnVsSprite[id][1], text, ICN::EMPTY_MAP_SELECT_BUTTON, ICN::UNKNOWN );
 
             break;
@@ -1352,6 +1473,7 @@ namespace
         case ICN::BUTTON_HSCORES_VERTICAL_STANDARD_EVIL:
         case ICN::BUTTON_GIFT_EVIL:
         case ICN::BUTTON_MAP_SELECT_EVIL:
+        case ICN::BUTTON_MAP_ABOUT_EVIL:
         case ICN::BUTTON_SMALL_ACCEPT_EVIL:
         case ICN::BUTTON_SMALL_DECLINE_EVIL:
         case ICN::BUTTON_SMALL_MAX_EVIL:
@@ -1377,6 +1499,9 @@ namespace
             }
             else if ( id == ICN::BUTTON_MAP_SELECT_EVIL ) {
                 goodButtonIcnID = ICN::BUTTON_MAP_SELECT_GOOD;
+            }
+            else if ( id == ICN::BUTTON_MAP_ABOUT_EVIL ) {
+                goodButtonIcnID = ICN::BUTTON_MAP_ABOUT_GOOD;
             }
             else if ( id == ICN::BUTTON_SMALL_RESTART_EVIL ) {
                 goodButtonIcnID = ICN::BUTTON_SMALL_RESTART_GOOD;
@@ -1439,7 +1564,7 @@ namespace
             break;
         }
         case ICN::BUTTONS_EDITOR_FILE_DIALOG_GOOD: {
-            _icnVsSprite[id].resize( 12 );
+            _icnVsSprite[id].resize( 14 );
 
             if ( useOriginalResources() ) {
                 const int buttonIcnID = ICN::ECPANEL;
@@ -1457,6 +1582,8 @@ namespace
                                              buttonSize, false, ICN::STONEBAK );
                 fheroes2::makeButtonSprites( _icnVsSprite[id][8], _icnVsSprite[id][9], fheroes2::getSupportedText( gettext_noop( "MAIN\nMENU" ), buttonFontType ),
                                              buttonSize, false, ICN::STONEBAK );
+                fheroes2::makeButtonSprites( _icnVsSprite[id][12], _icnVsSprite[id][13], fheroes2::getSupportedText( gettext_noop( "AUTO\nPLAY-TEST" ), buttonFontType ),
+                                             buttonSize, false, ICN::STONEBAK );
 
                 // Quit
                 _icnVsSprite[id][10] = fheroes2::AGG::GetICN( buttonIcnID, 6U );
@@ -1472,7 +1599,8 @@ namespace
                                                         fheroes2::getSupportedText( gettext_noop( "START\nMAP" ), buttonFontType ),
                                                         fheroes2::getSupportedText( gettext_noop( "SAVE\nMAP" ), buttonFontType ),
                                                         fheroes2::getSupportedText( gettext_noop( "MAIN\nMENU" ), buttonFontType ),
-                                                        fheroes2::getSupportedText( gettext_noop( "QUIT" ), buttonFontType ) },
+                                                        fheroes2::getSupportedText( gettext_noop( "QUIT" ), buttonFontType ),
+                                                        fheroes2::getSupportedText( gettext_noop( "AUTO\nPLAY-TEST" ), buttonFontType ) },
                                                       false, 86 );
             break;
         }
@@ -1774,11 +1902,15 @@ namespace
 
             break;
         }
-        case ICN::BUTTON_START_GOOD: {
+        case ICN::BUTTON_START_GOOD:
+        case ICN::BUTTON_START_EVIL: {
+            const bool isEvilInterface = ( id == ICN::BUTTON_START_EVIL );
+
             _icnVsSprite[id].resize( 2 );
 
             const char * text = fheroes2::getSupportedText( gettext_noop( "START" ), fheroes2::FontType::buttonReleasedWhite() );
-            getTextAdaptedSprite( _icnVsSprite[id][0], _icnVsSprite[id][1], text, ICN::EMPTY_GOOD_BUTTON, ICN::STONEBAK );
+            getTextAdaptedSprite( _icnVsSprite[id][0], _icnVsSprite[id][1], text, isEvilInterface ? ICN::EMPTY_EVIL_BUTTON : ICN::EMPTY_GOOD_BUTTON,
+                                  isEvilInterface ? ICN::STONEBAK_EVIL : ICN::STONEBAK );
 
             break;
         }
@@ -2426,6 +2558,10 @@ namespace
                 imageArray[249 - 32] = imageArray[100];
                 imageArray.erase( imageArray.begin() + 218, imageArray.end() );
             }
+
+            // Add 32 empty images to the front of the array to have 1:1 correlation between character index and its corresponding image.
+            const fheroes2::Sprite firstSprite{ imageArray[0] };
+            imageArray.insert( imageArray.begin(), 32, firstSprite );
             break;
         }
         case ICN::YELLOW_FONT:
@@ -2861,6 +2997,9 @@ namespace
                     else {
                         modified = std::move( temp );
                     }
+
+                    // Original images' Y offset is not needed for rendering. Set it to 0 to align all images vertically.
+                    modified.setPosition( modified.x(), 0 );
                 }
             }
             if ( _icnVsSprite[id].size() > 63 && _icnVsSprite[id][63].width() == 19 && _icnVsSprite[id][63].height() == 37 ) { // Air Elemental
@@ -3112,7 +3251,9 @@ namespace
                 _icnVsSprite[id][44] = std::move( pressed );
 
                 // Adventure objects button.
-                drawImageOnButton( fheroes2::AGG::GetICN( ICN::X_LOC1, 0 ), 39, 29, _icnVsSprite[id][35], _icnVsSprite[id][36] );
+                if ( AGG::isPoLResourceFilePresent() ) {
+                    drawImageOnButton( fheroes2::AGG::GetICN( ICN::X_LOC1, 0 ), 39, 29, _icnVsSprite[id][35], _icnVsSprite[id][36] );
+                }
 
                 // Kingdom objects button.
                 drawImageOnButton( fheroes2::AGG::GetICN( ICN::OBJNARTI, 13 ), 39, 29, _icnVsSprite[id][37], _icnVsSprite[id][38] );
@@ -3186,7 +3327,7 @@ namespace
         }
         case ICN::EDITPANL:
             if ( _icnVsSprite[id].size() == 6 ) {
-                _icnVsSprite[id].resize( 18 );
+                _icnVsSprite[id].resize( 21 );
 
                 // Make empty buttons for object types.
                 _icnVsSprite[id][6]._disableTransformLayer();
@@ -3247,6 +3388,11 @@ namespace
 
                 // Make erase Streams button image.
                 Blit( fheroes2::AGG::GetICN( ICN::STREAM, 2 ), 0, 0, _icnVsSprite[id][17], 1, 8, 24, 11 );
+
+                // Make Detail mode images.
+                Blit( fheroes2::AGG::GetICN( ICN::CMSECO, 5 ), 0, 0, _icnVsSprite[id][18], 8, 4, 11, 18 );
+                Blit( fheroes2::AGG::GetICN( ICN::CMSECO, 2 ), 0, 0, _icnVsSprite[id][19], 3, 1, 21, 24 );
+                Blit( fheroes2::AGG::GetICN( ICN::ADVMCO, 8 ), 0, 0, _icnVsSprite[id][20], 6, 3, 15, 20 );
             }
             break;
         case ICN::TEXTBAR:
@@ -4682,8 +4828,9 @@ namespace
         case ICN::BUTTON_GOOD_FONT_PRESSED:
         case ICN::BUTTON_EVIL_FONT_RELEASED:
         case ICN::BUTTON_EVIL_FONT_PRESSED: {
-            generateBaseButtonFont( _icnVsSprite[ICN::BUTTON_GOOD_FONT_RELEASED], _icnVsSprite[ICN::BUTTON_GOOD_FONT_PRESSED],
-                                    _icnVsSprite[ICN::BUTTON_EVIL_FONT_RELEASED], _icnVsSprite[ICN::BUTTON_EVIL_FONT_PRESSED] );
+            // These aren't the original game resources and these images are being generated dynamically.
+            // So, we shouldn't do anything here.
+            // We could even assert this place as the engine shouldn't even call it.
             break;
         }
         case ICN::HISCORE: {
@@ -5389,7 +5536,118 @@ namespace
             }
             break;
         }
+        case ICN::MTNCRCK:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 104, "abandoned_mine_crack.image" );
+            break;
+        case ICN::MTNDSRT:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 74, "abandoned_mine_desert.image" );
+            break;
+        case ICN::MTNLAVA:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 74, "abandoned_mine_lava.image" );
+            break;
+        case ICN::MTNMULT:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 74, "abandoned_mine_rock.image" );
+            break;
+        case ICN::MTNSNOW:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 74, "abandoned_mine_snow.image" );
+            break;
+        case ICN::MTNSWMP:
+            loadICN( ICN::OBJNDIRT );
+            createAbandonedMine( _icnVsSprite[ICN::OBJNDIRT], _icnVsSprite[id], 74, "abandoned_mine_swamp.image" );
+            break;
+        case ICN::ROAD: {
+            auto & roadSprites = _icnVsSprite[id];
+            if ( roadSprites.size() == 32 ) {
+                // The next road sprites are added:
+                // 2 "X" roads crossings,
+                // 8 "y" roads crossings,
+                // 1 "V" roads crossing,
+                // 1 from (bottom-)right to top and top-left,
+                // 1 from (bottom-)left to top and top-right,
+                // 1 from (bottom-)right to top and top-right,
+                // 1 from (bottom-)left to top and top-left,
+                // 1 from top-left to right and bottom,
+                // 1 from top-right to left and bottom.
+                constexpr size_t newRoadsCount = 2 + 8 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+                roadSprites.resize( roadSprites.size() + newRoadsCount );
 
+                // "X" roads crossings.
+                auto makeXCross = [&]( const size_t outId, const size_t leftToRightId, const size_t rightToLeftId ) {
+                    roadSprites[outId].resize( 32, 32 );
+                    fheroes2::Copy( roadSprites[leftToRightId], 0, 0, roadSprites[outId], 0, 0, 17, 17 );
+                    fheroes2::Copy( roadSprites[rightToLeftId], 17, 0, roadSprites[outId], 17, 0, 15, 17 );
+                    fheroes2::Copy( roadSprites[rightToLeftId], 0, 17, roadSprites[outId], 0, 17, 17, 17 );
+                    fheroes2::Copy( roadSprites[leftToRightId], 17, 17, roadSprites[outId], 17, 17, 15, 15 );
+                };
+                makeXCross( 32, 17, 18 );
+                makeXCross( 33, 29, 30 );
+
+                // "y" roads crossings:
+                // "\" and top-right.
+                roadSprites[34] = roadSprites[17];
+                fheroes2::Copy( roadSprites[18], 17, 0, roadSprites[34], 17, 0, 15, 17 );
+                roadSprites[35] = roadSprites[29];
+                fheroes2::Copy( roadSprites[30], 17, 0, roadSprites[35], 17, 0, 15, 17 );
+                // "\" and bottom-left.
+                roadSprites[36] = roadSprites[17];
+                fheroes2::Copy( roadSprites[18], 0, 17, roadSprites[36], 0, 17, 17, 17 );
+                roadSprites[37] = roadSprites[29];
+                fheroes2::Copy( roadSprites[30], 0, 17, roadSprites[37], 0, 17, 17, 17 );
+                // "/" and top-left.
+                roadSprites[38] = roadSprites[18];
+                fheroes2::Copy( roadSprites[17], 0, 0, roadSprites[38], 0, 0, 17, 17 );
+                roadSprites[39] = roadSprites[30];
+                fheroes2::Copy( roadSprites[29], 0, 0, roadSprites[39], 0, 0, 17, 17 );
+                // "/" and bottom-right.
+                roadSprites[40] = roadSprites[18];
+                fheroes2::Copy( roadSprites[17], 17, 17, roadSprites[40], 17, 17, 15, 15 );
+                roadSprites[41] = roadSprites[30];
+                fheroes2::Copy( roadSprites[29], 17, 17, roadSprites[41], 17, 17, 15, 15 );
+
+                // "V" roads crossing.
+                roadSprites[42].resize( 32, 32 );
+                fheroes2::Copy( roadSprites[12], 0, 0, roadSprites[42], 0, 0, 16, 32 );
+                fheroes2::Copy( roadSprites[9], roadSprites[9].width() - 16, 0, roadSprites[42], 16, 0, 16, 32 );
+
+                // From (bottom-)right to top and top-left.
+                roadSprites[43].resize( 32, 32 );
+                roadSprites[43].reset();
+                fheroes2::Copy( roadSprites[7], 0, 0, roadSprites[43], 32 - roadSprites[7].width(), 0, roadSprites[7].width(), 32 );
+                fheroes2::Copy( roadSprites[13], 0, 0, roadSprites[43], 0, 0, 15, 5 );
+
+                // From (bottom-)left to top and top-right.
+                roadSprites[44].resize( 32, 32 );
+                roadSprites[44].reset();
+                fheroes2::Copy( roadSprites[16], 0, 0, roadSprites[44], 0, 0, roadSprites[16].width(), 32 );
+                fheroes2::Copy( roadSprites[5], 6, 0, roadSprites[44], 16, 0, 16, 6 );
+
+                // From (bottom-)right to top and top-right.
+                roadSprites[45] = roadSprites[7];
+                fheroes2::Copy( roadSprites[5], 6, 0, roadSprites[45], roadSprites[45].width() - 16, 0, 16, 6 );
+
+                // From (bottom-)left to top and top-left.
+                roadSprites[46] = roadSprites[16];
+                fheroes2::Copy( roadSprites[13], 0, 0, roadSprites[46], 0, 0, 15, 5 );
+
+                // From top-left to right and bottom.
+                roadSprites[47].resize( 32, 32 );
+                roadSprites[47].reset();
+                fheroes2::Copy( roadSprites[12], 0, 0, roadSprites[47], 0, 0, roadSprites[12].width(), 32 );
+                fheroes2::Copy( roadSprites[6], 6, 27, roadSprites[47], 17, 27, 15, 5 );
+
+                // From top-right to left and bottom.
+                roadSprites[48].resize( 32, 32 );
+                roadSprites[48].reset();
+                fheroes2::Copy( roadSprites[9], 0, 0, roadSprites[48], 32 - roadSprites[9].width(), 0, roadSprites[9].width(), 32 );
+                fheroes2::Copy( roadSprites[14], 0, 26, roadSprites[48], 0, 26, 16, 6 );
+            }
+            break;
+        }
         default:
             break;
         }
@@ -5593,9 +5851,7 @@ namespace fheroes2::AGG
         static bool areOriginalResourcesInUse = false;
         static CodePage currentCodePage{ CodePage::NONE };
 
-        const bool loadOriginalResources = loadOriginalAlphabet || !isAlphabetSupported( language );
-
-        if ( loadOriginalResources ) {
+        if ( loadOriginalAlphabet ) {
             if ( alphabetPreserver.isPreserved() ) {
                 if ( areOriginalResourcesInUse ) {
                     // Since we are already using the original resources, we don't need to do anything else.
@@ -5631,6 +5887,6 @@ namespace fheroes2::AGG
         }
 
         currentCodePage = getCodePage( language );
-        areOriginalResourcesInUse = loadOriginalResources;
+        areOriginalResourcesInUse = loadOriginalAlphabet;
     }
 }

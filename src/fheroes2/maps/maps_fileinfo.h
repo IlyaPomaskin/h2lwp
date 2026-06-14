@@ -259,6 +259,9 @@ namespace Maps
         // It is very unlikely that a player suddenly decides to switch a language in the middle of a playthrough.
         std::vector<fheroes2::SupportedLanguage> translations;
 
+        // Optional field available only in Resurrection maps.
+        std::string creatorNotes;
+
     private:
         void FillUnions( const PlayerColorsSet side1Colors, const PlayerColorsSet side2Colors );
     };
@@ -271,11 +274,11 @@ using MapsFileInfoList = std::vector<Maps::FileInfo>;
 
 namespace Maps
 {
-    // For all map files.
-    MapsFileInfoList getAllMapFileInfos( const bool isForEditor, const uint8_t humanPlayerCount );
+    // Get all map files.
+    MapsFileInfoList getAllMapFileInfos( const uint8_t humanPlayerCount );
 
-    // Only for RESURRECTION map files.
-    MapsFileInfoList getResurrectionMapFileInfos( const bool isForEditor, const uint8_t humanPlayerCount );
+    // Get all maps available for the Editor.
+    MapsFileInfoList getEditorMapFileInfos();
 
     bool tryGetMatchingFile( const std::string & fileName, std::string & matchingFilePath );
 }
