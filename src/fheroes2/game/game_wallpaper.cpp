@@ -108,6 +108,7 @@ constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
 constexpr uint32_t EVENT_POLL_DELAY = 32;
 
 void renderMap();
+void randomizeGameArea();
 
 void lwpLog(const char *event) {
     VERBOSE_LOG("LWP " << event
@@ -147,6 +148,8 @@ void loadRandomMap() {
     conf.GetPlayers().SetStartGame();
     world.LoadMapMP2(nextMap.filename, false);
     VERBOSE_LOG("LWP map load FINISH file=" << nextMap.filename.c_str())
+
+    randomizeGameArea();
 }
 
 bool shouldUpdateMapRegion() {
@@ -164,19 +167,7 @@ bool shouldUpdateMapRegion() {
     return isExpired;
 }
 
-void randomizeGameAreaPoint() {
-    if (!shouldUpdateMapRegion()) {
-        return;
-    }
-
-    if (lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP) {
-        loadRandomMap();
-        lwpRegionUpdateCount = 0;
-    }
-
-    ++lwpRegionUpdateCount;
-    lwpLastMapUpdate = std::time(nullptr);
-
+void randomizeGameArea() {
     fheroes2::Display &display = fheroes2::Display::instance();
     int32_t displayWidth = display.width();
     int32_t displayHeight = display.height();
@@ -208,6 +199,22 @@ void randomizeGameAreaPoint() {
     Interface::AdventureMap::Get().getGameArea().SetCenter({x, y});
 
     renderMap();
+}
+
+void randomizeVisibleMapPart() {
+    if (!shouldUpdateMapRegion()) {
+        return;
+    }
+
+    if (lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP) {
+        loadRandomMap();
+        lwpRegionUpdateCount = 0;
+    } else {
+        randomizeGameArea();
+    }
+
+    ++lwpRegionUpdateCount;
+    lwpLastMapUpdate = std::time(nullptr);
 }
 
 void updateBrightness() {
@@ -277,7 +284,7 @@ void forceUpdates() {
     }
 
     if (forceMapUpdate) {
-        randomizeGameAreaPoint();
+        randomizeVisibleMapPart();
         forceMapUpdate = false;
     }
 
