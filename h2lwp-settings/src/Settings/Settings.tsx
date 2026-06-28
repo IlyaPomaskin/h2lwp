@@ -3,7 +3,7 @@ import { useBridgeContext } from "../BridgeContext";
 import { Brightness } from "./Brightness";
 import { MapUpdateInterval } from "./MapUpdateInterval";
 import { Scale } from "./Scale";
-import { ScaleType } from "./ScaleType";
+// import { ScaleType } from "./ScaleType";
 
 export const Settings = () => {
   const { settings } = useBridgeContext();
@@ -14,7 +14,9 @@ export const Settings = () => {
 
   return (
     <List disablePadding>
-      <ScaleType value={settings.scaleType} />
+      {/* Scale type option hidden: changing it has no effect because the renderer
+          is not recreated with the new value on scale type change. */}
+      {/* <ScaleType value={settings.scaleType} /> */}
 
       <Scale value={settings.scale} />
 
