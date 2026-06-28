@@ -428,10 +428,10 @@ fheroes2::GameMode renderWallpaper() {
             resizeDisplay();
         }
 
-        if (Game::validateAnimationDelay(Game::MAPS_DELAY)) {
+        if (Game::validateAnimationDelay(Game::DelayType::MAPS_DELAY)) {
             renderMap();
         } else {
-            SDL_Delay(Game::getAnimationDelayValue(Game::MAPS_DELAY));
+            SDL_Delay(Game::getAnimationDelayValue(Game::DelayType::MAPS_DELAY));
         }
     }
 }
