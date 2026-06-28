@@ -93,7 +93,14 @@ uint32_t lwpLastMapUpdate = 0;
 bool forceMapUpdate = true;
 bool forceConfigUpdate = true;
 bool forceUpdateOrientation = true;
-bool isPaused = false;
+
+typedef enum {
+    LWP_HIDE,
+} LiveWallpaperEvent;
+
+bool lwpHidePending = false;
+
+constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
 
 void renderMap();
 
@@ -261,7 +268,11 @@ extern "C" JNIEXPORT void JNICALL
 Java_org_libsdl_app_SDLActivity_nativeUpdateVisibleMapRegion([[maybe_unused]] JNIEnv *env,
                                                              [[maybe_unused]] jclass cls) {
     VERBOSE_LOG("nativeUpdateVisibleMapRegion")
-    forceMapUpdate = true;
+
+    SDL_Event hideEvent;
+    hideEvent.type = SDL_USEREVENT;
+    hideEvent.user.code = LWP_HIDE;
+    SDL_PushEvent(&hideEvent);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -269,27 +280,6 @@ Java_org_libsdl_app_SDLActivity_nativeUpdateConfigs([[maybe_unused]] JNIEnv *env
                                                     [[maybe_unused]] jclass cls) {
     VERBOSE_LOG("nativeUpdateConfigs")
     forceConfigUpdate = true;
-}
-
-typedef enum {
-    LWP_RESUME,
-} LiveWallpaperEvent;
-
-extern "C" JNIEXPORT void JNICALL
-Java_org_libsdl_app_SDLActivity_nativeOnVisibilityChange([[maybe_unused]] JNIEnv *env,
-                                                         [[maybe_unused]] jclass cls,
-                                                         jboolean nextIsVisible) {
-    VERBOSE_LOG("nativeOnVisibilityChange " << nextIsVisible)
-
-    if (nextIsVisible == false) {
-        isPaused = true;
-    } else {
-        SDL_Event lwpResumeEvent;
-        lwpResumeEvent.type = SDL_USEREVENT;
-        lwpResumeEvent.user.code = LWP_RESUME;
-
-        SDL_PushEvent(&lwpResumeEvent);
-    }
 }
 
 void handleKeyUp(SDL_Keysym keysym) {
@@ -398,6 +388,13 @@ bool handleSDLEvents() {
                 break;
             }
 
+            case SDL_USEREVENT: {
+                if (event.user.code == LWP_HIDE) {
+                    lwpHidePending = true;
+                }
+                break;
+            }
+
             case SDL_KEYUP: {
                 if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
                     return true;
@@ -416,27 +413,21 @@ bool handleSDLEvents() {
 
 fheroes2::GameMode renderWallpaper() {
     while (true) {
-        if (isPaused) {
-            SDL_Event e;
-            SDL_WaitEvent(&e);
-
-            if (e.type == SDL_USEREVENT && e.user.code == LWP_RESUME) {
-                forceUpdates();
-                renderMap();
-                isPaused = false;
-            }
-
-            continue;
-        }
-
         const bool isEscapePressed = handleSDLEvents();
         if (isEscapePressed) {
             return fheroes2::GameMode::QUIT_GAME;
         }
 
-        if (forceUpdateOrientation) {
-            resizeDisplay();
+        if (lwpHidePending) {
+            lwpHidePending = false;
+            forceMapUpdate = true;
+            forceUpdates();
+            renderMap();
+            SDL_AndroidSendMessage(COMMAND_PAUSE_NOW, 0);
+            continue;
         }
+
+        forceUpdates();
 
         if (Game::validateAnimationDelay(Game::DelayType::MAPS_DELAY)) {
             renderMap();

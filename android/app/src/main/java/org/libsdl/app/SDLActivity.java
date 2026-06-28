@@ -29,9 +29,6 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.InputConnection;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-
-import io.github.bhowell2.debouncer.Debouncer;
 
 
 /**
@@ -364,28 +361,16 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             }
         }
 
-        Debouncer debouncer = new Debouncer(2);
-
         @Override
-        public void onVisibilityChanged(boolean visible) {
-            Log.v(TAG, "onVisibilityChange " + (visible ? "true" : "false"));
-            nativeOnVisibilityChange(visible);
+        public void onVisibilityChanged(boolean isVisible) {
+            Log.v(TAG, "onVisibilityChange " + (isVisible ? "true" : "false"));
+            SDLActivity.lwpVisible = isVisible;
             nativeUpdateConfigs();
 
-            if (visible) {
-                debouncer.cancel("visibility-off");
-                debouncer.cancel("native-pause");
-                SDLActivity.nativeResume();
-//                nativeUpdateConfigs();
+            if (isVisible) {
+                SDLActivity.resumeSdl();
             } else {
-                debouncer.addRunLast(400, TimeUnit.MILLISECONDS, "visibility-off", k1 -> {
-                    nativeUpdateVisibleMapRegion();
-
-                    // small delay to let game engine update random map place and render it
-                    debouncer.addRunLast(500, TimeUnit.MILLISECONDS, "native-pause", k2 -> {
-                        SDLActivity.nativePause();
-                    });
-                });
+                nativeUpdateVisibleMapRegion();
             }
         }
 
@@ -579,6 +564,25 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     protected static final int COMMAND_USER = 0x8000;
 
+    protected static final int COMMAND_PAUSE_NOW = COMMAND_USER + 1;
+
+    static boolean lwpVisible = true;
+    static boolean sdlPaused = false;
+
+    static void pauseSdl() {
+        if (!sdlPaused) {
+            nativePause();
+            sdlPaused = true;
+        }
+    }
+
+    static void resumeSdl() {
+        if (sdlPaused) {
+            nativeResume();
+            sdlPaused = false;
+        }
+    }
+
     protected static boolean mFullscreenModeActive;
 
     /**
@@ -591,6 +595,12 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      * @return if the message was handled in overridden method.
      */
     protected boolean onUnhandledMessage(int command, Object param) {
+        if (command == COMMAND_PAUSE_NOW) {
+            if (!lwpVisible) {
+                pauseSdl();
+            }
+            return true;
+        }
         return false;
     }
 
@@ -629,7 +639,13 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     // Send a message from the SDLMain thread
     boolean sendCommand(int command, Object data) {
-        return true;
+        if (commandHandler == null) {
+            return false;
+        }
+        Message msg = commandHandler.obtainMessage();
+        msg.arg1 = command;
+        msg.obj = data;
+        return commandHandler.sendMessage(msg);
     }
 
     // C functions we call
@@ -640,8 +656,6 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     public static native void nativeUpdateVisibleMapRegion();
 
     public static native void nativeUpdateConfigs();
-
-    public static native void nativeOnVisibilityChange(boolean isVisible);
 
     public static native int nativeSetupJNI();
 
