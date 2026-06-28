@@ -7,7 +7,6 @@ type Props = {
 };
 
 const valueToText: Record<WallpaperScale, string> = {
-  0: "DPI",
   1: "x1",
   2: "x2",
   3: "x3",

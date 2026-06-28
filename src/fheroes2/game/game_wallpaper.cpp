@@ -224,6 +224,16 @@ void rereadAndApplyConfigs() {
     updateBrightness();
 }
 
+void migrateDeprecatedSettings() {
+    Settings &conf = Settings::Get();
+
+    if (conf.GetLWPScale() == 0) {
+        VERBOSE_LOG("migrating deprecated DPI scale to " << 5)
+        conf.SetLWPScale(5);
+        conf.Save(Settings::configFileName);
+    }
+}
+
 void forceUpdates() {
     if (forceConfigUpdate) {
         rereadAndApplyConfigs();
@@ -447,6 +457,8 @@ void overrideConfiguration() {
 }
 
 fheroes2::GameMode Game::Wallpaper() {
+    readConfigFile();
+    migrateDeprecatedSettings();
     rereadAndApplyConfigs();
     overrideConfiguration();
     loadRandomMap();
