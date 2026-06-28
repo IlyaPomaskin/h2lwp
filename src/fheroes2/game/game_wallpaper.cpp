@@ -94,6 +94,9 @@ bool forceMapUpdate = true;
 bool forceConfigUpdate = true;
 bool forceUpdateOrientation = true;
 
+constexpr int REGION_UPDATES_PER_MAP = 10;
+int lwpRegionUpdateCount = 0;
+
 typedef enum {
     LWP_HIDE,
 } LiveWallpaperEvent;
@@ -120,20 +123,30 @@ constexpr int TILE_WIDTH = 32;
 void loadRandomMap() {
     Settings &conf = Settings::Get();
 
-    const MapsFileInfoList mapsList = Maps::getAllMapFileInfos(1);
-    const uint32_t randomMapIndex = Rand::Get(0, mapsList.size() - 1);
-    const Maps::FileInfo &nextMap = mapsList.at(randomMapIndex);
+    MapsFileInfoList mapsList = Maps::getAllMapFileInfos(1);
     const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
 
-    if (currentMap.filename.empty() || currentMap.filename != nextMap.filename) {
-        VERBOSE_LOG("LWP map load START file=" << nextMap.filename.c_str())
-        conf.setCurrentMapInfo(nextMap);
-        conf.GetPlayers().SetStartGame();
-        world.LoadMapMP2(nextMap.filename, false);
-        VERBOSE_LOG("LWP map load FINISH file=" << nextMap.filename.c_str())
-    } else {
-        VERBOSE_LOG("LWP map load SKIPPED (same file) file=" << nextMap.filename.c_str())
+    if (mapsList.size() <= 1) {
+        VERBOSE_LOG("LWP map load SKIPPED (only one map) file=" << currentMap.filename.c_str())
+        return;
     }
+
+    mapsList.erase(
+        std::remove_if(mapsList.begin(), mapsList.end(),
+           [&currentMap](const Maps::FileInfo &info) {
+               return info.filename == currentMap.filename;
+           }),
+        mapsList.end()
+    );
+
+    const uint32_t randomMapIndex = Rand::Get(0, mapsList.size() - 1);
+    const Maps::FileInfo &nextMap = mapsList.at(randomMapIndex);
+
+    VERBOSE_LOG("LWP map load START file=" << nextMap.filename.c_str())
+    conf.setCurrentMapInfo(nextMap);
+    conf.GetPlayers().SetStartGame();
+    world.LoadMapMP2(nextMap.filename, false);
+    VERBOSE_LOG("LWP map load FINISH file=" << nextMap.filename.c_str())
 }
 
 bool shouldUpdateMapRegion() {
@@ -142,10 +155,10 @@ bool shouldUpdateMapRegion() {
     bool const isExpired = lwpLastMapUpdate <= currentTime - updateInterval;
 
     VERBOSE_LOG(
-            "ShouldUpdateMapRegion"
-                    << " interval:" << updateInterval
-                    << " current: " << currentTime
-                    << " last update: " << lwpLastMapUpdate
+        "ShouldUpdateMapRegion"
+            << " interval:" << updateInterval
+            << " current: " << currentTime
+            << " last update: " << lwpLastMapUpdate
     )
 
     return isExpired;
@@ -156,10 +169,12 @@ void randomizeGameAreaPoint() {
         return;
     }
 
-    if (lwpLastMapUpdate != 0) {
+    if (lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP) {
         loadRandomMap();
+        lwpRegionUpdateCount = 0;
     }
 
+    ++lwpRegionUpdateCount;
     lwpLastMapUpdate = std::time(nullptr);
 
     fheroes2::Display &display = fheroes2::Display::instance();
