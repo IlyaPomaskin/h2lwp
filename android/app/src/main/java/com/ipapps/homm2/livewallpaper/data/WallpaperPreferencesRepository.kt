@@ -62,7 +62,7 @@ class WallpaperPreferencesRepository(configFile: File?) {
             return ScaleType.LINEAR
         }
 
-        if (value === "nearest") {
+        if (value == "nearest") {
             return ScaleType.NEAREST
         }
 

@@ -102,7 +102,7 @@ constexpr int TILE_WIDTH = 32;
 void loadRandomMap() {
     Settings &conf = Settings::Get();
 
-    const MapsFileInfoList mapsList = Maps::getAllMapFileInfos(true, 0);
+    const MapsFileInfoList mapsList = Maps::getAllMapFileInfos(1);
     const uint32_t randomMapIndex = Rand::Get(0, mapsList.size() - 1);
     const Maps::FileInfo &nextMap = mapsList.at(randomMapIndex);
     const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
