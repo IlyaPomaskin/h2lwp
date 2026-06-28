@@ -363,8 +363,8 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
         @Override
         public void onVisibilityChanged(boolean isVisible) {
-            Log.v(TAG, "onVisibilityChange " + (isVisible ? "true" : "false"));
             SDLActivity.lwpVisible = isVisible;
+            SDLActivity.lwpLog("onVisibilityChanged " + isVisible);
             nativeUpdateConfigs();
 
             if (isVisible) {
@@ -423,6 +423,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
                 mSDLThread.start();
             } else {
                 Log.v(TAG, "SDLThread already exists");
+                SDLActivity.lwpLog("onSurfaceChanged -> nativeResume() (surface lifecycle)");
                 SDLActivity.nativeResume();
             }
         }
@@ -433,6 +434,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
             if (holder == SDLActivity.mEngine.mHolder) {
                 Log.v(TAG, "destroyed SDLActivity.mEngine.mHolder");
+                SDLActivity.lwpLog("onSurfaceDestroyed -> nativePause() (surface lifecycle)");
                 SDLActivity.nativePause();
                 super.onSurfaceDestroyed(holder);
             } else {
@@ -569,10 +571,17 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     static boolean lwpVisible = true;
     static boolean sdlPaused = false;
 
+    static void lwpLog(String event) {
+        Log.i("LWP", event + " | lwpVisible=" + lwpVisible + " sdlPaused=" + sdlPaused);
+    }
+
     static void pauseSdl() {
         if (!sdlPaused) {
             nativePause();
             sdlPaused = true;
+            lwpLog("pauseSdl -> nativePause()");
+        } else {
+            lwpLog("pauseSdl skipped (already paused)");
         }
     }
 
@@ -580,6 +589,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         if (sdlPaused) {
             nativeResume();
             sdlPaused = false;
+            lwpLog("resumeSdl -> nativeResume()");
+        } else {
+            lwpLog("resumeSdl skipped (not paused)");
         }
     }
 
@@ -596,8 +608,11 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
      */
     protected boolean onUnhandledMessage(int command, Object param) {
         if (command == COMMAND_PAUSE_NOW) {
+            lwpLog("onUnhandledMessage COMMAND_PAUSE_NOW");
             if (!lwpVisible) {
                 pauseSdl();
+            } else {
+                lwpLog("COMMAND_PAUSE_NOW ignored (visible again)");
             }
             return true;
         }

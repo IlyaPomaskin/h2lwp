@@ -102,7 +102,18 @@ bool lwpHidePending = false;
 
 constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
 
+constexpr uint32_t EVENT_POLL_DELAY = 32;
+
 void renderMap();
+
+void lwpLog(const char *event) {
+    VERBOSE_LOG("LWP " << event
+            << " | forceMapUpdate=" << forceMapUpdate
+            << " forceConfigUpdate=" << forceConfigUpdate
+            << " forceUpdateOrientation=" << forceUpdateOrientation
+            << " lwpHidePending=" << lwpHidePending
+            << " lwpLastMapUpdate=" << lwpLastMapUpdate)
+}
 
 constexpr int TILE_WIDTH = 32;
 
@@ -115,10 +126,13 @@ void loadRandomMap() {
     const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
 
     if (currentMap.filename.empty() || currentMap.filename != nextMap.filename) {
-        VERBOSE_LOG("map changed to file: " << nextMap.filename.c_str())
+        VERBOSE_LOG("LWP map load START file=" << nextMap.filename.c_str())
         conf.setCurrentMapInfo(nextMap);
         conf.GetPlayers().SetStartGame();
         world.LoadMapMP2(nextMap.filename, false);
+        VERBOSE_LOG("LWP map load FINISH file=" << nextMap.filename.c_str())
+    } else {
+        VERBOSE_LOG("LWP map load SKIPPED (same file) file=" << nextMap.filename.c_str())
     }
 }
 
@@ -260,14 +274,14 @@ void forceUpdates() {
 extern "C" JNIEXPORT void JNICALL
 Java_org_libsdl_app_SDLActivity_nativeUpdateOrientation([[maybe_unused]] JNIEnv *env,
                                                         [[maybe_unused]] jclass cls) {
-    VERBOSE_LOG("nativeUpdateOrientation")
     forceUpdateOrientation = true;
+    lwpLog("JNI nativeUpdateOrientation");
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_org_libsdl_app_SDLActivity_nativeUpdateVisibleMapRegion([[maybe_unused]] JNIEnv *env,
                                                              [[maybe_unused]] jclass cls) {
-    VERBOSE_LOG("nativeUpdateVisibleMapRegion")
+    lwpLog("JNI nativeUpdateVisibleMapRegion -> push LWP_HIDE");
 
     SDL_Event hideEvent;
     hideEvent.type = SDL_USEREVENT;
@@ -278,8 +292,8 @@ Java_org_libsdl_app_SDLActivity_nativeUpdateVisibleMapRegion([[maybe_unused]] JN
 extern "C" JNIEXPORT void JNICALL
 Java_org_libsdl_app_SDLActivity_nativeUpdateConfigs([[maybe_unused]] JNIEnv *env,
                                                     [[maybe_unused]] jclass cls) {
-    VERBOSE_LOG("nativeUpdateConfigs")
     forceConfigUpdate = true;
+    lwpLog("JNI nativeUpdateConfigs");
 }
 
 void handleKeyUp(SDL_Keysym keysym) {
@@ -362,7 +376,7 @@ bool handleSDLEvents() {
                 break;
             }
             case SDL_APP_DIDENTERBACKGROUND: {
-                VERBOSE_LOG("SDL_APP_DIDENTERBACKGROUND")
+                lwpLog("event SDL_APP_DIDENTERBACKGROUND (SDL now paused)");
                 break;
             }
             case SDL_APP_WILLENTERFOREGROUND: {
@@ -370,7 +384,7 @@ bool handleSDLEvents() {
                 break;
             }
             case SDL_APP_DIDENTERFOREGROUND: {
-                VERBOSE_LOG("SDL_APP_DIDENTERFOREGROUND")
+                lwpLog("event SDL_APP_DIDENTERFOREGROUND (SDL now resumed)");
                 break;
             }
             case SDL_RENDER_DEVICE_RESET: {
@@ -391,6 +405,7 @@ bool handleSDLEvents() {
             case SDL_USEREVENT: {
                 if (event.user.code == LWP_HIDE) {
                     lwpHidePending = true;
+                    lwpLog("event LWP_HIDE received");
                 }
                 break;
             }
@@ -421,9 +436,11 @@ fheroes2::GameMode renderWallpaper() {
         if (lwpHidePending) {
             lwpHidePending = false;
             forceMapUpdate = true;
+            lwpLog("hidden: loading map + rendering frame");
             forceUpdates();
             renderMap();
             SDL_AndroidSendMessage(COMMAND_PAUSE_NOW, 0);
+            lwpLog("hidden: frame posted, sent COMMAND_PAUSE_NOW");
             continue;
         }
 
@@ -431,9 +448,8 @@ fheroes2::GameMode renderWallpaper() {
 
         if (Game::validateAnimationDelay(Game::DelayType::MAPS_DELAY)) {
             renderMap();
-        } else {
-            SDL_Delay(Game::getAnimationDelayValue(Game::DelayType::MAPS_DELAY));
         }
+        SDL_Delay(EVENT_POLL_DELAY);
     }
 }
 

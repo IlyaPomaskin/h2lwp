@@ -59,6 +59,13 @@
         </service>
 
         <activity
+            android:name="com.ipapps.homm2.livewallpaper.SetWallpaperActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
             android:name="com.ipapps.homm2.livewallpaper.WebViewActivity"
             android:exported="false"
             android:icon="@mipmap/ic_launcher"
