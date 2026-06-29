@@ -53,7 +53,6 @@ namespace
     uint32_t lwpLastMapUpdate = 0;
     bool forceMapUpdate = true;
     bool forceConfigUpdate = true;
-    bool forceResizeDisplay = true;
 
     constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
@@ -76,8 +75,8 @@ namespace
 
     void lwpLog( const char * event )
     {
-        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " forceConfigUpdate=" << forceConfigUpdate
-                            << " forceResizeDisplay=" << forceResizeDisplay << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
+        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " forceConfigUpdate=" << forceConfigUpdate << " lwpHidePending=" << lwpHidePending
+                            << " lwpLastMapUpdate=" << lwpLastMapUpdate )
     }
 
     void pushWallpaperEvent( LiveWallpaperEvent code )
@@ -201,8 +200,6 @@ namespace
 
     void resizeDisplay()
     {
-        forceResizeDisplay = false;
-
         fheroes2::Display & display = fheroes2::Display::instance();
         int const scale = Settings::Get().GetLWPScale();
         VERBOSE_LOG( "resizeDisplay scale: " << scale )
@@ -240,10 +237,6 @@ namespace
         if ( forceMapUpdate ) {
             randomizeVisibleMapPart();
             forceMapUpdate = false;
-        }
-
-        if ( forceResizeDisplay ) {
-            resizeDisplay();
         }
     }
 
@@ -315,7 +308,7 @@ namespace
                     forceConfigUpdate = true;
                     break;
                 case LiveWallpaperEvent::ResizeDisplay:
-                    forceResizeDisplay = true;
+                    resizeDisplay();
                     break;
                 default:
                     break;
