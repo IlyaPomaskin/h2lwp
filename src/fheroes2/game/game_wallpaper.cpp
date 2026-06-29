@@ -53,7 +53,7 @@ namespace
     uint32_t lwpLastMapUpdate = 0;
     bool forceMapUpdate = true;
     bool forceConfigUpdate = true;
-    bool forceUpdateOrientation = true;
+    bool forceResizeDisplay = true;
 
     constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
@@ -63,7 +63,7 @@ namespace
         // These values must stay in sync with the WALLPAPER_EVENT_* constants in SDLActivity.java.
         Hide,
         UpdateConfigs,
-        UpdateOrientation,
+        ResizeDisplay,
     };
 
     bool lwpHidePending = false;
@@ -77,7 +77,7 @@ namespace
     void lwpLog( const char * event )
     {
         VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " forceConfigUpdate=" << forceConfigUpdate
-                            << " forceUpdateOrientation=" << forceUpdateOrientation << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
+                            << " forceResizeDisplay=" << forceResizeDisplay << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
     }
 
     void pushWallpaperEvent( LiveWallpaperEvent code )
@@ -201,7 +201,7 @@ namespace
 
     void resizeDisplay()
     {
-        forceUpdateOrientation = false;
+        forceResizeDisplay = false;
 
         fheroes2::Display & display = fheroes2::Display::instance();
         int const scale = Settings::Get().GetLWPScale();
@@ -242,7 +242,7 @@ namespace
             forceMapUpdate = false;
         }
 
-        if ( forceUpdateOrientation ) {
+        if ( forceResizeDisplay ) {
             resizeDisplay();
         }
     }
@@ -314,8 +314,8 @@ namespace
                 case LiveWallpaperEvent::UpdateConfigs:
                     forceConfigUpdate = true;
                     break;
-                case LiveWallpaperEvent::UpdateOrientation:
-                    forceUpdateOrientation = true;
+                case LiveWallpaperEvent::ResizeDisplay:
+                    forceResizeDisplay = true;
                     break;
                 default:
                     break;

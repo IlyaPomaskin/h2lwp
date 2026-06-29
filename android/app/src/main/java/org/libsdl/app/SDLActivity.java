@@ -415,7 +415,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             SDLActivity.onNativeResize();
             SDLActivity.onNativeSurfaceChanged();
 
-            pushWallpaperEvent(WALLPAPER_EVENT_UPDATE_ORIENTATION);
+            pushWallpaperEvent(WALLPAPER_EVENT_RESIZE_DISPLAY);
 
             if (mSDLThread == null) {
                 Log.v(TAG, "Starting SDLThread");
@@ -571,7 +571,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     // Wallpaper event codes. Must stay in sync with LiveWallpaperEvent in game_wallpaper.cpp.
     public static final int WALLPAPER_EVENT_HIDE = 0;
     public static final int WALLPAPER_EVENT_UPDATE_CONFIGS = 1;
-    public static final int WALLPAPER_EVENT_UPDATE_ORIENTATION = 2;
+    public static final int WALLPAPER_EVENT_RESIZE_DISPLAY = 2;
 
     static boolean lwpVisible = true;
     static boolean sdlPaused = false;
