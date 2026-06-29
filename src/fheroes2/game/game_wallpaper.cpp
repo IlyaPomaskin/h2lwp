@@ -31,7 +31,6 @@
 #include <vector>
 
 #include "SDL.h"
-#include "color.h"
 #include "game.h" // IWYU pragma: associated
 #include "game_delays.h"
 #include "game_interface.h"
@@ -215,21 +214,6 @@ namespace
         Settings::Get().Read( confFile );
     }
 
-    void overrideConfiguration()
-    {
-        Settings & conf = Settings::Get();
-        conf.SetGameType( Game::TYPE_STANDARD );
-        conf.SetCurrentColor( PlayerColor::NONE );
-        conf.setVSync( true );
-        conf.setSystemInfo( false );
-        conf.setHideInterface( true );
-        conf.SetShowControlPanel( false );
-
-        if ( conf.GetLWPScale() == 0 ) {
-            conf.SetLWPScale( 5 );
-        }
-    }
-
     void resizeDisplay()
     {
         fheroes2::Display & display = fheroes2::Display::instance();
@@ -264,7 +248,6 @@ namespace
     void rereadAndApplyConfigs()
     {
         readConfigFile();
-        overrideConfiguration();
         resizeDisplay();
         updateBrightness();
     }

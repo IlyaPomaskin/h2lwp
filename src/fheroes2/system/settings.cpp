@@ -161,7 +161,17 @@ void Settings::OverrideSettingsForLiveWallpaper()
     SetMusicVolume(0);
     set3DAudio( false );
     setAutoSaveAtBeginningOfTurn(false);
-    setHideInterface(false);
+
+    SetGameType( Game::TYPE_STANDARD );
+    SetCurrentColor( PlayerColor::NONE );
+    setVSync( true );
+    setSystemInfo( false );
+    setHideInterface( true );
+    SetShowControlPanel( false );
+
+    if ( GetLWPScale() == 0 ) {
+        SetLWPScale( 5 );
+    }
 }
 
 void Settings::ReadSettingsForLiveWallpaper(TinyConfig & config)
