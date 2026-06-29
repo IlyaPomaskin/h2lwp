@@ -52,11 +52,23 @@
 
 namespace
 {
+    int regionUpdatesPerMap()
+    {
+        switch ( World::Get().w() ) {
+        case Maps::MEDIUM:
+            return 15;
+        case Maps::LARGE:
+            return 20;
+        case Maps::XLARGE:
+            return 30;
+        case Maps::SMALL:
+        default:
+            return 10;
+        }
+    }
+
     uint32_t lwpLastMapUpdate = 0;
-
-    constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
-
     int lwpLastScale = -1;
     fheroes2::ResolutionInfo lwpLastResolution;
     std::filesystem::file_time_type lwpLastConfigMtime;
@@ -171,7 +183,7 @@ namespace
             return;
         }
 
-        if ( lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP ) {
+        if ( lwpRegionUpdateCount >= regionUpdatesPerMap() ) {
             loadRandomMap();
             lwpRegionUpdateCount = 0;
         }
