@@ -283,8 +283,6 @@ namespace
         rereadAndApplyConfigs();
     }
 
-
-
     bool handleSDLEvents()
     {
         SDL_Event event;
