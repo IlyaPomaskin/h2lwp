@@ -52,21 +52,6 @@
 
 namespace
 {
-    int regionUpdatesPerMap()
-    {
-        switch ( World::Get().w() ) {
-        case Maps::MEDIUM:
-            return 15;
-        case Maps::LARGE:
-            return 20;
-        case Maps::XLARGE:
-            return 30;
-        case Maps::SMALL:
-        default:
-            return 10;
-        }
-    }
-
     uint32_t lwpLastMapUpdate = 0;
     int lwpRegionUpdateCount = 0;
     int lwpLastScale = -1;
@@ -175,6 +160,21 @@ namespace
         VERBOSE_LOG( "ShouldUpdateMapRegion" << " interval:" << updateInterval << " current: " << currentTime << " last update: " << lwpLastMapUpdate )
 
         return isExpired;
+    }
+
+    int regionUpdatesPerMap()
+    {
+        switch ( World::Get().w() ) {
+            case Maps::MEDIUM:
+                return 15;
+            case Maps::LARGE:
+                return 20;
+            case Maps::XLARGE:
+                return 30;
+            case Maps::SMALL:
+            default:
+                return 10;
+        }
     }
 
     void randomizeVisibleMapPart()
