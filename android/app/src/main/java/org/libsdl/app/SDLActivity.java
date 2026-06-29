@@ -365,9 +365,9 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         public void onVisibilityChanged(boolean isVisible) {
             SDLActivity.lwpVisible = isVisible;
             SDLActivity.lwpLog("onVisibilityChanged " + isVisible);
-            pushWallpaperEvent(WALLPAPER_EVENT_UPDATE_CONFIGS);
 
             if (isVisible) {
+                pushWallpaperEvent(WALLPAPER_EVENT_UPDATE_CONFIGS);
                 SDLActivity.resumeSdl();
             } else {
                 pushWallpaperEvent(WALLPAPER_EVENT_HIDE);

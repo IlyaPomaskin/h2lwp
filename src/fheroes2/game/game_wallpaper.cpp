@@ -24,8 +24,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <ctime>
+#include <filesystem>
 #include <ostream>
 #include <string>
+#include <system_error>
 #include <vector>
 
 #include "SDL.h"
@@ -57,6 +59,7 @@ namespace
 
     int lwpLastScale = -1;
     fheroes2::ResolutionInfo lwpLastResolution;
+    std::filesystem::file_time_type lwpLastConfigMtime;
 
     enum class LiveWallpaperEvent : int32_t
     {
@@ -189,13 +192,23 @@ namespace
 
     void readConfigFile()
     {
-        VERBOSE_LOG( "readConfigFile" )
         const std::string configurationFileName( Settings::configFileName );
         const std::string confFile = Settings::GetLastFile( "", configurationFileName );
 
-        if ( System::IsFile( confFile ) ) {
-            Settings::Get().Read( confFile );
+        if ( !System::IsFile( confFile ) ) {
+            return;
         }
+
+        std::error_code ec;
+        const std::filesystem::file_time_type mtime = std::filesystem::last_write_time( confFile, ec );
+        if ( !ec && mtime == lwpLastConfigMtime ) {
+            VERBOSE_LOG( "readConfigFile skipped (unchanged)" )
+            return;
+        }
+        lwpLastConfigMtime = mtime;
+
+        VERBOSE_LOG( "readConfigFile" )
+        Settings::Get().Read( confFile );
     }
 
     void resizeDisplay()
@@ -226,17 +239,6 @@ namespace
         readConfigFile();
         resizeDisplay();
         updateBrightness();
-    }
-
-    void migrateDeprecatedSettings()
-    {
-        Settings & conf = Settings::Get();
-
-        if ( conf.GetLWPScale() == 0 ) {
-            VERBOSE_LOG( "migrating deprecated DPI scale to " << 5 )
-            conf.SetLWPScale( 5 );
-            conf.Save( Settings::configFileName );
-        }
     }
 
     void handleKeyUp( SDL_Keysym keysym )
@@ -361,6 +363,10 @@ namespace
         conf.setSystemInfo( false );
         conf.setHideInterface( true );
         conf.SetShowControlPanel( false );
+
+        if ( conf.GetLWPScale() == 0 ) {
+            conf.SetLWPScale( 5 );
+        }
     }
 }
 
@@ -372,7 +378,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_pushWallpaperE
 fheroes2::GameMode Game::Wallpaper()
 {
     readConfigFile();
-    migrateDeprecatedSettings();
     rereadAndApplyConfigs();
     overrideConfiguration();
     loadRandomMap();
