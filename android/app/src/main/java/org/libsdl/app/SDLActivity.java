@@ -357,7 +357,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         @Override
         public void onTouchEvent(MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-//                nativeUpdateVisibleMapRegion();
+//                pushWallpaperEvent(WALLPAPER_EVENT_HIDE);
             }
         }
 
@@ -365,12 +365,12 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
         public void onVisibilityChanged(boolean isVisible) {
             SDLActivity.lwpVisible = isVisible;
             SDLActivity.lwpLog("onVisibilityChanged " + isVisible);
-            nativeUpdateConfigs();
+            pushWallpaperEvent(WALLPAPER_EVENT_UPDATE_CONFIGS);
 
             if (isVisible) {
                 SDLActivity.resumeSdl();
             } else {
-                nativeUpdateVisibleMapRegion();
+                pushWallpaperEvent(WALLPAPER_EVENT_HIDE);
             }
         }
 
@@ -415,7 +415,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
             SDLActivity.onNativeResize();
             SDLActivity.onNativeSurfaceChanged();
 
-            nativeUpdateOrientation();
+            pushWallpaperEvent(WALLPAPER_EVENT_UPDATE_ORIENTATION);
 
             if (mSDLThread == null) {
                 Log.v(TAG, "Starting SDLThread");
@@ -568,6 +568,11 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
 
     protected static final int COMMAND_PAUSE_NOW = COMMAND_USER + 1;
 
+    // Wallpaper event codes. Must stay in sync with LiveWallpaperEvent in game_wallpaper.cpp.
+    public static final int WALLPAPER_EVENT_HIDE = 0;
+    public static final int WALLPAPER_EVENT_UPDATE_CONFIGS = 1;
+    public static final int WALLPAPER_EVENT_UPDATE_ORIENTATION = 2;
+
     static boolean lwpVisible = true;
     static boolean sdlPaused = false;
 
@@ -666,11 +671,7 @@ public class SDLActivity extends WallpaperService implements View.OnSystemUiVisi
     // C functions we call
     public static native String nativeGetVersion();
 
-    public static native void nativeUpdateOrientation();
-
-    public static native void nativeUpdateVisibleMapRegion();
-
-    public static native void nativeUpdateConfigs();
+    public static native void pushWallpaperEvent(int code);
 
     public static native int nativeSetupJNI();
 

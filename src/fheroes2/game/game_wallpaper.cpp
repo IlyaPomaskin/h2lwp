@@ -21,471 +21,368 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "game.h"
-
 #include <algorithm>
-#include <cassert>
-#include <cstddef>
 #include <cstdint>
+#include <ctime>
 #include <ostream>
 #include <string>
-#include <type_traits>
-#include <utility>
 #include <vector>
 
-#include "agg_image.h"
-#include "army.h"
-#include "audio.h"
-#include "audio_manager.h"
-#include "battle_only.h"
-#include "castle.h"
+#include "SDL.h"
 #include "color.h"
-#include "cursor.h"
-#include "dialog.h"
-#include "direction.h"
+#include "game.h" // IWYU pragma: associated
 #include "game_delays.h"
-#include "game_hotkeys.h"
 #include "game_interface.h"
-#include "game_io.h"
 #include "game_mode.h"
-#include "game_over.h"
-#include "heroes.h"
-#include "icn.h"
-#include "image.h"
-#include "interface_buttons.h"
-#include "interface_cpanel.h"
 #include "interface_gamearea.h"
-#include "interface_icons.h"
-#include "interface_radar.h"
-#include "interface_status.h"
-#include "kingdom.h"
+#include "jni.h"
 #include "localevent.h"
 #include "logging.h"
-#include "m82.h"
 #include "maps.h"
-#include "maps_tiles.h"
-#include "maps_tiles_helper.h"
+#include "maps_fileinfo.h"
 #include "math_base.h"
-#include "monster.h"
-#include "mp2.h"
-#include "mus.h"
 #include "players.h"
 #include "rand.h"
-#include "resource.h"
-#include "route.h"
 #include "screen.h"
 #include "settings.h"
 #include "system.h"
-#include "tools.h"
-#include "translations.h"
-#include "ui_dialog.h"
-#include "ui_text.h"
-#include "ui_tool.h"
-#include "week.h"
 #include "world.h"
-#include "SDL_timer.h"
-#include "SDL_system.h"
-#include "SDL_thread.h"
-#include "jni.h"
-#include "SDL_events.h"
 
-uint32_t lwpLastMapUpdate = 0;
-bool forceMapUpdate = true;
-bool forceConfigUpdate = true;
-bool forceUpdateOrientation = true;
+namespace
+{
+    uint32_t lwpLastMapUpdate = 0;
+    bool forceMapUpdate = true;
+    bool forceConfigUpdate = true;
+    bool forceUpdateOrientation = true;
 
-constexpr int REGION_UPDATES_PER_MAP = 10;
-int lwpRegionUpdateCount = 0;
+    constexpr int REGION_UPDATES_PER_MAP = 10;
+    int lwpRegionUpdateCount = 0;
 
-typedef enum {
-    LWP_HIDE,
-} LiveWallpaperEvent;
+    enum class LiveWallpaperEvent : int32_t
+    {
+        // These values must stay in sync with the WALLPAPER_EVENT_* constants in SDLActivity.java.
+        Hide,
+        UpdateConfigs,
+        UpdateOrientation,
+    };
 
-bool lwpHidePending = false;
+    bool lwpHidePending = false;
 
-constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
+    constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
 
-constexpr uint32_t EVENT_POLL_DELAY = 32;
+    constexpr uint32_t EVENT_POLL_DELAY = 32;
 
-void renderMap();
-void randomizeGameArea();
+    constexpr int TILE_WIDTH = 32;
 
-void lwpLog(const char *event) {
-    VERBOSE_LOG("LWP " << event
-            << " | forceMapUpdate=" << forceMapUpdate
-            << " forceConfigUpdate=" << forceConfigUpdate
-            << " forceUpdateOrientation=" << forceUpdateOrientation
-            << " lwpHidePending=" << lwpHidePending
-            << " lwpLastMapUpdate=" << lwpLastMapUpdate)
-}
-
-constexpr int TILE_WIDTH = 32;
-
-void loadRandomMap() {
-    Settings &conf = Settings::Get();
-
-    MapsFileInfoList mapsList = Maps::getAllMapFileInfos(1);
-    const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
-
-    if (mapsList.size() <= 1) {
-        VERBOSE_LOG("LWP map load SKIPPED (only one map) file=" << currentMap.filename.c_str())
-        return;
+    void lwpLog( const char * event )
+    {
+        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " forceConfigUpdate=" << forceConfigUpdate
+                            << " forceUpdateOrientation=" << forceUpdateOrientation << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
     }
 
-    mapsList.erase(
-        std::remove_if(mapsList.begin(), mapsList.end(),
-           [&currentMap](const Maps::FileInfo &info) {
-               return info.filename == currentMap.filename;
-           }),
-        mapsList.end()
-    );
+    void pushWallpaperEvent( LiveWallpaperEvent code )
+    {
+        VERBOSE_LOG( "pushWallpaperEvent code=" << static_cast<int32_t>( code ) )
 
-    const uint32_t randomMapIndex = Rand::Get(0, mapsList.size() - 1);
-    const Maps::FileInfo &nextMap = mapsList.at(randomMapIndex);
+        if ( SDL_WasInit( SDL_INIT_EVENTS ) == 0 ) {
+            return;
+        }
 
-    VERBOSE_LOG("LWP map load START file=" << nextMap.filename.c_str())
-    conf.setCurrentMapInfo(nextMap);
-    conf.GetPlayers().SetStartGame();
-    world.LoadMapMP2(nextMap.filename, false);
-    VERBOSE_LOG("LWP map load FINISH file=" << nextMap.filename.c_str())
-
-    randomizeGameArea();
-}
-
-bool shouldUpdateMapRegion() {
-    uint32_t const updateInterval = Settings::Get().GetLWPMapUpdateInterval();
-    uint32_t const currentTime = std::time(nullptr);
-    bool const isExpired = lwpLastMapUpdate <= currentTime - updateInterval;
-
-    VERBOSE_LOG(
-        "ShouldUpdateMapRegion"
-            << " interval:" << updateInterval
-            << " current: " << currentTime
-            << " last update: " << lwpLastMapUpdate
-    )
-
-    return isExpired;
-}
-
-void randomizeGameArea() {
-    fheroes2::Display &display = fheroes2::Display::instance();
-    int32_t displayWidth = display.width();
-    int32_t displayHeight = display.height();
-
-    int32_t mapWidth = World::Get().w();
-    int32_t mapHeight = World::Get().h();
-
-    int32_t screenHeight = static_cast<int32_t>(floor(displayHeight / TILE_WIDTH));
-    int32_t screenWidth = static_cast<int32_t>(floor(displayWidth / TILE_WIDTH));
-
-    int32_t halfHeight = static_cast<int32_t>(floor(screenHeight / 2));
-    int32_t halfWidth = static_cast<int32_t>(floor(screenWidth / 2));
-
-    int32_t widthFrom = halfWidth + 1;
-    int32_t widthTo = mapWidth - halfWidth - 1;
-    int32_t x = Rand::Get(widthFrom, widthTo);
-
-    int32_t heightFrom = halfHeight + 1;
-    int32_t heightTo = mapHeight - halfHeight - 1;
-    int32_t y = Rand::Get(heightFrom, heightTo);
-
-    VERBOSE_LOG("Map w: " << mapWidth << " h: " << mapHeight)
-    VERBOSE_LOG("Screen w: " << screenWidth << " h: " << screenHeight)
-    VERBOSE_LOG("Half screen w: " << halfWidth << " h: " << halfHeight)
-    VERBOSE_LOG("Width from: " << widthFrom << " to: " << widthTo)
-    VERBOSE_LOG("Height from: " << heightFrom << " to: " << heightTo)
-    VERBOSE_LOG("Next point x: " << x << " y: " << y)
-
-    Interface::AdventureMap::Get().getGameArea().SetCenter({x, y});
-
-    renderMap();
-}
-
-void randomizeVisibleMapPart() {
-    if (!shouldUpdateMapRegion()) {
-        return;
+        SDL_Event event;
+        SDL_zero( event );
+        event.type = SDL_USEREVENT;
+        event.user.code = static_cast<int32_t>( code );
+        SDL_PushEvent( &event );
     }
 
-    if (lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP) {
-        loadRandomMap();
-        lwpRegionUpdateCount = 0;
-    } else {
+    void renderMap()
+    {
+        Interface::GameArea const & gameArea = Interface::AdventureMap::Get().getGameArea();
+        fheroes2::Display & display = fheroes2::Display::instance();
+
+        Game::updateAdventureMapAnimationIndex();
+        gameArea.Redraw( display, Interface::RedrawLevelType::LEVEL_OBJECTS | Interface::RedrawLevelType::LEVEL_HEROES );
+        display.render();
+    }
+
+    int32_t randomAxisCenter( int32_t displayPx, int32_t mapTiles )
+    {
+        const int32_t halfScreenTiles = displayPx / TILE_WIDTH / 2;
+        return Rand::Get( halfScreenTiles + 1, mapTiles - halfScreenTiles - 1 );
+    }
+
+    void randomizeGameArea()
+    {
+        fheroes2::Display & display = fheroes2::Display::instance();
+        const int32_t x = randomAxisCenter( display.width(), World::Get().w() );
+        const int32_t y = randomAxisCenter( display.height(), World::Get().h() );
+
+        VERBOSE_LOG( "randomizeGameArea x=" << x << " y=" << y )
+
+        Interface::AdventureMap::Get().getGameArea().SetCenter( { x, y } );
+
+        renderMap();
+    }
+
+    void loadRandomMap()
+    {
+        Settings & conf = Settings::Get();
+
+        MapsFileInfoList mapsList = Maps::getAllMapFileInfos( 1 );
+        const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
+
+        if ( mapsList.size() <= 1 ) {
+            VERBOSE_LOG( "LWP map load SKIPPED (only one map) file=" << currentMap.filename.c_str() )
+            return;
+        }
+
+        mapsList.erase( std::remove_if( mapsList.begin(), mapsList.end(), [&currentMap]( const Maps::FileInfo & info ) { return info.filename == currentMap.filename; } ),
+                        mapsList.end() );
+
+        const uint32_t randomMapIndex = Rand::Get( 0, mapsList.size() - 1 );
+        const Maps::FileInfo & nextMap = mapsList.at( randomMapIndex );
+
+        VERBOSE_LOG( "LWP map load START file=" << nextMap.filename.c_str() )
+        conf.setCurrentMapInfo( nextMap );
+        conf.GetPlayers().SetStartGame();
+        world.LoadMapMP2( nextMap.filename, false );
+        VERBOSE_LOG( "LWP map load FINISH file=" << nextMap.filename.c_str() )
+
         randomizeGameArea();
     }
 
-    ++lwpRegionUpdateCount;
-    lwpLastMapUpdate = std::time(nullptr);
-}
+    bool shouldUpdateMapRegion()
+    {
+        uint32_t const updateInterval = Settings::Get().GetLWPMapUpdateInterval();
+        uint32_t const currentTime = std::time( nullptr );
+        bool const isExpired = lwpLastMapUpdate <= currentTime - updateInterval;
 
-void updateBrightness() {
-    int brightness = Settings::Get().GetLWPBrightness();
-    int brightnessAlpha = static_cast<int>(floor((100 - brightness) * 255 / 100));
-    VERBOSE_LOG("updateBrightness value: " << brightness << " alpha: " << brightnessAlpha)
-    fheroes2::engine().setBrightness(brightnessAlpha);
-}
+        VERBOSE_LOG( "ShouldUpdateMapRegion" << " interval:" << updateInterval << " current: " << currentTime << " last update: " << lwpLastMapUpdate )
 
-void readConfigFile() {
-    VERBOSE_LOG("readConfigFile")
-    const std::string configurationFileName(Settings::configFileName);
-    const std::string confFile = Settings::GetLastFile("", configurationFileName);
-
-    if (System::IsFile(confFile)) {
-        Settings::Get().Read(confFile);
-    }
-}
-
-void resizeDisplay() {
-    forceUpdateOrientation = false;
-
-    fheroes2::Display &display = fheroes2::Display::instance();
-    int const scale = Settings::Get().GetLWPScale();
-    VERBOSE_LOG("resizeDisplay scale: " << scale)
-
-    display.setResolution(display.getScaledScreenSize(scale));
-
-    Interface::AdventureMap::Get().getGameArea().generate(
-            {display.width(), display.height()},
-            true
-    );
-}
-
-void renderMap() {
-    Interface::GameArea const &gameArea = Interface::AdventureMap::Get().getGameArea();
-    fheroes2::Display &display = fheroes2::Display::instance();
-
-    Game::updateAdventureMapAnimationIndex();
-    gameArea.Redraw(
-            display,
-            Interface::RedrawLevelType::LEVEL_OBJECTS |
-            Interface::RedrawLevelType::LEVEL_HEROES);
-    display.render();
-}
-
-void rereadAndApplyConfigs() {
-    readConfigFile();
-    resizeDisplay();
-    updateBrightness();
-}
-
-void migrateDeprecatedSettings() {
-    Settings &conf = Settings::Get();
-
-    if (conf.GetLWPScale() == 0) {
-        VERBOSE_LOG("migrating deprecated DPI scale to " << 5)
-        conf.SetLWPScale(5);
-        conf.Save(Settings::configFileName);
-    }
-}
-
-void forceUpdates() {
-    if (forceConfigUpdate) {
-        rereadAndApplyConfigs();
-        forceConfigUpdate = false;
+        return isExpired;
     }
 
-    if (forceMapUpdate) {
-        randomizeVisibleMapPart();
-        forceMapUpdate = false;
+    void randomizeVisibleMapPart()
+    {
+        if ( !shouldUpdateMapRegion() ) {
+            return;
+        }
+
+        if ( lwpRegionUpdateCount >= REGION_UPDATES_PER_MAP ) {
+            loadRandomMap();
+            lwpRegionUpdateCount = 0;
+        }
+        else {
+            randomizeGameArea();
+        }
+
+        ++lwpRegionUpdateCount;
+        lwpLastMapUpdate = std::time( nullptr );
     }
 
-    if (forceUpdateOrientation) {
+    void updateBrightness()
+    {
+        int brightness = Settings::Get().GetLWPBrightness();
+        int brightnessAlpha = ( 100 - brightness ) * 255 / 100;
+        VERBOSE_LOG( "updateBrightness value: " << brightness << " alpha: " << brightnessAlpha )
+        fheroes2::engine().setBrightness( brightnessAlpha );
+    }
+
+    void readConfigFile()
+    {
+        VERBOSE_LOG( "readConfigFile" )
+        const std::string configurationFileName( Settings::configFileName );
+        const std::string confFile = Settings::GetLastFile( "", configurationFileName );
+
+        if ( System::IsFile( confFile ) ) {
+            Settings::Get().Read( confFile );
+        }
+    }
+
+    void resizeDisplay()
+    {
+        forceUpdateOrientation = false;
+
+        fheroes2::Display & display = fheroes2::Display::instance();
+        int const scale = Settings::Get().GetLWPScale();
+        VERBOSE_LOG( "resizeDisplay scale: " << scale )
+
+        display.setResolution( display.getScaledScreenSize( scale ) );
+
+        Interface::AdventureMap::Get().getGameArea().generate( { display.width(), display.height() }, true );
+    }
+
+    void rereadAndApplyConfigs()
+    {
+        readConfigFile();
         resizeDisplay();
+        updateBrightness();
     }
-}
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_libsdl_app_SDLActivity_nativeUpdateOrientation([[maybe_unused]] JNIEnv *env,
-                                                        [[maybe_unused]] jclass cls) {
-    forceUpdateOrientation = true;
-    lwpLog("JNI nativeUpdateOrientation");
-}
+    void migrateDeprecatedSettings()
+    {
+        Settings & conf = Settings::Get();
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_libsdl_app_SDLActivity_nativeUpdateVisibleMapRegion([[maybe_unused]] JNIEnv *env,
-                                                             [[maybe_unused]] jclass cls) {
-    lwpLog("JNI nativeUpdateVisibleMapRegion -> push LWP_HIDE");
+        if ( conf.GetLWPScale() == 0 ) {
+            VERBOSE_LOG( "migrating deprecated DPI scale to " << 5 )
+            conf.SetLWPScale( 5 );
+            conf.Save( Settings::configFileName );
+        }
+    }
 
-    SDL_Event hideEvent;
-    hideEvent.type = SDL_USEREVENT;
-    hideEvent.user.code = LWP_HIDE;
-    SDL_PushEvent(&hideEvent);
-}
+    void forceUpdates()
+    {
+        if ( forceConfigUpdate ) {
+            rereadAndApplyConfigs();
+            forceConfigUpdate = false;
+        }
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_libsdl_app_SDLActivity_nativeUpdateConfigs([[maybe_unused]] JNIEnv *env,
-                                                    [[maybe_unused]] jclass cls) {
-    forceConfigUpdate = true;
-    lwpLog("JNI nativeUpdateConfigs");
-}
+        if ( forceMapUpdate ) {
+            randomizeVisibleMapPart();
+            forceMapUpdate = false;
+        }
 
-void handleKeyUp(SDL_Keysym keysym) {
-    Settings &conf = Settings::Get();
+        if ( forceUpdateOrientation ) {
+            resizeDisplay();
+        }
+    }
 
-    int const offsetMultiplier = keysym.mod & KMOD_SHIFT ? 10 : 1;
-    int const offset = TILE_WIDTH * offsetMultiplier;
+    void handleKeyUp( SDL_Keysym keysym )
+    {
+        Settings & conf = Settings::Get();
+        Interface::GameArea & gameArea = Interface::AdventureMap::Get().getGameArea();
 
-    switch (keysym.scancode) {
-        case SDL_SCANCODE_SPACE: {
+        int const offsetMultiplier = keysym.mod & KMOD_SHIFT ? 10 : 1;
+        int const offset = TILE_WIDTH * offsetMultiplier;
+
+        switch ( keysym.scancode ) {
+        case SDL_SCANCODE_SPACE:
             forceMapUpdate = true;
             break;
-        }
-        case SDL_SCANCODE_1: {
-            conf.SetLWPScale(1);
+        case SDL_SCANCODE_1:
+        case SDL_SCANCODE_2:
+        case SDL_SCANCODE_3:
+        case SDL_SCANCODE_4:
+        case SDL_SCANCODE_5:
+            conf.SetLWPScale( keysym.scancode - SDL_SCANCODE_1 + 1 );
             break;
-        }
-        case SDL_SCANCODE_2: {
-            conf.SetLWPScale(2);
+        case SDL_SCANCODE_0:
+            conf.SetLWPScale( 0 );
             break;
-        }
-        case SDL_SCANCODE_3: {
-            conf.SetLWPScale(3);
-            break;
-        }
-        case SDL_SCANCODE_4: {
-            conf.SetLWPScale(4);
-            break;
-        }
-        case SDL_SCANCODE_5: {
-            conf.SetLWPScale(5);
-            break;
-        }
-        case SDL_SCANCODE_0: {
-            conf.SetLWPScale(0);
+        case SDL_SCANCODE_UP:
+            gameArea.ShiftCenter( { 0, -offset } );
+            return;
+        case SDL_SCANCODE_DOWN:
+            gameArea.ShiftCenter( { 0, offset } );
+            return;
+        case SDL_SCANCODE_LEFT:
+            gameArea.ShiftCenter( { -offset, 0 } );
+            return;
+        case SDL_SCANCODE_RIGHT:
+            gameArea.ShiftCenter( { offset, 0 } );
+            return;
+        case SDL_SCANCODE_ESCAPE:
+            exit( 0 );
+        default:
             break;
         }
 
-        case SDL_SCANCODE_UP: {
-            Interface::AdventureMap::Get().getGameArea().ShiftCenter(fheroes2::Point(0, -offset));
-            return;
-        }
-        case SDL_SCANCODE_DOWN: {
-            Interface::AdventureMap::Get().getGameArea().ShiftCenter(fheroes2::Point(0, offset));
-            return;
-        }
-        case SDL_SCANCODE_LEFT: {
-            Interface::AdventureMap::Get().getGameArea().ShiftCenter(fheroes2::Point(-offset, 0));
-            return;
-        }
-        case SDL_SCANCODE_RIGHT: {
-            Interface::AdventureMap::Get().getGameArea().ShiftCenter(fheroes2::Point(offset, 0));
-            return;
-        }
-
-        case SDL_SCANCODE_ESCAPE: {
-            exit(0);
-        }
-
-        default: {
-        }
+        conf.Save( Settings::configFileName );
+        rereadAndApplyConfigs();
     }
 
-    conf.Save(Settings::configFileName);
-    rereadAndApplyConfigs();
-}
+    bool handleSDLEvents()
+    {
+        SDL_Event event;
 
-bool handleSDLEvents() {
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-            case SDL_RENDER_TARGETS_RESET: {
-                VERBOSE_LOG("SDL_RENDER_TARGETS_RESET")
+        while ( SDL_PollEvent( &event ) ) {
+            switch ( event.type ) {
+            case SDL_RENDER_TARGETS_RESET:
+                VERBOSE_LOG( "SDL_RENDER_TARGETS_RESET" )
                 fheroes2::Display::instance().render();
                 break;
-            }
-            case SDL_APP_WILLENTERBACKGROUND: {
-                VERBOSE_LOG("SDL_APP_WILLENTERBACKGROUND")
-                break;
-            }
-            case SDL_APP_DIDENTERBACKGROUND: {
-                lwpLog("event SDL_APP_DIDENTERBACKGROUND (SDL now paused)");
-                break;
-            }
-            case SDL_APP_WILLENTERFOREGROUND: {
-                VERBOSE_LOG("SDL_APP_WILLENTERFOREGROUND")
-                break;
-            }
-            case SDL_APP_DIDENTERFOREGROUND: {
-                lwpLog("event SDL_APP_DIDENTERFOREGROUND (SDL now resumed)");
-                break;
-            }
-            case SDL_RENDER_DEVICE_RESET: {
-                VERBOSE_LOG("SDL_RENDER_DEVICE_RESET")
+            case SDL_RENDER_DEVICE_RESET:
+                VERBOSE_LOG( "SDL_RENDER_DEVICE_RESET" )
                 LocalEvent::onRenderDeviceResetEvent();
                 fheroes2::Display::instance().render();
                 break;
-            }
-            case SDL_DISPLAYEVENT: {
-                VERBOSE_LOG("SDL_DISPLAYEVENT")
-                break;
-            }
-            case SDL_SYSWMEVENT: {
-                VERBOSE_LOG("SDL_SYSWMEVENT")
-                break;
-            }
-
-            case SDL_USEREVENT: {
-                if (event.user.code == LWP_HIDE) {
+            case SDL_USEREVENT:
+                switch ( static_cast<LiveWallpaperEvent>( event.user.code ) ) {
+                case LiveWallpaperEvent::Hide:
                     lwpHidePending = true;
-                    lwpLog("event LWP_HIDE received");
+                    break;
+                case LiveWallpaperEvent::UpdateConfigs:
+                    forceConfigUpdate = true;
+                    break;
+                case LiveWallpaperEvent::UpdateOrientation:
+                    forceUpdateOrientation = true;
+                    break;
+                default:
+                    break;
                 }
+                lwpLog( "handled wallpaper event" );
                 break;
-            }
-
-            case SDL_KEYUP: {
-                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+            case SDL_KEYUP:
+                if ( event.key.keysym.scancode == SDL_SCANCODE_ESCAPE ) {
                     return true;
                 }
-
-                handleKeyUp(event.key.keysym);
-            }
-
+                handleKeyUp( event.key.keysym );
+                break;
             default:
                 break;
+            }
         }
+
+        return false;
     }
 
-    return false;
-}
+    fheroes2::GameMode renderWallpaper()
+    {
+        while ( true ) {
+            const bool isEscapePressed = handleSDLEvents();
+            if ( isEscapePressed ) {
+                return fheroes2::GameMode::QUIT_GAME;
+            }
 
-fheroes2::GameMode renderWallpaper() {
-    while (true) {
-        const bool isEscapePressed = handleSDLEvents();
-        if (isEscapePressed) {
-            return fheroes2::GameMode::QUIT_GAME;
-        }
+            if ( lwpHidePending ) {
+                lwpHidePending = false;
+                forceMapUpdate = true;
+                lwpLog( "hidden: loading map + rendering frame" );
+                forceUpdates();
+                renderMap();
+                SDL_AndroidSendMessage( COMMAND_PAUSE_NOW, 0 );
+                lwpLog( "hidden: frame posted, sent COMMAND_PAUSE_NOW" );
+                continue;
+            }
 
-        if (lwpHidePending) {
-            lwpHidePending = false;
-            forceMapUpdate = true;
-            lwpLog("hidden: loading map + rendering frame");
             forceUpdates();
-            renderMap();
-            SDL_AndroidSendMessage(COMMAND_PAUSE_NOW, 0);
-            lwpLog("hidden: frame posted, sent COMMAND_PAUSE_NOW");
-            continue;
-        }
 
-        forceUpdates();
-
-        if (Game::validateAnimationDelay(Game::DelayType::MAPS_DELAY)) {
-            renderMap();
+            if ( Game::validateAnimationDelay( Game::DelayType::MAPS_DELAY ) ) {
+                renderMap();
+            }
+            SDL_Delay( EVENT_POLL_DELAY );
         }
-        SDL_Delay(EVENT_POLL_DELAY);
+    }
+
+    void overrideConfiguration()
+    {
+        Settings & conf = Settings::Get();
+        conf.SetGameType( Game::TYPE_STANDARD );
+        conf.SetCurrentColor( PlayerColor::NONE );
+        conf.setVSync( true );
+        conf.setSystemInfo( false );
+        conf.setHideInterface( true );
+        conf.SetShowControlPanel( false );
     }
 }
 
-void overrideConfiguration() {
-    Settings &conf = Settings::Get();
-    conf.SetGameType(Game::TYPE_STANDARD);
-    conf.SetCurrentColor(PlayerColor::NONE);
-    conf.setVSync(true);
-    conf.setSystemInfo(false);
-    conf.setHideInterface(true);
-    conf.SetShowControlPanel(false);
+extern "C" JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_pushWallpaperEvent( [[maybe_unused]] JNIEnv * env, [[maybe_unused]] jclass cls, jint code )
+{
+    pushWallpaperEvent( static_cast<LiveWallpaperEvent>( code ) );
 }
 
-fheroes2::GameMode Game::Wallpaper() {
+fheroes2::GameMode Game::Wallpaper()
+{
     readConfigFile();
     migrateDeprecatedSettings();
     rereadAndApplyConfigs();
