@@ -52,11 +52,11 @@
 
 namespace
 {
-    uint32_t lwpLastMapUpdate = 0;
-    int lwpRegionUpdateCount = 0;
-    int lwpLastScale = -1;
-    fheroes2::ResolutionInfo lwpLastResolution;
-    std::filesystem::file_time_type lwpLastConfigMtime;
+    uint32_t lastMapUpdate = 0;
+    int regionUpdateCount = 0;
+    int lastScale = -1;
+    fheroes2::ResolutionInfo lastResolution;
+    std::filesystem::file_time_type lastConfigMtime;
 
     enum class LiveWallpaperEvent : int32_t
     {
@@ -66,7 +66,7 @@ namespace
         ResizeDisplay,
     };
 
-    bool lwpHidePending = false;
+    bool isHidePending = false;
 
     constexpr int COMMAND_PAUSE_NOW = 0x8000 + 1;
 
@@ -76,7 +76,7 @@ namespace
 
     void lwpLog( const char * event )
     {
-        VERBOSE_LOG( "LWP " << event << " | lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
+        VERBOSE_LOG( "LWP " << event << " | isHidePending=" << isHidePending << " lastMapUpdate=" << lastMapUpdate )
     }
 
     void pushWallpaperEvent( LiveWallpaperEvent code )
@@ -155,9 +155,9 @@ namespace
     {
         uint32_t const updateInterval = Settings::Get().GetLWPMapUpdateInterval();
         uint32_t const currentTime = std::time( nullptr );
-        bool const isExpired = lwpLastMapUpdate <= currentTime - updateInterval;
+        bool const isExpired = lastMapUpdate <= currentTime - updateInterval;
 
-        VERBOSE_LOG( "ShouldUpdateMapRegion" << " interval:" << updateInterval << " current: " << currentTime << " last update: " << lwpLastMapUpdate )
+        VERBOSE_LOG( "ShouldUpdateMapRegion" << " interval:" << updateInterval << " current: " << currentTime << " last update: " << lastMapUpdate )
 
         return isExpired;
     }
@@ -183,15 +183,15 @@ namespace
             return;
         }
 
-        if ( lwpRegionUpdateCount >= regionUpdatesPerMap() ) {
+        if ( regionUpdateCount >= regionUpdatesPerMap() ) {
             loadRandomMap();
-            lwpRegionUpdateCount = 0;
+            regionUpdateCount = 0;
         }
 
         randomizeGameArea();
 
-        ++lwpRegionUpdateCount;
-        lwpLastMapUpdate = std::time( nullptr );
+        ++regionUpdateCount;
+        lastMapUpdate = std::time( nullptr );
     }
 
     void updateBrightness()
@@ -213,11 +213,11 @@ namespace
 
         std::error_code ec;
         const std::filesystem::file_time_type mtime = std::filesystem::last_write_time( confFile, ec );
-        if ( !ec && mtime == lwpLastConfigMtime ) {
+        if ( !ec && mtime == lastConfigMtime ) {
             VERBOSE_LOG( "readConfigFile skipped (unchanged)" )
             return;
         }
-        lwpLastConfigMtime = mtime;
+        lastConfigMtime = mtime;
 
         VERBOSE_LOG( "readConfigFile" )
         Settings::Get().Read( confFile );
@@ -229,12 +229,12 @@ namespace
         const int scale = Settings::Get().GetLWPScale();
         const fheroes2::ResolutionInfo resolution = display.getScaledScreenSize( scale );
 
-        if ( scale == lwpLastScale && resolution == lwpLastResolution ) {
+        if ( scale == lastScale && resolution == lastResolution ) {
             VERBOSE_LOG( "resizeDisplay skipped (scale " << scale << " unchanged)" )
             return;
         }
-        lwpLastScale = scale;
-        lwpLastResolution = resolution;
+        lastScale = scale;
+        lastResolution = resolution;
 
         VERBOSE_LOG( "resizeDisplay scale: " << scale )
 
@@ -251,6 +251,21 @@ namespace
         readConfigFile();
         resizeDisplay();
         updateBrightness();
+    }
+
+    void overrideConfiguration()
+    {
+        Settings & conf = Settings::Get();
+        conf.SetGameType( Game::TYPE_STANDARD );
+        conf.SetCurrentColor( PlayerColor::NONE );
+        conf.setVSync( true );
+        conf.setSystemInfo( false );
+        conf.setHideInterface( true );
+        conf.SetShowControlPanel( false );
+
+        if ( conf.GetLWPScale() == 0 ) {
+            conf.SetLWPScale( 5 );
+        }
     }
 
     void handleKeyUp( SDL_Keysym keysym )
@@ -315,7 +330,7 @@ namespace
             case SDL_USEREVENT:
                 switch ( static_cast<LiveWallpaperEvent>( event.user.code ) ) {
                 case LiveWallpaperEvent::Hide:
-                    lwpHidePending = true;
+                    isHidePending = true;
                     lwpLog( "hidden: loading map + rendering frame" );
                     randomizeVisibleMapPart();
                     break;
@@ -352,8 +367,8 @@ namespace
                 return fheroes2::GameMode::QUIT_GAME;
             }
 
-            if ( lwpHidePending ) {
-                lwpHidePending = false;
+            if ( isHidePending ) {
+                isHidePending = false;
                 SDL_AndroidSendMessage( COMMAND_PAUSE_NOW, 0 );
                 lwpLog( "hidden: frame posted, sent COMMAND_PAUSE_NOW" );
                 continue;
@@ -362,22 +377,8 @@ namespace
             if ( Game::validateAnimationDelay( Game::DelayType::MAPS_DELAY ) ) {
                 renderMap();
             }
+
             SDL_Delay( EVENT_POLL_DELAY );
-        }
-    }
-
-    void overrideConfiguration()
-    {
-        Settings & conf = Settings::Get();
-        conf.SetGameType( Game::TYPE_STANDARD );
-        conf.SetCurrentColor( PlayerColor::NONE );
-        conf.setVSync( true );
-        conf.setSystemInfo( false );
-        conf.setHideInterface( true );
-        conf.SetShowControlPanel( false );
-
-        if ( conf.GetLWPScale() == 0 ) {
-            conf.SetLWPScale( 5 );
         }
     }
 }
