@@ -146,8 +146,6 @@ namespace
         conf.GetPlayers().SetStartGame();
         world.LoadMapMP2( nextMap.filename, false );
         VERBOSE_LOG( "LWP map load FINISH file=" << nextMap.filename.c_str() )
-
-        randomizeGameArea();
     }
 
     bool shouldUpdateMapRegion()
@@ -171,9 +169,8 @@ namespace
             loadRandomMap();
             lwpRegionUpdateCount = 0;
         }
-        else {
-            randomizeGameArea();
-        }
+
+        randomizeGameArea();
 
         ++lwpRegionUpdateCount;
         lwpLastMapUpdate = std::time( nullptr );
@@ -305,6 +302,8 @@ namespace
                 switch ( static_cast<LiveWallpaperEvent>( event.user.code ) ) {
                 case LiveWallpaperEvent::Hide:
                     lwpHidePending = true;
+                    lwpLog( "hidden: loading map + rendering frame" );
+                    randomizeVisibleMapPart();
                     break;
                 case LiveWallpaperEvent::UpdateConfigs:
                     rereadAndApplyConfigs();
@@ -341,9 +340,6 @@ namespace
 
             if ( lwpHidePending ) {
                 lwpHidePending = false;
-                lwpLog( "hidden: loading map + rendering frame" );
-                randomizeVisibleMapPart();
-                renderMap();
                 SDL_AndroidSendMessage( COMMAND_PAUSE_NOW, 0 );
                 lwpLog( "hidden: frame posted, sent COMMAND_PAUSE_NOW" );
                 continue;
