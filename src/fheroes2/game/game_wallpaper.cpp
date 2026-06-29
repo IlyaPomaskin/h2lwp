@@ -57,6 +57,9 @@ namespace
     constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
 
+    int lwpLastScale = -1;
+    fheroes2::ResolutionInfo lwpLastResolution;
+
     enum class LiveWallpaperEvent : int32_t
     {
         // These values must stay in sync with the WALLPAPER_EVENT_* constants in SDLActivity.java.
@@ -201,12 +204,25 @@ namespace
     void resizeDisplay()
     {
         fheroes2::Display & display = fheroes2::Display::instance();
-        int const scale = Settings::Get().GetLWPScale();
+        const int scale = Settings::Get().GetLWPScale();
+        const fheroes2::ResolutionInfo resolution = display.getScaledScreenSize( scale );
+
+        if ( scale == lwpLastScale && resolution == lwpLastResolution ) {
+            VERBOSE_LOG( "resizeDisplay skipped (scale " << scale << " unchanged)" )
+            return;
+        }
+        lwpLastScale = scale;
+        lwpLastResolution = resolution;
+
         VERBOSE_LOG( "resizeDisplay scale: " << scale )
 
-        display.setResolution( display.getScaledScreenSize( scale ) );
+        Interface::GameArea & gameArea = Interface::AdventureMap::Get().getGameArea();
+        const fheroes2::Point center = gameArea.getCurrentCenterInPixels();
 
-        Interface::AdventureMap::Get().getGameArea().generate( { display.width(), display.height() }, true );
+        display.setResolution( resolution );
+        gameArea.generate( { display.width(), display.height() }, true );
+
+        gameArea.SetCenterInPixels( center );
     }
 
     void rereadAndApplyConfigs()
