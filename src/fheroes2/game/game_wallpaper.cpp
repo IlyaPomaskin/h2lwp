@@ -51,7 +51,6 @@
 namespace
 {
     uint32_t lwpLastMapUpdate = 0;
-    bool forceMapUpdate = true;
 
     constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
@@ -77,7 +76,7 @@ namespace
 
     void lwpLog( const char * event )
     {
-        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
+        VERBOSE_LOG( "LWP " << event << " | lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
     }
 
     void pushWallpaperEvent( LiveWallpaperEvent code )
@@ -241,14 +240,6 @@ namespace
         }
     }
 
-    void forceUpdates()
-    {
-        if ( forceMapUpdate ) {
-            randomizeVisibleMapPart();
-            forceMapUpdate = false;
-        }
-    }
-
     void handleKeyUp( SDL_Keysym keysym )
     {
         Settings & conf = Settings::Get();
@@ -259,7 +250,7 @@ namespace
 
         switch ( keysym.scancode ) {
         case SDL_SCANCODE_SPACE:
-            forceMapUpdate = true;
+            randomizeVisibleMapPart();
             break;
         case SDL_SCANCODE_1:
         case SDL_SCANCODE_2:
@@ -292,6 +283,8 @@ namespace
         conf.Save( Settings::configFileName );
         rereadAndApplyConfigs();
     }
+
+
 
     bool handleSDLEvents()
     {
@@ -348,16 +341,13 @@ namespace
 
             if ( lwpHidePending ) {
                 lwpHidePending = false;
-                forceMapUpdate = true;
                 lwpLog( "hidden: loading map + rendering frame" );
-                forceUpdates();
+                randomizeVisibleMapPart();
                 renderMap();
                 SDL_AndroidSendMessage( COMMAND_PAUSE_NOW, 0 );
                 lwpLog( "hidden: frame posted, sent COMMAND_PAUSE_NOW" );
                 continue;
             }
-
-            forceUpdates();
 
             if ( Game::validateAnimationDelay( Game::DelayType::MAPS_DELAY ) ) {
                 renderMap();
