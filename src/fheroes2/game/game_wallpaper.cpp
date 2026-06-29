@@ -52,7 +52,6 @@ namespace
 {
     uint32_t lwpLastMapUpdate = 0;
     bool forceMapUpdate = true;
-    bool forceConfigUpdate = true;
 
     constexpr int REGION_UPDATES_PER_MAP = 10;
     int lwpRegionUpdateCount = 0;
@@ -78,8 +77,7 @@ namespace
 
     void lwpLog( const char * event )
     {
-        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " forceConfigUpdate=" << forceConfigUpdate << " lwpHidePending=" << lwpHidePending
-                            << " lwpLastMapUpdate=" << lwpLastMapUpdate )
+        VERBOSE_LOG( "LWP " << event << " | forceMapUpdate=" << forceMapUpdate << " lwpHidePending=" << lwpHidePending << " lwpLastMapUpdate=" << lwpLastMapUpdate )
     }
 
     void pushWallpaperEvent( LiveWallpaperEvent code )
@@ -245,11 +243,6 @@ namespace
 
     void forceUpdates()
     {
-        if ( forceConfigUpdate ) {
-            rereadAndApplyConfigs();
-            forceConfigUpdate = false;
-        }
-
         if ( forceMapUpdate ) {
             randomizeVisibleMapPart();
             forceMapUpdate = false;
@@ -321,7 +314,7 @@ namespace
                     lwpHidePending = true;
                     break;
                 case LiveWallpaperEvent::UpdateConfigs:
-                    forceConfigUpdate = true;
+                    rereadAndApplyConfigs();
                     break;
                 case LiveWallpaperEvent::ResizeDisplay:
                     resizeDisplay();
