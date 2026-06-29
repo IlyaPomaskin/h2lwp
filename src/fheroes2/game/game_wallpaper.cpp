@@ -145,6 +145,9 @@ namespace
         conf.setCurrentMapInfo( nextMap );
         conf.GetPlayers().SetStartGame();
         world.LoadMapMP2( nextMap.filename, false );
+
+        fheroes2::Display & display = fheroes2::Display::instance();
+        Interface::AdventureMap::Get().getGameArea().generate( { display.width(), display.height() }, true );
         VERBOSE_LOG( "LWP map load FINISH file=" << nextMap.filename.c_str() )
     }
 
@@ -215,7 +218,6 @@ namespace
 
         display.setResolution( resolution );
         gameArea.generate( { display.width(), display.height() }, true );
-
         gameArea.SetCenterInPixels( center );
     }
 
