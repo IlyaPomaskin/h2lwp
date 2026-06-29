@@ -194,14 +194,6 @@ namespace
         lastMapUpdate = std::time( nullptr );
     }
 
-    void updateBrightness()
-    {
-        int brightness = Settings::Get().GetLWPBrightness();
-        int brightnessAlpha = ( 100 - brightness ) * 255 / 100;
-        VERBOSE_LOG( "updateBrightness value: " << brightness << " alpha: " << brightnessAlpha )
-        fheroes2::engine().setBrightness( brightnessAlpha );
-    }
-
     void readConfigFile()
     {
         const std::string configurationFileName( Settings::configFileName );
@@ -221,6 +213,21 @@ namespace
 
         VERBOSE_LOG( "readConfigFile" )
         Settings::Get().Read( confFile );
+    }
+
+    void overrideConfiguration()
+    {
+        Settings & conf = Settings::Get();
+        conf.SetGameType( Game::TYPE_STANDARD );
+        conf.SetCurrentColor( PlayerColor::NONE );
+        conf.setVSync( true );
+        conf.setSystemInfo( false );
+        conf.setHideInterface( true );
+        conf.SetShowControlPanel( false );
+
+        if ( conf.GetLWPScale() == 0 ) {
+            conf.SetLWPScale( 5 );
+        }
     }
 
     void resizeDisplay()
@@ -246,26 +253,20 @@ namespace
         gameArea.SetCenterInPixels( center );
     }
 
+    void updateBrightness()
+    {
+        int brightness = Settings::Get().GetLWPBrightness();
+        int brightnessAlpha = ( 100 - brightness ) * 255 / 100;
+        VERBOSE_LOG( "updateBrightness value: " << brightness << " alpha: " << brightnessAlpha )
+        fheroes2::engine().setBrightness( brightnessAlpha );
+    }
+
     void rereadAndApplyConfigs()
     {
         readConfigFile();
+        overrideConfiguration();
         resizeDisplay();
         updateBrightness();
-    }
-
-    void overrideConfiguration()
-    {
-        Settings & conf = Settings::Get();
-        conf.SetGameType( Game::TYPE_STANDARD );
-        conf.SetCurrentColor( PlayerColor::NONE );
-        conf.setVSync( true );
-        conf.setSystemInfo( false );
-        conf.setHideInterface( true );
-        conf.SetShowControlPanel( false );
-
-        if ( conf.GetLWPScale() == 0 ) {
-            conf.SetLWPScale( 5 );
-        }
     }
 
     void handleKeyUp( SDL_Keysym keysym )
@@ -390,9 +391,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_pushWallpaperE
 
 fheroes2::GameMode Game::Wallpaper()
 {
-    readConfigFile();
     rereadAndApplyConfigs();
-    overrideConfiguration();
     loadRandomMap();
 
     return renderWallpaper();
