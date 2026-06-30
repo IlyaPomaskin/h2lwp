@@ -69,7 +69,7 @@ public final class GameActivity extends Activity
     }
 
     @Override
-    public void onDestroy()
+    protected void onDestroy()
     {
         super.onDestroy();
 
