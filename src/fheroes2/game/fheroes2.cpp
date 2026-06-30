@@ -163,10 +163,6 @@ namespace
     public:
         DisplayInitializer()
         {
-            fheroes2::Display & display = fheroes2::Display::instance();
-            display.setResolution( display.getScaledScreenSize( Settings::Get().GetLWPScale() ) );
-            display.fill( 0 );
-           
             /*
             const Settings & conf = Settings::Get();
 
@@ -187,6 +183,10 @@ namespace
             display.setWindowPos( conf.getSavedWindowPos() );
             display.setResolution( bestResolution );
             */
+
+            fheroes2::Display & display = fheroes2::Display::instance();
+            display.setResolution( display.getScaledScreenSize( Settings::Get().GetLWPScale() ) );
+            display.fill( 0 );
 
             fheroes2::engine().setTitle( GetCaption() );
 
