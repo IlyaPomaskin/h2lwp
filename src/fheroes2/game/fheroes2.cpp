@@ -310,7 +310,8 @@ int main( int argc, char ** argv )
         InitDataDir();
         ReadConfigs();
 
-        std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Video };
+        std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Audio,
+                                                                          fheroes2::SystemInitializationComponent::Video };
 
 #if defined( TARGET_PS_VITA ) || defined( TARGET_NINTENDO_SWITCH )
         coreComponents.emplace( fheroes2::SystemInitializationComponent::GameController );

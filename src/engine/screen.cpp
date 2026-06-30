@@ -1660,7 +1660,7 @@ namespace fheroes2
         return *( display._cursor );
     }
 
-    ResolutionInfo Display::getScaledScreenSize(int scale) {
+    ResolutionInfo Display::getScaledScreenSize( int scale ) {
         float ddpi = 1;
         float hdpi = 1;
         float vdpi = 1;
