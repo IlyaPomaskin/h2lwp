@@ -168,6 +168,9 @@ namespace
             display.fill( 0 );
            
             /*
+            const Settings & conf = Settings::Get();
+
+            fheroes2::Display & display = fheroes2::Display::instance();
             fheroes2::ResolutionInfo bestResolution{ conf.currentResolutionInfo() };
 
             if ( conf.isFirstGameRun() && System::isHandheldDevice() ) {
