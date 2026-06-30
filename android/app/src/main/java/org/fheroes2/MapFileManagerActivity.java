@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -248,7 +248,7 @@ public final class MapFileManagerActivity extends AppCompatActivity
         }
     }
 
-    private static final List<String> allowedMapFileExtensions = new ArrayList<>( Arrays.asList( ".fh2m", ".mp2" ) );
+    private static final List<String> allowedMapFileExtensions = new ArrayList<>( Collections.singletonList( ".fh2m" ) );
 
     private File mapFileDir = null;
 
