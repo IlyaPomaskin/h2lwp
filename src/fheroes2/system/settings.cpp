@@ -201,14 +201,11 @@ void Settings::ReadSettingsForLiveWallpaper(TinyConfig & config)
 
 bool Settings::Read( const std::string & filePath )
 {
-    VERBOSE_LOG("Settings::Read")
-
     TinyConfig config( '=', '#' );
 
     std::string sval;
 
     if ( !config.Load( filePath ) ) {
-        VERBOSE_LOG("No config file")
         return false;
     }
 
