@@ -330,9 +330,6 @@ namespace
                 lwpLog( "handled wallpaper event" );
                 break;
             case SDL_KEYUP:
-                if ( event.key.keysym.scancode == SDL_SCANCODE_ESCAPE ) {
-                    return true;
-                }
                 handleKeyUp( event.key.keysym );
                 break;
             default:
@@ -346,10 +343,7 @@ namespace
     fheroes2::GameMode renderWallpaper()
     {
         while ( true ) {
-            const bool isEscapePressed = handleSDLEvents();
-            if ( isEscapePressed ) {
-                return fheroes2::GameMode::QUIT_GAME;
-            }
+            handleSDLEvents();
 
             if ( isHidePending ) {
                 isHidePending = false;

@@ -377,7 +377,7 @@ int main( int argc, char ** argv )
         try {
             const CursorRestorer cursorRestorer( true, Cursor::POINTER );
             const fheroes2::Point pos = conf.getSavedWindowPos();
-            Game::mainGameLoop( conf.isFirstGameRun(), isProbablyDemoVersion() );
+            Game::Wallpaper();
             const fheroes2::Point currentPos = display.getWindowPos();
             if ( pos != currentPos ) {
                 conf.setStartWindowPos( currentPos );
