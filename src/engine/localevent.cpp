@@ -534,7 +534,6 @@ namespace EventProcessing
                     break;
                 default:
                     // If this assertion blows up then we included an event type but we didn't add logic for it.
-                    VERBOSE_LOG( "Event type: " << event.type << " is not supported." )
                     assert( eventTypeStatus.count( event.type ) == 0 );
 
                     // This is a new event type which we do not handle. It might have been added in a newer version of SDL.
@@ -572,8 +571,7 @@ namespace EventProcessing
         static void setEventProcessingState( const uint32_t eventType, const bool enable )
         {
             if ( const auto [dummy, inserted] = eventTypeStatus.emplace( eventType ); !inserted ) {
-//                FIXME - enable
-//                assert( 0 );
+                assert( 0 );
             }
 
             SDL_EventState( eventType, ( enable ? SDL_ENABLE : SDL_IGNORE ) );

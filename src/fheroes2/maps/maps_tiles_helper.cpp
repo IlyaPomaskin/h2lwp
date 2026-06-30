@@ -1143,7 +1143,7 @@ namespace Maps
             const int art = Artifact::getArtifactFromMapSpriteIndex( artifactSpriteIndex ).GetID();
             if ( Artifact::UNKNOWN == art ) {
                 // This is an unknown artifact. Did you add a new one?
-//                assert( 0 );
+                assert( 0 );
                 return;
             }
 
