@@ -169,6 +169,8 @@ void Settings::OverrideSettingsForLiveWallpaper()
     setHideInterface( true );
     SetShowControlPanel( false );
 
+    _gameOptions.ResetModes( GAME_SHOW_INTRO );
+
     if ( GetLWPScale() == 0 ) {
         SetLWPScale( 5 );
     }

@@ -104,15 +104,12 @@ namespace
 
 void Game::mainGameLoop( bool isFirstGameRun, bool isProbablyDemoVersion )
 {
-    fheroes2::GameMode result = fheroes2::GameMode::WALLPAPER;
+    fheroes2::GameMode result = fheroes2::GameMode::MAIN_MENU;
 
     bool exit = false;
 
     while ( !exit ) {
         switch ( result ) {
-        case fheroes2::GameMode::WALLPAPER:
-            result = Game::Wallpaper();
-            break;
         case fheroes2::GameMode::QUIT_GAME:
             exit = true;
             break;

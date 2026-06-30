@@ -367,7 +367,7 @@ int main( int argc, char ** argv )
         // Initialize game data.
         Game::Init();
 
-        if ( conf.isShowIntro() && false ) {
+        if ( conf.isShowIntro() ) {
             fheroes2::showTeamInfo();
             for ( const char * logo : { "NWCLOGO.SMK", "CYLOGO.SMK", "H2XINTRO.SMK" } ) {
                 Video::ShowVideo( { { logo, Video::VideoControl::PLAY_CUTSCENE } } );
