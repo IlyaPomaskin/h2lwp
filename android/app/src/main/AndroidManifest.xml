@@ -66,14 +66,6 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name="com.ipapps.homm2.livewallpaper.WebViewActivity"
-            android:exported="false"
-            android:icon="@mipmap/ic_launcher"
-            android:parentActivityName="org.fheroes2.ToolsetActivity"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
-        </activity>
-
-        <activity
             android:name="org.fheroes2.ToolsetActivity"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
