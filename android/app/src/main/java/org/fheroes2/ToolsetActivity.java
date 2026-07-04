@@ -46,7 +46,6 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.ipapps.homm2.livewallpaper.R;
-import com.ipapps.homm2.livewallpaper.WebViewActivity;
 
 public final class ToolsetActivity extends AppCompatActivity
 {
@@ -300,11 +299,6 @@ public final class ToolsetActivity extends AppCompatActivity
         startActivity( new Intent( this, MapFileManagerActivity.class ) );
     }
 
-    public void wallpaperSettingsClicked( final View view )
-    {
-        startActivity( new Intent( this, WebViewActivity.class ) );
-    }
-
     private void updateUI( final ToolsetActivityViewModel.Status modelStatus )
     {
         final Button startGameButton = findViewById( R.id.activity_toolset_start_game_btn );
@@ -312,7 +306,6 @@ public final class ToolsetActivity extends AppCompatActivity
         final Button importGogExeButton = findViewById( R.id.activity_toolset_import_gog_exe_btn );
         final Button downloadHoMM2DemoButton = findViewById( R.id.activity_toolset_download_homm2_demo_btn );
         final Button saveFileManagerButton = findViewById( R.id.activity_toolset_save_file_manager_btn );
-        final Button wallpaperSettingsButton = findViewById( R.id.activity_toolset_wallpaper_settings_btn );
         final Button mapFileManagerButton = findViewById( R.id.activity_toolset_map_file_manager_btn );
 
         final TextView gameStatusTextView = findViewById( R.id.activity_toolset_game_status_lbl );
@@ -325,7 +318,6 @@ public final class ToolsetActivity extends AppCompatActivity
         importGogExeButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
         downloadHoMM2DemoButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
         saveFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
-        wallpaperSettingsButton.setEnabled( modelStatus.isHoMM2AssetsPresent );
         mapFileManagerButton.setEnabled( !modelStatus.isBackgroundTaskExecuting );
 
         switch ( modelStatus.backgroundTaskResult ) {
