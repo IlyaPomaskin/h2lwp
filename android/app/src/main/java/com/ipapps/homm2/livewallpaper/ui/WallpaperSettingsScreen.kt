@@ -1,7 +1,10 @@
 package com.ipapps.homm2.livewallpaper.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -54,6 +57,10 @@ fun WallpaperSettingsScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
+                    modifier = Modifier
+                        .background(MaterialTheme.colors.primary)
+                        .statusBarsPadding(),
+                    elevation = 0.dp,
                     title = { Text(stringResource(R.string.settings_screen_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
@@ -66,13 +73,17 @@ fun WallpaperSettingsScreen(
                 )
             },
             floatingActionButton = {
-                SetWallpaperFab(onClick = onSetWallpaper)
+                SetWallpaperFab(
+                    modifier = Modifier.navigationBarsPadding(),
+                    onClick = onSetWallpaper,
+                )
             },
         ) { innerPadding ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .navigationBarsPadding(),
+                contentPadding = innerPadding,
             ) {
                 item { SettingsCategory(text = stringResource(R.string.preferences_header)) }
                 item {
@@ -129,7 +140,10 @@ private fun BrightnessSetting(
 }
 
 @Composable
-private fun SetWallpaperFab(onClick: () -> Unit) {
+private fun SetWallpaperFab(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var isLimitationVisible by remember { mutableStateOf(false) }
 
     if (isLimitationVisible) {
@@ -147,6 +161,7 @@ private fun SetWallpaperFab(onClick: () -> Unit) {
     }
 
     FloatingActionButton(
+        modifier = modifier,
         backgroundColor = MaterialTheme.colors.primary,
         onClick = { isLimitationVisible = true },
     ) {

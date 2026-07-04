@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import com.ipapps.homm2.livewallpaper.data.WallpaperConfigRepository
 import com.ipapps.homm2.livewallpaper.ui.WallpaperSettingsScreen
 import org.libsdl.app.SDLActivity
@@ -21,6 +22,10 @@ import java.io.File
 class WallpaperSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // The top app bar draws its dark primary color behind the status bar, so
+        // use light (white) status bar icons for contrast.
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
 
         val repository = WallpaperConfigRepository(resolveConfigFile())
 
