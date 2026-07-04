@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_screen_title">Wallpaper settings</string>
+
+    <string name="preferences_header">Preferences</string>
+
+    <string name="scale_title">Scale</string>
+
+    <string name="update_time_title">Map change interval</string>
+    <string name="update_timeout_every_switch">Every switch to home screen</string>
+    <string name="update_timeout_10minutes">10 minutes</string>
+    <string name="update_timeout_30minutes">30 minutes</string>
+    <string name="update_timeout_2hour">2 hours</string>
+    <string name="update_timeout_24hours">24 hours</string>
+
+    <string name="brightness_title">Brightness</string>
+
+    <string name="wallpaper_change_button">Set wallpaper</string>
+    <string name="wallpaper_change_limitation_title">Please note</string>
+    <string name="wallpaper_change_limitation_text">Some phones don\'t allow to set live wallpapers on the lock screen or don\'t allow to set live wallpapers at all!</string>
+    <string name="wallpaper_change_limitation_button">OK</string>
+</resources>

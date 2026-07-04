@@ -95,5 +95,14 @@
             android:label="@string/activity_map_file_manager_label"
             android:taskAffinity="org.fheroes2.ToolsetTask"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <activity
+            android:name="com.ipapps.homm2.livewallpaper.WallpaperSettingsActivity"
+            android:exported="false"
+            android:icon="@mipmap/ic_launcher_toolset"
+            android:label="@string/settings_screen_title"
+            android:parentActivityName="org.fheroes2.ToolsetActivity"
+            android:taskAffinity="org.fheroes2.ToolsetTask"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
     </application>
 </manifest>

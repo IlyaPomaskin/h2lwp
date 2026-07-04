@@ -17,6 +17,7 @@
     <string name="activity_toolset_save_file_manager_btn_text">Save file manager</string>
     <string name="activity_toolset_set_wallpaper_btn_text" translatable="false">Set wallpaper</string>
     <string name="activity_toolset_map_file_manager_btn_text">FH2M map file manager</string>
+    <string name="activity_toolset_wallpaper_settings_btn_text">Wallpaper settings</string>
     <string name="activity_toolset_last_task_status_lbl_text_completed_successfully">Operation completed successfully.</string>
     <string name="activity_toolset_last_task_status_lbl_text_no_assets_found">Operation completed successfully, but no HoMM2 assets were found.</string>
     <string name="activity_toolset_last_task_status_lbl_text_failed">An error occurred during the operation: %s</string>
