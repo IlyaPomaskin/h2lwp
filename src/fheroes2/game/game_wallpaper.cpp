@@ -95,6 +95,10 @@ namespace
 
     void renderMap()
     {
+        if ( world.w() <= 0 ) {
+            return;
+        }
+
         Interface::GameArea const & gameArea = Interface::AdventureMap::Get().getGameArea();
         fheroes2::Display & display = fheroes2::Display::instance();
 
@@ -111,6 +115,10 @@ namespace
 
     void randomizeGameArea()
     {
+        if ( world.w() <= 0 ) {
+            return;
+        }
+
         fheroes2::Display & display = fheroes2::Display::instance();
         const int32_t x = randomAxisCenter( display.width(), World::Get().w() );
         const int32_t y = randomAxisCenter( display.height(), World::Get().h() );
@@ -125,17 +133,20 @@ namespace
     void loadRandomMap()
     {
         Settings & conf = Settings::Get();
-
-        MapsFileInfoList mapsList = Maps::getAllMapFileInfos( 1 );
         const Maps::FileInfo currentMap = conf.getCurrentMapInfo();
 
-        if ( mapsList.size() <= 1 ) {
-            VERBOSE_LOG( "LWP map load SKIPPED (only one map) file=" << currentMap.filename.c_str() )
-            return;
+        MapsFileInfoList mapsList = Maps::getAllMapFileInfos( 1 );
+
+        if ( world.w() > 0 ) {
+            mapsList.erase( std::remove_if( mapsList.begin(), mapsList.end(),
+                                            [&currentMap]( const Maps::FileInfo & info ) { return info.filename == currentMap.filename; } ),
+                            mapsList.end() );
         }
 
-        mapsList.erase( std::remove_if( mapsList.begin(), mapsList.end(), [&currentMap]( const Maps::FileInfo & info ) { return info.filename == currentMap.filename; } ),
-                        mapsList.end() );
+        if ( mapsList.empty() ) {
+            VERBOSE_LOG( "LWP map load SKIPPED (no map to load) file=" << currentMap.filename.c_str() )
+            return;
+        }
 
         const uint32_t randomMapIndex = Rand::Get( 0, mapsList.size() - 1 );
         const Maps::FileInfo & nextMap = mapsList.at( randomMapIndex );
