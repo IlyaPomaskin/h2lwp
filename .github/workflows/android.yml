@@ -30,10 +30,6 @@ jobs:
       with:
         distribution: temurin
         java-version: 17
-    - name: Install JS deps
-      run: |
-        npm ci
-      working-directory: ./h2lwp-settings
     - name: Install dependencies
       run: |
         bash script/android/install_packages.sh

@@ -103,9 +103,6 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.16.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
 
-    implementation 'com.github.andycandy-de:simple-android-bridge:1.0.2'
-    implementation "io.github.bhowell2:debouncer:1.1.0"
-
     implementation project(':isotools')
 //    implementation project(':sdl2')
 
@@ -142,12 +139,6 @@ tasks.register('copyFH2M', Copy) {
 
 }
 
-tasks.register('buildJs', Exec) {
-    workingDir '../../h2lwp-settings'
-    // No idea why it can't find `npm` in system env.
-    commandLine '/opt/homebrew/opt/node@22/bin/npm', 'run', 'build'
-}
-
 tasks.register('copyH2D', Copy) {
     from('../../files/data') {
         include '*.h2d'
@@ -177,15 +168,8 @@ tasks.register('copyTranslations', Copy) {
     into 'src/main/assets/files/lang'
 }
 
-tasks.register('copyJs', Copy) {
-    dependsOn buildJs
-
-    from '../../h2lwp-settings/build'
-    into 'src/main/assets/www'
-}
-
 tasks.register('generateAssetsDigest') {
-    dependsOn copyJs, copyDefaultConfig, copyFH2M, copyH2D, copyTimidity, copyTranslations
+    dependsOn copyDefaultConfig, copyFH2M, copyH2D, copyTimidity, copyTranslations
 
     doLast {
         final java.nio.file.Path assetsDirPath = layout.projectDirectory.getAsFile()
