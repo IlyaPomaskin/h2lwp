@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_screen_title">Настройки живых обоев</string>
+
+    <string name="preferences_header">Параметры</string>
+
+    <string name="scale_title">Масштаб</string>
+
+    <string name="update_time_title">Интервал смены карты</string>
+    <string name="update_timeout_every_switch">При каждом переходе на главный экран</string>
+    <string name="update_timeout_10minutes">10 минут</string>
+    <string name="update_timeout_30minutes">30 минут</string>
+    <string name="update_timeout_2hour">2 часа</string>
+    <string name="update_timeout_24hours">24 часа</string>
+
+    <string name="brightness_title">Яркость</string>
+
+    <string name="wallpaper_change_button">Установить обои</string>
+    <string name="wallpaper_change_limitation_title">Обратите внимание</string>
+    <string name="wallpaper_change_limitation_text">Некоторые телефоны не позволяют устанавливать живые обои на экран блокировки или вообще не поддерживают установку живых обоев!</string>
+    <string name="wallpaper_change_limitation_button">OK</string>
+</resources>
