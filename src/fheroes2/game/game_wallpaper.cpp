@@ -175,15 +175,15 @@ namespace
     int regionUpdatesPerMap()
     {
         switch ( World::Get().w() ) {
-            case Maps::MEDIUM:
-                return 15;
-            case Maps::LARGE:
-                return 20;
-            case Maps::XLARGE:
-                return 30;
-            case Maps::SMALL:
-            default:
-                return 10;
+        case Maps::MEDIUM:
+            return 15;
+        case Maps::LARGE:
+            return 20;
+        case Maps::XLARGE:
+            return 30;
+        case Maps::SMALL:
+        default:
+            return 10;
         }
     }
 
