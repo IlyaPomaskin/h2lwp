@@ -1,12 +1,14 @@
-# fheroes2
+# fheroes2 Live Wallpaper
 
-**fheroes2** is a recreation of the Heroes of Might and Magic II game engine.
+**fheroes2 Live Wallpaper** is a Live Wallpaper for Android that brings the world map of Heroes of Might and Magic II to your home screen.
 
-This open source multiplatform project, written from scratch, is designed to reproduce the original game with significant
-improvements in gameplay, graphics and logic (including support for high-resolution graphics, improved AI, numerous fixes
-and user interface improvements), breathing new life into one of the most addictive turn-based strategy games.
+It is based on [**fheroes2**](https://github.com/ihhub/fheroes2), an open source recreation of the Heroes of Might and Magic II game engine.
 
-You can find a complete list of all of our changes and enhancements in [**this page**](docs/GAME_IMPROVEMENTS.md).
+[![Get it on Google Play](https://img.shields.io/badge/Google_Play-Download-414141?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.ipapps.homm2.livewallpaper)
+
+<p align="center">
+    <video src="demo.mp4" width="820" controls></video>
+</p>
 
 <p align="center">
     <img src="docs/images/screenshots/screenshot_world_map.webp" width="820" alt="Screenshot of the world map">
