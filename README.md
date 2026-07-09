@@ -7,23 +7,8 @@ It is based on [**fheroes2**](https://github.com/ihhub/fheroes2), an open source
 [![Get it on Google Play](https://img.shields.io/badge/Google_Play-Download-414141?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.ipapps.homm2.livewallpaper)
 
 <p align="center">
-    <video src="demo.mp4" width="820" controls></video>
+    <img src="demo.gif" width="360" alt="fheroes2 Live Wallpaper demo">
 </p>
-
-<p align="center">
-    <img src="docs/images/screenshots/screenshot_world_map.webp" width="820" alt="Screenshot of the world map">
-</p>
-
-<p align="center">
-    <img src="docs/images/screenshots/screenshot_battle.webp" width="410" alt="Screenshot of the battle screen">
-    <img src="docs/images/screenshots/screenshot_castle.webp" width="410" alt="Screenshot of the castle screen">
-</p>
-
-## Download and Install
-
-Please follow the [**installation guide**](docs/INSTALL.md) to download and install fheroes2.
-
-[![Github Downloads](https://img.shields.io/github/downloads/ihhub/fheroes2/total.svg)](https://github.com/ihhub/fheroes2/releases)
 
 ## Copyright
 
@@ -35,8 +20,6 @@ free demo version of the game. Please refer to the [**installation guide**](docs
 ## License
 
 This project is licensed under the [**GNU General Public License v2.0**](https://github.com/ihhub/fheroes2/blob/master/LICENSE).
-
-Initially, the project was developed on [**sourceforge**](https://sourceforge.net/projects/fheroes2/).
 
 ## Contribution and Development
 
@@ -59,25 +42,3 @@ If you would like to help translating the project, please read the [**translatio
 
 To build the [website](https://ihhub.github.io/fheroes2/) from source, please follow
 [**this guide**](docs/WEBSITE_LOCAL_DEV.md).
-
-## Donation
-
-We accept donations via [**Patreon**](https://www.patreon.com/fheroes2), [**PayPal**](https://www.paypal.com/paypalme/fheroes2) or [**Boosty**](https://boosty.to/fheroes2).
-All donations will be used only for the future project development as we do not consider this project as a source of income by any means.
-
-[![Patreon Donate](https://img.shields.io/badge/Donate-Patreon-green.svg)](https://www.patreon.com/fheroes2)
-[![Paypal Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/fheroes2)
-[![Boosty Donate](https://img.shields.io/badge/Donate-Boosty-green.svg)](https://boosty.to/fheroes2)
-
-## Contacts
-
-Follow us on social networks: [**Facebook**](https://www.facebook.com/groups/fheroes2) or [**VK**](https://vk.com/fheroes2).
-We also have a [**Discord**](https://discord.gg/xF85vbZ) server to discuss the development of the project.
-
-[![Facebook](https://img.shields.io/badge/Facebook-blue.svg)](https://www.facebook.com/groups/fheroes2)
-[![VK](https://img.shields.io/badge/VK-blue.svg)](https://vk.com/fheroes2)
-[![Discord](https://img.shields.io/discord/733093692860137523.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/xF85vbZ)
-
-## Frequently Asked Questions (FAQ)
-
-You can find answers to the most commonly asked questions on our [**F.A.Q. page**](docs/FAQ.md).
