@@ -4,7 +4,9 @@
 
 It is based on [**fheroes2**](https://github.com/ihhub/fheroes2), an open source recreation of the Heroes of Might and Magic II game engine.
 
-[![Get it on Google Play](https://img.shields.io/badge/Google_Play-Download-414141?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.ipapps.homm2.livewallpaper)
+<a href="https://play.google.com/store/apps/details?id=com.ipapps.homm2.livewallpaper">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80">
+</a>
 
 <p align="center">
     <img src="demo.gif" width="360" alt="fheroes2 Live Wallpaper demo">
