@@ -18,338 +18,6 @@ msgstr ""
 "X-Launchpad-Export-Date: 2013-10-09 02:01+0000\n"
 "X-Generator: Poedit 3.4.2\n"
 
-msgid "SELECT"
-msgstr "VÄLJ"
-
-msgid "ABOUT"
-msgstr "OM"
-
-msgid "S"
-msgstr "S"
-
-msgid "M"
-msgstr "M"
-
-msgid "L"
-msgstr "L"
-
-msgid "X-L"
-msgstr "XL"
-
-msgid "ALL"
-msgstr "ALLA"
-
-msgid "EXIT"
-msgstr "LÄMNA"
-
-msgid "smallerButton|EXIT"
-msgstr "LÄMN."
-
-msgid "OKAY"
-msgstr "OKEJ"
-
-msgid "HEROES"
-msgstr ""
-"HJÄLT-\n"
-"AR"
-
-msgid ""
-"TOWNS/\n"
-"CASTLES"
-msgstr ""
-"STÄDER/\n"
-"BORGAR"
-
-msgid "CANCEL"
-msgstr "AVBRYT"
-
-msgid "ACCEPT"
-msgstr "ACCEPTERA"
-
-msgid "DECLINE"
-msgstr "AVBÖJ"
-
-msgid "LEARN"
-msgstr "VÄLJ"
-
-msgid "TRADE"
-msgstr "HANDLA"
-
-msgid "YES"
-msgstr "JA"
-
-msgid "NO"
-msgstr "NEJ"
-
-msgid "DISMISS"
-msgstr "AVSKEDA"
-
-msgid "UPGRADE"
-msgstr "UPPG."
-
-msgid "GIFT"
-msgstr "GÅVA"
-
-msgid "RESTART"
-msgstr "OMSTART"
-
-msgid "MAX"
-msgstr "MAX"
-
-msgid "MIN"
-msgstr "MIN"
-
-msgid ""
-"D\n"
-"I\n"
-"S\n"
-"M\n"
-"I\n"
-"S\n"
-"S"
-msgstr ""
-"A\n"
-"V\n"
-"S\n"
-"K\n"
-"E\n"
-"D\n"
-"A"
-
-msgid ""
-"E\n"
-"X\n"
-"I\n"
-"T"
-msgstr ""
-"L\n"
-"Ä\n"
-"M\n"
-"N\n"
-"A"
-
-msgid ""
-"C\n"
-"A\n"
-"M\n"
-"P\n"
-"A\n"
-"I\n"
-"G\n"
-"N"
-msgstr ""
-"K\n"
-"A\n"
-"M\n"
-"P\n"
-"A\n"
-"N\n"
-"J"
-
-msgid ""
-"S\n"
-"T\n"
-"A\n"
-"N\n"
-"D\n"
-"A\n"
-"R\n"
-"D"
-msgstr ""
-"S\n"
-"O\n"
-"L\n"
-"O\n"
-"S\n"
-"P\n"
-"E\n"
-"L"
-
-msgid ""
-"NEW\n"
-"GAME"
-msgstr ""
-"NYTT\n"
-"SPEL"
-
-msgid ""
-"LOAD\n"
-"GAME"
-msgstr ""
-"LADDA\n"
-"SPEL"
-
-msgid ""
-"RESTART\n"
-"GAME"
-msgstr ""
-"OMSTARTA\n"
-"SPEL"
-
-msgid ""
-"SAVE\n"
-"GAME"
-msgstr ""
-"SPARA\n"
-"SPEL"
-
-msgid ""
-"QUICK\n"
-"SAVE"
-msgstr ""
-"SNABB-\n"
-"SPARA"
-
-msgid "QUIT"
-msgstr "AVSLUTA"
-
-msgid ""
-"START\n"
-"MAP"
-msgstr ""
-"STARTA\n"
-"KARTA"
-
-msgid ""
-"MAIN\n"
-"MENU"
-msgstr ""
-"HUVUD-\n"
-"MENY"
-
-msgid ""
-"AUTO\n"
-"PLAY-TEST"
-msgstr ""
-
-msgid ""
-"NEW\n"
-"MAP"
-msgstr ""
-"NY\n"
-"KARTA"
-
-msgid ""
-"LOAD\n"
-"MAP"
-msgstr ""
-"LADDA\n"
-"KARTA"
-
-msgid ""
-"SAVE\n"
-"MAP"
-msgstr ""
-"SPARA\n"
-"KARTA"
-
-msgid "INFO"
-msgstr "INFO"
-
-msgid ""
-"BATTLE\n"
-"ONLY"
-msgstr ""
-"ENDAST\n"
-"STRID"
-
-msgid "SETTINGS"
-msgstr "INSTÄLLNINGAR"
-
-msgid ""
-"STANDARD\n"
-"GAME"
-msgstr "SOLOSPEL"
-
-msgid ""
-"CAMPAIGN\n"
-"GAME"
-msgstr "KAMPANJ"
-
-msgid ""
-"MULTI-\n"
-"PLAYER\n"
-"GAME"
-msgstr "MULTISPEL"
-
-msgid "HOT SEAT"
-msgstr ""
-"HETA\n"
-"STOLEN"
-
-msgid "2 PLAYERS"
-msgstr "2 SPELARE"
-
-msgid "3 PLAYERS"
-msgstr "3 SPELARE"
-
-msgid "4 PLAYERS"
-msgstr "4 SPELARE"
-
-msgid "5 PLAYERS"
-msgstr "5 SPELARE"
-
-msgid "6 PLAYERS"
-msgstr "6 SPELARE"
-
-msgid ""
-"ORIGINAL\n"
-"CAMPAIGN"
-msgstr ""
-"ORGINAL-\n"
-"KAMPANJ"
-
-msgid ""
-"EXPANSION\n"
-"CAMPAIGN"
-msgstr ""
-"EXPANSIONS-\n"
-"KAMPANJ"
-
-msgid "editorMainMenu|BACK"
-msgstr "TILLBAKA"
-
-msgid ""
-"newMap|FROM\n"
-"SCRATCH"
-msgstr ""
-"BLANK\n"
-"KARTA"
-
-msgid "newMap|RANDOM"
-msgstr "SLUMPAD"
-
-msgid "DIFFICULTY"
-msgstr "SVÅRIGHETSGRAD"
-
-msgid "VIEW INTRO"
-msgstr "VISA INTRO"
-
-msgid "RESET"
-msgstr "ÅTERS."
-
-msgid "START"
-msgstr "STARTA"
-
-msgid ""
-"P\n"
-"A\n"
-"T\n"
-"R\n"
-"O\n"
-"L"
-msgstr ""
-"P\n"
-"A\n"
-"T\n"
-"R\n"
-"U\n"
-"L\n"
-"L"
-
-msgid "army|Few"
-msgstr "Några"
-
 msgid "Warrior"
 msgstr "Krigare"
 
@@ -431,6 +99,9 @@ msgid ""
 msgstr ""
 "En legion av\n"
 "%{monster}"
+
+msgid "army|Few"
+msgstr "Några"
 
 msgid "army|Several"
 msgstr "Flera"
@@ -3075,9 +2746,6 @@ msgstr ""
 "%{gold} guld.\n"
 "Accepterar du det?"
 
-msgid "(Rate: %{percent})"
-msgstr "(Andel: %{percent} procent)"
-
 msgid "off"
 msgstr "av"
 
@@ -3324,6 +2992,10 @@ msgstr "V-Sync kan aktiveras för att lösa flimmerproblem på vissa skärmar."
 msgid "Show extra information such as FPS and current time."
 msgstr "Visa extra information som FPS och nuvarande tid."
 
+#, fuzzy
+msgid "hotkeys|All Categories"
+msgstr "Stridsalternativ"
+
 msgid "Hotkey: "
 msgstr "Snabbtangent: "
 
@@ -3335,6 +3007,16 @@ msgstr "Händelse: "
 
 msgid "Hot Keys:"
 msgstr "Snabbtangenter:"
+
+#, fuzzy
+msgid "Click here to select:\n"
+msgstr ""
+"Klicka här för att\n"
+"välja en varelse."
+
+#, fuzzy
+msgid "Select hotkeys category"
+msgstr "Välj Varelse:"
 
 msgid "Hide"
 msgstr "Dölj"
@@ -3581,8 +3263,14 @@ msgstr "Antal att köpa:"
 msgid "Recruit selected monsters."
 msgstr "Rekrytera valda varelser."
 
+msgid "MAX"
+msgstr "MAX"
+
 msgid "Select maximum monsters to be recruited."
 msgstr "Välj maximalt antal varelser att rekrytera."
+
+msgid "MIN"
+msgstr "MIN"
 
 msgid "Select only 1 monster to be recruited."
 msgstr "Välj endast 1 varelse att rekrytera."
@@ -4358,6 +4046,9 @@ msgstr ""
 msgid "Click to make selection."
 msgstr "Klicka för att göra ett val."
 
+msgid "SELECT"
+msgstr "VÄLJ"
+
 msgid "%{objects} cannot be placed on water."
 msgstr "%{objects}  kan inte placeras på vatten."
 
@@ -4440,8 +4131,11 @@ msgstr ""
 "Vill du lämna Redigeraren och spela kartan? (Osparade ändringar för din "
 "nuvarande karta kommer försvinna.)"
 
-msgid "Create a new map from scratch."
-msgstr "Skapa en ny blank karta."
+msgid ""
+"Create a new map, either from scratch or using the random map generator."
+msgstr ""
+"Skapa en ny karta, antingen från en blank karta eller genom "
+"slumpkartgeneratorn."
 
 msgid "New Map"
 msgstr "Ny Karta"
@@ -4541,6 +4235,9 @@ msgstr "Kartan sparades i:"
 
 msgid "Failed to save the map."
 msgstr "Misslyckades att spara kartan."
+
+msgid "The selected object has been moved to the top layer."
+msgstr ""
 
 msgid "Unsaved Changes"
 msgstr "Osparade ändringar"
@@ -4873,12 +4570,6 @@ msgstr "Radera ett redan existerande språk."
 
 msgid "Failed to generate a random map with given parameters."
 msgstr "Misslyckades att skapa en slumpad karta med givna parametrar."
-
-msgid ""
-"Create a new map, either from scratch or using the random map generator."
-msgstr ""
-"Skapa en ny karta, antingen från en blank karta eller genom "
-"slumpkartgeneratorn."
 
 msgid "Exit the Editor and return to the game's Main Menu."
 msgstr "Stäng Kartredigeraren och återvänd till spelets huvudmeny."
@@ -5259,9 +4950,6 @@ msgstr "Ingen artefakt kommer att ges som belöning."
 msgid "Delete an artifact from the reward."
 msgstr "Ta bort en artefakt från belöningen."
 
-msgid "Day: %{day} Week: %{week} Month: %{month}"
-msgstr "Dag: %{day} Vecka: %{week} Månad: %{month}"
-
 msgid "difficulty|Easy"
 msgstr "Lätt"
 
@@ -5277,6 +4965,326 @@ msgstr "Professionell"
 msgid "difficulty|Impossible"
 msgstr "Omöjligt"
 
+msgid "ABOUT"
+msgstr "OM"
+
+msgid "S"
+msgstr "S"
+
+msgid "M"
+msgstr "M"
+
+msgid "L"
+msgstr "L"
+
+msgid "X-L"
+msgstr "XL"
+
+msgid "ALL"
+msgstr "ALLA"
+
+msgid "EXIT"
+msgstr "LÄMNA"
+
+msgid "smallerButton|EXIT"
+msgstr "LÄMN."
+
+msgid "OKAY"
+msgstr "OKEJ"
+
+msgid "HEROES"
+msgstr ""
+"HJÄLT-\n"
+"AR"
+
+msgid ""
+"TOWNS/\n"
+"CASTLES"
+msgstr ""
+"STÄDER/\n"
+"BORGAR"
+
+msgid "CANCEL"
+msgstr "AVBRYT"
+
+msgid "ACCEPT"
+msgstr "ACCEPTERA"
+
+msgid "DECLINE"
+msgstr "AVBÖJ"
+
+msgid "LEARN"
+msgstr "VÄLJ"
+
+msgid "TRADE"
+msgstr "HANDLA"
+
+msgid "YES"
+msgstr "JA"
+
+msgid "NO"
+msgstr "NEJ"
+
+msgid "DISMISS"
+msgstr "AVSKEDA"
+
+msgid "UPGRADE"
+msgstr "UPPG."
+
+msgid "GIFT"
+msgstr "GÅVA"
+
+msgid "RESTART"
+msgstr "OMSTART"
+
+msgid ""
+"D\n"
+"I\n"
+"S\n"
+"M\n"
+"I\n"
+"S\n"
+"S"
+msgstr ""
+"A\n"
+"V\n"
+"S\n"
+"K\n"
+"E\n"
+"D\n"
+"A"
+
+msgid ""
+"E\n"
+"X\n"
+"I\n"
+"T"
+msgstr ""
+"L\n"
+"Ä\n"
+"M\n"
+"N\n"
+"A"
+
+msgid ""
+"C\n"
+"A\n"
+"M\n"
+"P\n"
+"A\n"
+"I\n"
+"G\n"
+"N"
+msgstr ""
+"K\n"
+"A\n"
+"M\n"
+"P\n"
+"A\n"
+"N\n"
+"J"
+
+msgid ""
+"S\n"
+"T\n"
+"A\n"
+"N\n"
+"D\n"
+"A\n"
+"R\n"
+"D"
+msgstr ""
+"S\n"
+"O\n"
+"L\n"
+"O\n"
+"S\n"
+"P\n"
+"E\n"
+"L"
+
+msgid ""
+"NEW\n"
+"GAME"
+msgstr ""
+"NYTT\n"
+"SPEL"
+
+msgid ""
+"LOAD\n"
+"GAME"
+msgstr ""
+"LADDA\n"
+"SPEL"
+
+msgid ""
+"RESTART\n"
+"GAME"
+msgstr ""
+"OMSTARTA\n"
+"SPEL"
+
+msgid ""
+"SAVE\n"
+"GAME"
+msgstr ""
+"SPARA\n"
+"SPEL"
+
+msgid ""
+"QUICK\n"
+"SAVE"
+msgstr ""
+"SNABB-\n"
+"SPARA"
+
+msgid "QUIT"
+msgstr "AVSLUTA"
+
+msgid ""
+"NEW\n"
+"MAP"
+msgstr ""
+"NY\n"
+"KARTA"
+
+msgid ""
+"LOAD\n"
+"MAP"
+msgstr ""
+"LADDA\n"
+"KARTA"
+
+msgid ""
+"START\n"
+"MAP"
+msgstr ""
+"STARTA\n"
+"KARTA"
+
+msgid ""
+"SAVE\n"
+"MAP"
+msgstr ""
+"SPARA\n"
+"KARTA"
+
+msgid ""
+"MAIN\n"
+"MENU"
+msgstr ""
+"HUVUD-\n"
+"MENY"
+
+msgid ""
+"AUTO\n"
+"PLAYTEST"
+msgstr ""
+
+msgid "INFO"
+msgstr "INFO"
+
+msgid ""
+"BATTLE\n"
+"ONLY"
+msgstr ""
+"ENDAST\n"
+"STRID"
+
+msgid "SETTINGS"
+msgstr "INSTÄLLNINGAR"
+
+msgid ""
+"STANDARD\n"
+"GAME"
+msgstr "SOLOSPEL"
+
+msgid ""
+"CAMPAIGN\n"
+"GAME"
+msgstr "KAMPANJ"
+
+msgid ""
+"MULTI-\n"
+"PLAYER\n"
+"GAME"
+msgstr "MULTISPEL"
+
+msgid "HOT SEAT"
+msgstr ""
+"HETA\n"
+"STOLEN"
+
+msgid "2 PLAYERS"
+msgstr "2 SPELARE"
+
+msgid "3 PLAYERS"
+msgstr "3 SPELARE"
+
+msgid "4 PLAYERS"
+msgstr "4 SPELARE"
+
+msgid "5 PLAYERS"
+msgstr "5 SPELARE"
+
+msgid "6 PLAYERS"
+msgstr "6 SPELARE"
+
+msgid ""
+"ORIGINAL\n"
+"CAMPAIGN"
+msgstr ""
+"ORGINAL-\n"
+"KAMPANJ"
+
+msgid ""
+"EXPANSION\n"
+"CAMPAIGN"
+msgstr ""
+"EXPANSIONS-\n"
+"KAMPANJ"
+
+msgid "editorMainMenu|BACK"
+msgstr "TILLBAKA"
+
+msgid ""
+"newMap|FROM\n"
+"SCRATCH"
+msgstr ""
+"BLANK\n"
+"KARTA"
+
+msgid "newMap|RANDOM"
+msgstr "SLUMPAD"
+
+msgid "DIFFICULTY"
+msgstr "SVÅRIGHETSGRAD"
+
+msgid "VIEW INTRO"
+msgstr "VISA INTRO"
+
+msgid "RESET"
+msgstr "ÅTERS."
+
+msgid "START"
+msgstr "STARTA"
+
+msgid ""
+"P\n"
+"A\n"
+"T\n"
+"R\n"
+"O\n"
+"L"
+msgstr ""
+"P\n"
+"A\n"
+"T\n"
+"R\n"
+"U\n"
+"L\n"
+"L"
+
 msgid "Auto Playtest Results"
 msgstr "Automatiskt Testkörningsresultat"
 
@@ -5291,6 +5299,9 @@ msgstr ""
 msgid "Click to close the dialog."
 msgstr "Klicka för stänga dialogen."
 
+msgid "%{color} player"
+msgstr "%{color} spelare"
+
 msgid "Won %{percent}% of playthroughs."
 msgstr "%{percent}% vunna testkörningar."
 
@@ -5300,7 +5311,18 @@ msgstr "Misslyckades att förbereda kartan för automatiskt testkörning."
 msgid "autoPlaytest|Number of playthroughs:"
 msgstr "Antal testkörningar:"
 
+#, fuzzy
+msgid "Set the number of playthroughs."
+msgstr "Antal testkörningar:"
+
 msgid "autoPlaytest|Max days per playthrough:"
+msgstr "Maximalt antal dagar per testkörning:"
+
+msgid "Set the maximum number of days within each playthrough is being run."
+msgstr ""
+
+#, fuzzy
+msgid "autoPlaytest|Last day of playthrough:"
 msgstr "Maximalt antal dagar per testkörning:"
 
 msgid "autoPlaytest|Animation"
@@ -5309,14 +5331,33 @@ msgstr "Animering"
 msgid "autoPlaytest|Animation speed:"
 msgstr "Animeringshastighet:"
 
+msgid "Set animation speed during playthrough."
+msgstr ""
+
 msgid "autoPlaytest|Sound Effects"
 msgstr "Ljudeffekter"
 
 msgid "Left-clicking at any point will interrupt the playtest."
 msgstr "Vänsterklickning kommer att avbryta testkörningen."
 
+msgid ""
+"This lets you change the class of a player. Classes are not always "
+"changeable. Depending on the scenario, a player may receive additional towns "
+"and/or heroes not of their primary alignment."
+msgstr ""
+"Detta låter dig ändra spelarnas startpositioner och färger. En speciell färg "
+"startar alltid vid en viss plats. Vissa positioner kan endast spelas av en "
+"datorstyrd eller mänsklig spelare."
+
 msgid "Click to run an automated map playtest."
 msgstr "Klicka för köra en karta med automatiskt testkörning."
+
+#, fuzzy
+msgid "Toggle animation during playthroughs."
+msgstr "Aktivera animationen för föremålen."
+
+msgid "Toggle sound effects during playthroughs."
+msgstr ""
 
 msgid ""
 "Auto playtest\n"
@@ -5333,37 +5374,44 @@ msgstr ""
 msgid "and more..."
 msgstr "och mer..."
 
-msgid "Easy"
-msgstr "Lätt"
-
-msgid "Normal"
-msgstr "Normal"
-
-msgid "Hard"
-msgstr "Svår"
-
-msgid "Campaign Difficulty"
+#, fuzzy
+msgid "campaignDifficulty|Decreased"
 msgstr "Kampanjsvårighet"
 
+#, fuzzy
+msgid "campaignDifficulty|Default"
+msgstr "Kampanjsvårighet"
+
+#, fuzzy
+msgid "campaignDifficulty|Increased"
+msgstr "Kampanjsvårighet"
+
+#, fuzzy
 msgid ""
-"Choose this difficulty to experience the game's story with less challenge. "
-"The AI will be weaker than at Normal difficulty."
+"Choose this difficulty to experience the game's story with decreased "
+"challenge. The AI will be weaker than at the default difficulty."
 msgstr ""
 "Välj denna svårighetsgrad om du föredrar att följa historien framför "
 "utmaningen. Datorn är svagare i jämförelse med normal svårighetsgrad."
 
+#, fuzzy
 msgid ""
-"Choose this difficulty to experience the campaign as per the original design."
+"Choose this difficulty to experience the campaign as close to the original "
+"design as possible with the fheroes2 AI."
 msgstr ""
 "Välj denna svårighetsgrad för att uppleva kampanjen som den ursprungligen är "
 "tänkt att upplevas."
 
+#, fuzzy
 msgid ""
-"Choose this difficulty if you want more challenge. The AI will be stronger "
-"than at Normal difficulty."
+"Choose this difficulty if you want more of a challenge. The AI will be "
+"stronger than at the default difficulty."
 msgstr ""
 "Välj denna svårighetsgrad om du vill ha en utmaning. Datorn är starkare i "
 "jämförelse med normal svårighetsgrad."
+
+msgid "Campaign Difficulty"
+msgstr "Kampanjsvårighet"
 
 msgid ""
 "Congratulations!\n"
@@ -6021,6 +6069,9 @@ msgstr "Stadsvy"
 msgid "Army Actions"
 msgstr "Arméåtgärder"
 
+msgid "fheroes2 Resurrection Team presents"
+msgstr "fheroes2 Resurrection Team presenterar"
+
 msgid "The save file is corrupted."
 msgstr "Sparfilen är korrupt."
 
@@ -6086,9 +6137,6 @@ msgstr ""
 
 msgid "Cancel back to the main menu."
 msgstr "Avbryt och gå tillbaka till huvudmenyn."
-
-msgid "fheroes2 Resurrection Team presents"
-msgstr "fheroes2 Resurrection Team presenterar"
 
 msgid "Welcome to Heroes of Might and Magic II powered by fheroes2 engine!"
 msgstr "Välkommen till Heroes of Might and Magic II genom fheroes2 spelmotor!"
@@ -6524,6 +6572,9 @@ msgid ""
 msgstr ""
 "%{color} spelare, dina hjältar överger dig och du utvisas från detta land."
 
+msgid "Day: %{day} Week: %{week} Month: %{month}"
+msgstr "Dag: %{day} Vecka: %{week} Månad: %{month}"
+
 msgid "Lord Kilburn"
 msgstr "Lord Kilburn"
 
@@ -6733,15 +6784,6 @@ msgstr ""
 "startar alltid vid en viss plats. Vissa positioner kan endast spelas av en "
 "datorstyrd eller mänsklig spelare."
 
-msgid ""
-"This lets you change the class of a player. Classes are not always "
-"changeable. Depending on the scenario, a player may receive additional towns "
-"and/or heroes not of their primary alignment."
-msgstr ""
-"Detta låter dig ändra spelarnas startpositioner och färger. En speciell färg "
-"startar alltid vid en viss plats. Vissa positioner kan endast spelas av en "
-"datorstyrd eller mänsklig spelare."
-
 msgid "Handicap"
 msgstr "Handikapp"
 
@@ -6755,9 +6797,6 @@ msgstr ""
 "Ändra spelarens handikapp. Bara spelare kontrollerade av en människa kan ha "
 "handikapp. Handikappade spelare startar med färre resurser och tjänar 15 % "
 "mindre för milt och 30 % mindre för gravt handikapp."
-
-msgid "%{color} player"
-msgstr "%{color} spelare"
 
 msgid "No Handicap"
 msgstr "Inget Handikapp"
@@ -6949,6 +6988,9 @@ msgstr "Esperanto"
 
 msgid "Slow"
 msgstr "Långsam"
+
+msgid "Normal"
+msgstr "Normal"
 
 msgid "Fast"
 msgstr "Snabb"
@@ -12416,8 +12458,10 @@ msgstr "Höjer kraftigt en varelses Anfall mot Drakar."
 msgid "Blood Lust"
 msgstr "Blodtörst"
 
-msgid "Increases a unit's attack skill."
-msgstr "Höjer en varelses Anfall."
+msgid ""
+"Increases a unit's attack skill by 3. The effect lasts for 3 rounds of "
+"combat, regardless of spell power."
+msgstr ""
 
 msgid "Animate Dead"
 msgstr "Animera Död"
@@ -12535,10 +12579,12 @@ msgstr ""
 "Inkalla\n"
 "Skepp"
 
+#, fuzzy
 msgid ""
-"Summons the nearest unoccupied, friendly boat to an adjacent shore location. "
-"A friendly boat is one which you just built or were the most recent player "
-"to occupy."
+"Summons the nearest unoccupied and either friendly or neutral boat to an "
+"adjacent shore location. A friendly boat is one which you just built or were "
+"the most recent player to occupy. A neutral boat is one which no player has "
+"occupied yet."
 msgstr ""
 "Framkallar närmsta lediga skepp till en närliggande strand. Bara skepp som "
 "du nyligen byggt eller var den senaste att kontrollera kan framkallas."
@@ -12767,6 +12813,29 @@ msgstr "Han sa till henne: Jag bah... och hon svarade: Du bah..."
 
 msgid "An unknown force is being resurrected..."
 msgstr "En okänd kraft återuppstår..."
+
+#~ msgid "(Rate: %{percent})"
+#~ msgstr "(Andel: %{percent} procent)"
+
+#~ msgid "Increases a unit's attack skill."
+#~ msgstr "Höjer en varelses Anfall."
+
+#~ msgid "Easy"
+#~ msgstr "Lätt"
+
+#~ msgid "Hard"
+#~ msgstr "Svår"
+
+#, fuzzy
+#~ msgid ""
+#~ "RESURRECTION\n"
+#~ "CAMPAIGN"
+#~ msgstr ""
+#~ "EXPANSIONS-\n"
+#~ "KAMPANJ"
+
+#~ msgid "Create a new map from scratch."
+#~ msgstr "Skapa en ny blank karta."
 
 #~ msgid ""
 #~ "Cell\n"

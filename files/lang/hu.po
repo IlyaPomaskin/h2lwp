@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: fheroes2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-10 08:09+0000\n"
-"PO-Revision-Date: 2026-06-16 11:23+0200\n"
+"PO-Revision-Date: 2026-09-22 20:59+0200\n"
 "Last-Translator: Berda Jenő <big4billy@gmail.com>\n"
 "Language-Team: fheroes2 team <fhomm2@gmail.com>\n"
 "Language: hu\n"
@@ -17,343 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Launchpad-Export-Date: 2011-06-02 03:12+0000\n"
 "X-Generator: Poedit 3.5\n"
-
-msgid "SELECT"
-msgstr "VÁLASZT"
-
-msgid "ABOUT"
-msgstr "LEÍRÁS"
-
-msgid "S"
-msgstr "S"
-
-msgid "M"
-msgstr "M"
-
-msgid "L"
-msgstr "L"
-
-msgid "X-L"
-msgstr "XL"
-
-msgid "ALL"
-msgstr "MIND"
-
-msgid "EXIT"
-msgstr "KILÉP"
-
-msgid "smallerButton|EXIT"
-msgstr "EXIT"
-
-msgid "OKAY"
-msgstr "OK"
-
-msgid "HEROES"
-msgstr "HŐSÖK"
-
-msgid ""
-"TOWNS/\n"
-"CASTLES"
-msgstr ""
-"VÁROS\n"
-"/VÁR"
-
-msgid "CANCEL"
-msgstr "MÉGSEM"
-
-msgid "ACCEPT"
-msgstr "ELFOGAD"
-
-msgid "DECLINE"
-msgstr "ELUTASÍT"
-
-msgid "LEARN"
-msgstr "TANUL"
-
-msgid "TRADE"
-msgstr "ÜZLET"
-
-msgid "YES"
-msgstr "IGEN"
-
-msgid "NO"
-msgstr "NEM"
-
-msgid "DISMISS"
-msgstr "ELBOCSÁT"
-
-msgid "UPGRADE"
-msgstr "FEJLESZT"
-
-msgid "GIFT"
-msgstr "AJÁND."
-
-msgid "RESTART"
-msgstr "ÚJRA"
-
-msgid "MAX"
-msgstr "MAX"
-
-msgid "MIN"
-msgstr "MIN"
-
-msgid ""
-"D\n"
-"I\n"
-"S\n"
-"M\n"
-"I\n"
-"S\n"
-"S"
-msgstr ""
-"E\n"
-"L\n"
-"B\n"
-"O\n"
-"C\n"
-"S\n"
-"Á\n"
-"T"
-
-msgid ""
-"E\n"
-"X\n"
-"I\n"
-"T"
-msgstr ""
-"K\n"
-"I\n"
-"L\n"
-"É\n"
-"P"
-
-msgid ""
-"C\n"
-"A\n"
-"M\n"
-"P\n"
-"A\n"
-"I\n"
-"G\n"
-"N"
-msgstr ""
-"H\n"
-"A\n"
-"D\n"
-"J\n"
-"Á\n"
-"R\n"
-"A\n"
-"T"
-
-msgid ""
-"S\n"
-"T\n"
-"A\n"
-"N\n"
-"D\n"
-"A\n"
-"R\n"
-"D"
-msgstr ""
-"N\n"
-"O\n"
-"R\n"
-"M\n"
-"Á\n"
-"L"
-
-msgid ""
-"NEW\n"
-"GAME"
-msgstr ""
-"ÚJ\n"
-"JÁTÉK"
-
-msgid ""
-"LOAD\n"
-"GAME"
-msgstr ""
-"JÁTÉK\n"
-"BETÖLTÉS"
-
-msgid ""
-"RESTART\n"
-"GAME"
-msgstr ""
-"ÚJRA-\n"
-"JÁTSZÁS"
-
-msgid ""
-"SAVE\n"
-"GAME"
-msgstr ""
-"JÁTÉK\n"
-"MENTÉS"
-
-msgid ""
-"QUICK\n"
-"SAVE"
-msgstr ""
-"GYORS\n"
-"MENTÉS"
-
-msgid "QUIT"
-msgstr "KILÉPÉS"
-
-msgid ""
-"START\n"
-"MAP"
-msgstr ""
-"TÉRKÉP\n"
-"INDÍTÁS"
-
-msgid ""
-"MAIN\n"
-"MENU"
-msgstr ""
-"FŐ-\n"
-"MENÜ"
-
-msgid ""
-"AUTO\n"
-"PLAY-TEST"
-msgstr ""
-"AUTO\n"
-"JÁTÉK-TESZT"
-
-msgid ""
-"NEW\n"
-"MAP"
-msgstr ""
-"ÚJ\n"
-"TÉRKÉP"
-
-msgid ""
-"LOAD\n"
-"MAP"
-msgstr ""
-"TÉRKÉP\n"
-"BETÖLTÉS"
-
-msgid ""
-"SAVE\n"
-"MAP"
-msgstr ""
-"TÉRKÉP\n"
-"MENTÉS"
-
-msgid "INFO"
-msgstr "INFÓ"
-
-msgid ""
-"BATTLE\n"
-"ONLY"
-msgstr ""
-"CSAK\n"
-"CSATA"
-
-msgid "SETTINGS"
-msgstr "BEÁLLÍTÁSOK"
-
-msgid ""
-"STANDARD\n"
-"GAME"
-msgstr ""
-"NORMÁL\n"
-"JÁTÉK"
-
-msgid ""
-"CAMPAIGN\n"
-"GAME"
-msgstr ""
-"HADJÁRAT\n"
-"JÁTÉK"
-
-msgid ""
-"MULTI-\n"
-"PLAYER\n"
-"GAME"
-msgstr ""
-"TÖBB-\n"
-"JÁTÉKOS\n"
-"MÓD"
-
-msgid "HOT SEAT"
-msgstr "HELYCSERE"
-
-msgid "2 PLAYERS"
-msgstr "2 JÁTÉKOS"
-
-msgid "3 PLAYERS"
-msgstr "3 JÁTÉKOS"
-
-msgid "4 PLAYERS"
-msgstr "4 JÁTÉKOS"
-
-msgid "5 PLAYERS"
-msgstr "5 JÁTÉKOS"
-
-msgid "6 PLAYERS"
-msgstr "6 JÁTÉKOS"
-
-msgid ""
-"ORIGINAL\n"
-"CAMPAIGN"
-msgstr ""
-"EREDETI\n"
-"HADJÁRAT"
-
-msgid ""
-"EXPANSION\n"
-"CAMPAIGN"
-msgstr ""
-"KIEGÉSZÍTŐ\n"
-"HADJÁRAT"
-
-msgid "editorMainMenu|BACK"
-msgstr "VISSZA"
-
-msgid ""
-"newMap|FROM\n"
-"SCRATCH"
-msgstr ""
-"TISZTA\n"
-"LAPPAL"
-
-msgid "newMap|RANDOM"
-msgstr "VÉLETLEN"
-
-msgid "DIFFICULTY"
-msgstr "NEHÉZSÉG"
-
-msgid "VIEW INTRO"
-msgstr "BEVEZETŐ"
-
-msgid "RESET"
-msgstr "ÚJRA"
-
-msgid "START"
-msgstr "START"
-
-msgid ""
-"P\n"
-"A\n"
-"T\n"
-"R\n"
-"O\n"
-"L"
-msgstr ""
-"Ő\n"
-"R\n"
-"J\n"
-"Á\n"
-"R\n"
-"A\n"
-"T"
-
-msgid "army|Few"
-msgstr "Néhány"
 
 msgid "Warrior"
 msgstr "Harcos"
@@ -436,6 +99,9 @@ msgid ""
 msgstr ""
 "Légiónyi\n"
 "%{monster}"
+
+msgid "army|Few"
+msgstr "Néhány"
 
 msgid "army|Several"
 msgstr "Több"
@@ -3073,9 +2739,6 @@ msgstr ""
 "aranyért.\n"
 "Elfogadod az ajánlatukat?"
 
-msgid "(Rate: %{percent})"
-msgstr "(Arány: %{percent})"
-
 msgid "off"
 msgstr "ki"
 
@@ -3332,6 +2995,10 @@ msgstr ""
 msgid "Show extra information such as FPS and current time."
 msgstr "Extra információkat jelenít meg, mint például FPS, illetve pontos idő."
 
+#, fuzzy
+msgid "hotkeys|All Categories"
+msgstr "csata beállítások"
+
 msgid "Hotkey: "
 msgstr "Gyorsbillentyű: "
 
@@ -3343,6 +3010,16 @@ msgstr "Esemény: "
 
 msgid "Hot Keys:"
 msgstr "Billentyűfunkciók:"
+
+#, fuzzy
+msgid "Click here to select:\n"
+msgstr ""
+"Kattints ide, a\n"
+"lény kiválasztásához."
+
+#, fuzzy
+msgid "Select hotkeys category"
+msgstr "Lény kiválasztása:"
 
 msgid "Hide"
 msgstr "Elrejt"
@@ -3588,8 +3265,14 @@ msgstr "Vétel (db):"
 msgid "Recruit selected monsters."
 msgstr "A kiválasztott lények toborzása."
 
+msgid "MAX"
+msgstr "MAX"
+
 msgid "Select maximum monsters to be recruited."
 msgstr "A lények maximális számának kiválasztása toborzáshoz."
+
+msgid "MIN"
+msgstr "MIN"
 
 msgid "Select only 1 monster to be recruited."
 msgstr "Csak egyetlen lény kiválasztása toborzáshoz."
@@ -4363,6 +4046,9 @@ msgstr ""
 msgid "Click to make selection."
 msgstr "Kattints a kiválasztáshoz."
 
+msgid "SELECT"
+msgstr "VÁLASZT"
+
 msgid "%{objects} cannot be placed on water."
 msgstr "Vízen nem helyezhetők el %{objects}."
 
@@ -4443,8 +4129,11 @@ msgstr ""
 "Szeretnéd elhagyni a szerkesztőt, és elindítani a térképet? (Az aktuális "
 "térkép nem mentett módosításai elvesznek.)"
 
-msgid "Create a new map from scratch."
-msgstr "Teljesen új térkép létrehozása."
+msgid ""
+"Create a new map, either from scratch or using the random map generator."
+msgstr ""
+"Hozz létre teljesen új térképet vagy használd a véletlenszerű térkép "
+"generátort."
 
 msgid "New Map"
 msgstr "Új térkép"
@@ -4543,6 +4232,9 @@ msgstr "Térkép mentve ide: "
 
 msgid "Failed to save the map."
 msgstr "Térkép mentése sikertelen."
+
+msgid "The selected object has been moved to the top layer."
+msgstr "A kiválasztott objektum átkerült a legfelső rétegre."
 
 msgid "Unsaved Changes"
 msgstr "Nem mentett módosítások"
@@ -4876,12 +4568,6 @@ msgstr "Meglévő nyelv törlése."
 msgid "Failed to generate a random map with given parameters."
 msgstr ""
 "A véletlenszerű térkép generálása a megadott paraméterekkel nem sikerült."
-
-msgid ""
-"Create a new map, either from scratch or using the random map generator."
-msgstr ""
-"Hozz létre teljesen új térképet vagy használd a véletlenszerű térkép "
-"generátort."
 
 msgid "Exit the Editor and return to the game's Main Menu."
 msgstr "Kilépés a szerkesztőből és visszatérés a játék főmenüjébe."
@@ -5266,9 +4952,6 @@ msgstr "Nincs varázstárgy jutalom."
 msgid "Delete an artifact from the reward."
 msgstr "Varázstárgy törlése a jutalmak közül."
 
-msgid "Day: %{day} Week: %{week} Month: %{month}"
-msgstr "Nap: %{day} hét: %{week} hónap: %{month}"
-
 msgid "difficulty|Easy"
 msgstr "Könnyű"
 
@@ -5284,6 +4967,331 @@ msgstr "Szakértő"
 msgid "difficulty|Impossible"
 msgstr "Lehetetlen"
 
+msgid "ABOUT"
+msgstr "LEÍRÁS"
+
+msgid "S"
+msgstr "S"
+
+msgid "M"
+msgstr "M"
+
+msgid "L"
+msgstr "L"
+
+msgid "X-L"
+msgstr "XL"
+
+msgid "ALL"
+msgstr "MIND"
+
+msgid "EXIT"
+msgstr "KILÉP"
+
+msgid "smallerButton|EXIT"
+msgstr "EXIT"
+
+msgid "OKAY"
+msgstr "OK"
+
+msgid "HEROES"
+msgstr "HŐSÖK"
+
+msgid ""
+"TOWNS/\n"
+"CASTLES"
+msgstr ""
+"VÁROS\n"
+"/VÁR"
+
+msgid "CANCEL"
+msgstr "MÉGSEM"
+
+msgid "ACCEPT"
+msgstr "ELFOGAD"
+
+msgid "DECLINE"
+msgstr "ELUTASÍT"
+
+msgid "LEARN"
+msgstr "TANUL"
+
+msgid "TRADE"
+msgstr "ÜZLET"
+
+msgid "YES"
+msgstr "IGEN"
+
+msgid "NO"
+msgstr "NEM"
+
+msgid "DISMISS"
+msgstr "ELBOCSÁT"
+
+msgid "UPGRADE"
+msgstr "FEJLESZT"
+
+msgid "GIFT"
+msgstr "AJÁND."
+
+msgid "RESTART"
+msgstr "ÚJRA"
+
+msgid ""
+"D\n"
+"I\n"
+"S\n"
+"M\n"
+"I\n"
+"S\n"
+"S"
+msgstr ""
+"E\n"
+"L\n"
+"B\n"
+"O\n"
+"C\n"
+"S\n"
+"Á\n"
+"T"
+
+msgid ""
+"E\n"
+"X\n"
+"I\n"
+"T"
+msgstr ""
+"K\n"
+"I\n"
+"L\n"
+"É\n"
+"P"
+
+msgid ""
+"C\n"
+"A\n"
+"M\n"
+"P\n"
+"A\n"
+"I\n"
+"G\n"
+"N"
+msgstr ""
+"H\n"
+"A\n"
+"D\n"
+"J\n"
+"Á\n"
+"R\n"
+"A\n"
+"T"
+
+msgid ""
+"S\n"
+"T\n"
+"A\n"
+"N\n"
+"D\n"
+"A\n"
+"R\n"
+"D"
+msgstr ""
+"N\n"
+"O\n"
+"R\n"
+"M\n"
+"Á\n"
+"L"
+
+msgid ""
+"NEW\n"
+"GAME"
+msgstr ""
+"ÚJ\n"
+"JÁTÉK"
+
+msgid ""
+"LOAD\n"
+"GAME"
+msgstr ""
+"JÁTÉK\n"
+"BETÖLTÉS"
+
+msgid ""
+"RESTART\n"
+"GAME"
+msgstr ""
+"ÚJRA-\n"
+"JÁTSZÁS"
+
+msgid ""
+"SAVE\n"
+"GAME"
+msgstr ""
+"JÁTÉK\n"
+"MENTÉS"
+
+msgid ""
+"QUICK\n"
+"SAVE"
+msgstr ""
+"GYORS\n"
+"MENTÉS"
+
+msgid "QUIT"
+msgstr "KILÉPÉS"
+
+msgid ""
+"NEW\n"
+"MAP"
+msgstr ""
+"ÚJ\n"
+"TÉRKÉP"
+
+msgid ""
+"LOAD\n"
+"MAP"
+msgstr ""
+"TÉRKÉP\n"
+"BETÖLTÉS"
+
+msgid ""
+"START\n"
+"MAP"
+msgstr ""
+"TÉRKÉP\n"
+"INDÍTÁS"
+
+msgid ""
+"SAVE\n"
+"MAP"
+msgstr ""
+"TÉRKÉP\n"
+"MENTÉS"
+
+msgid ""
+"MAIN\n"
+"MENU"
+msgstr ""
+"FŐ-\n"
+"MENÜ"
+
+msgid ""
+"AUTO\n"
+"PLAYTEST"
+msgstr ""
+"AUTO\n"
+"JÁTÉK-TESZT"
+
+msgid "INFO"
+msgstr "INFÓ"
+
+msgid ""
+"BATTLE\n"
+"ONLY"
+msgstr ""
+"CSAK\n"
+"CSATA"
+
+msgid "SETTINGS"
+msgstr "BEÁLLÍTÁSOK"
+
+msgid ""
+"STANDARD\n"
+"GAME"
+msgstr ""
+"NORMÁL\n"
+"JÁTÉK"
+
+msgid ""
+"CAMPAIGN\n"
+"GAME"
+msgstr ""
+"HADJÁRAT\n"
+"JÁTÉK"
+
+msgid ""
+"MULTI-\n"
+"PLAYER\n"
+"GAME"
+msgstr ""
+"TÖBB-\n"
+"JÁTÉKOS\n"
+"MÓD"
+
+msgid "HOT SEAT"
+msgstr "HELYCSERE"
+
+msgid "2 PLAYERS"
+msgstr "2 JÁTÉKOS"
+
+msgid "3 PLAYERS"
+msgstr "3 JÁTÉKOS"
+
+msgid "4 PLAYERS"
+msgstr "4 JÁTÉKOS"
+
+msgid "5 PLAYERS"
+msgstr "5 JÁTÉKOS"
+
+msgid "6 PLAYERS"
+msgstr "6 JÁTÉKOS"
+
+msgid ""
+"ORIGINAL\n"
+"CAMPAIGN"
+msgstr ""
+"EREDETI\n"
+"HADJÁRAT"
+
+msgid ""
+"EXPANSION\n"
+"CAMPAIGN"
+msgstr ""
+"KIEGÉSZÍTŐ\n"
+"HADJÁRAT"
+
+msgid "editorMainMenu|BACK"
+msgstr "VISSZA"
+
+msgid ""
+"newMap|FROM\n"
+"SCRATCH"
+msgstr ""
+"TISZTA\n"
+"LAPPAL"
+
+msgid "newMap|RANDOM"
+msgstr "VÉLETLEN"
+
+msgid "DIFFICULTY"
+msgstr "NEHÉZSÉG"
+
+msgid "VIEW INTRO"
+msgstr "BEVEZETŐ"
+
+msgid "RESET"
+msgstr "ÚJRA"
+
+msgid "START"
+msgstr "START"
+
+msgid ""
+"P\n"
+"A\n"
+"T\n"
+"R\n"
+"O\n"
+"L"
+msgstr ""
+"Ő\n"
+"R\n"
+"J\n"
+"Á\n"
+"R\n"
+"A\n"
+"T"
+
 msgid "Auto Playtest Results"
 msgstr "Automatikus játékteszt eredmények"
 
@@ -5298,6 +5306,9 @@ msgstr " a végigjátszás elérte a meghatározott időkorlátot"
 msgid "Click to close the dialog."
 msgstr "Kattints a dialógusablak bezárásához."
 
+msgid "%{color} player"
+msgstr "%{color} játékos"
+
 msgid "Won %{percent}% of playthroughs."
 msgstr "Győzelem a végigjátszások %{percent}%-ában."
 
@@ -5307,7 +5318,18 @@ msgstr "A térkép előkészítése az automatikus játéktesztre sikertelen."
 msgid "autoPlaytest|Number of playthroughs:"
 msgstr "Végigjátszások száma:"
 
+#, fuzzy
+msgid "Set the number of playthroughs."
+msgstr "Végigjátszások száma:"
+
 msgid "autoPlaytest|Max days per playthrough:"
+msgstr "Max. napszám végigjátszásonként:"
+
+msgid "Set the maximum number of days within each playthrough is being run."
+msgstr ""
+
+#, fuzzy
+msgid "autoPlaytest|Last day of playthrough:"
 msgstr "Max. napszám végigjátszásonként:"
 
 msgid "autoPlaytest|Animation"
@@ -5316,6 +5338,9 @@ msgstr "Animáció"
 msgid "autoPlaytest|Animation speed:"
 msgstr "Animáció sebesség:"
 
+msgid "Set animation speed during playthrough."
+msgstr ""
+
 msgid "autoPlaytest|Sound Effects"
 msgstr "Hangeffektek"
 
@@ -5323,8 +5348,23 @@ msgid "Left-clicking at any point will interrupt the playtest."
 msgstr ""
 "A bal egérgomb lenyomása bármikor megszakítja az automatikus játéktesztet."
 
+msgid ""
+"This lets you change the class of a player. Classes are not always "
+"changeable. Depending on the scenario, a player may receive additional towns "
+"and/or heroes not of their primary alignment."
+msgstr ""
+"Lehetővé teszi a játékos osztályának megválasztását. Az osztály nem mindig "
+"módosítható. Küldetéstől függően a játékos további várakat és hősöket kaphat."
+
 msgid "Click to run an automated map playtest."
 msgstr "Kattints egy automatikus játékteszt indításához."
+
+#, fuzzy
+msgid "Toggle animation during playthroughs."
+msgstr "Objektumok animációjának kapcsolója."
+
+msgid "Toggle sound effects during playthroughs."
+msgstr ""
 
 msgid ""
 "Auto playtest\n"
@@ -5343,37 +5383,39 @@ msgstr ""
 msgid "and more..."
 msgstr "és egyebek..."
 
-msgid "Easy"
-msgstr "Könnyű"
+msgid "campaignDifficulty|Decreased"
+msgstr "Csökkentett"
 
-msgid "Normal"
-msgstr "Normál"
+msgid "campaignDifficulty|Default"
+msgstr "Alapbeállítás"
 
-msgid "Hard"
-msgstr "Nehéz"
+msgid "campaignDifficulty|Increased"
+msgstr "Növelt"
+
+msgid ""
+"Choose this difficulty to experience the game's story with decreased "
+"challenge. The AI will be weaker than at the default difficulty."
+msgstr ""
+"Válaszd ezt a nehézséget, ha kevesebb kihívással szeretnéd végigvinni a "
+"játékot. A mesterséges intelligencia gyengébb lesz, mint az Alapbeállítású "
+"nehézségi fokozaton."
+
+msgid ""
+"Choose this difficulty to experience the campaign as close to the original "
+"design as possible with the fheroes2 AI."
+msgstr ""
+"Válaszd ezt a nehézséget, ha a hadjáratot az eredeti elgondolásnak és "
+"mesterséges intelligenciának megfelelően szeretnéd játszani az fheroes2-t."
+
+msgid ""
+"Choose this difficulty if you want more of a challenge. The AI will be "
+"stronger than at the default difficulty."
+msgstr ""
+"Válaszd ezt a nehézséget, ha több kihívást akarsz. A mesterséges "
+"intelligencia erősebb lesz, mint az Alapbeállítású nehézségi fokozaton."
 
 msgid "Campaign Difficulty"
 msgstr "Hadjárat nehézsége"
-
-msgid ""
-"Choose this difficulty to experience the game's story with less challenge. "
-"The AI will be weaker than at Normal difficulty."
-msgstr ""
-"Válaszd ezt a nehézséget, ha kevesebb kihívással szeretnéd végigvinni a "
-"játékot. A gép gyengébb lesz, mint a Normál nehézségi fokozaton."
-
-msgid ""
-"Choose this difficulty to experience the campaign as per the original design."
-msgstr ""
-"Válaszd ezt a nehézséget, ha a hadjáratot az eredeti elgondolásnak "
-"megfelelően szeretnéd játszani."
-
-msgid ""
-"Choose this difficulty if you want more challenge. The AI will be stronger "
-"than at Normal difficulty."
-msgstr ""
-"Válaszd ezt a nehézséget, ha több kihívást akarsz. A gép erősebb lesz, mint "
-"a Normál nehézségi fokozaton."
 
 msgid ""
 "Congratulations!\n"
@@ -6033,6 +6075,9 @@ msgstr "Város képernyő"
 msgid "Army Actions"
 msgstr "Sereg cselekvései"
 
+msgid "fheroes2 Resurrection Team presents"
+msgstr "fheroes2 Resurrection Team bemutatja"
+
 msgid "The save file is corrupted."
 msgstr "A mentés fájl sérült."
 
@@ -6098,9 +6143,6 @@ msgstr ""
 
 msgid "Cancel back to the main menu."
 msgstr "Vissza a főmenübe."
-
-msgid "fheroes2 Resurrection Team presents"
-msgstr "fheroes2 Resurrection Team bemutatja"
 
 msgid "Welcome to Heroes of Might and Magic II powered by fheroes2 engine!"
 msgstr ""
@@ -6534,6 +6576,9 @@ msgid ""
 msgstr ""
 "%{color} játékos, a hőseid elhagytak, téged pedig száműztek erről a földről."
 
+msgid "Day: %{day} Week: %{week} Month: %{month}"
+msgstr "Nap: %{day} hét: %{week} hónap: %{month}"
+
 msgid "Lord Kilburn"
 msgstr "Lord Kilburn"
 
@@ -6743,14 +6788,6 @@ msgstr ""
 "bizonyos szín mindig egy bizonyos helyről indul a játékban. Néhány pozíciót "
 "csak gépi vagy emberi játékos foglalhat el."
 
-msgid ""
-"This lets you change the class of a player. Classes are not always "
-"changeable. Depending on the scenario, a player may receive additional towns "
-"and/or heroes not of their primary alignment."
-msgstr ""
-"Lehetővé teszi a játékos osztályának megválasztását. Az osztály nem mindig "
-"módosítható. Küldetéstől függően a játékos további várakat és hősöket kaphat."
-
 msgid "Handicap"
 msgstr "Hátrány"
 
@@ -6764,9 +6801,6 @@ msgstr ""
 "játékos sújtható hátránnyal. A hátrányban lévő játékosok kevesebb "
 "erőforrással kezdenek és azok 15-30%-kal kevesebbel gyarapodnak körönként a "
 "hátrány mértékétől függően, mely lehet mérsékelt vagy súlyos."
-
-msgid "%{color} player"
-msgstr "%{color} játékos"
 
 msgid "No Handicap"
 msgstr "Nincs hátrány"
@@ -6963,6 +6997,9 @@ msgstr "eszperantó"
 
 msgid "Slow"
 msgstr "Lassú"
+
+msgid "Normal"
+msgstr "Normál"
 
 msgid "Fast"
 msgstr "Gyors"
@@ -12410,8 +12447,12 @@ msgstr "Az egység támadóereje jelentősen növekszik sárkányok ellen."
 msgid "Blood Lust"
 msgstr "Vérszomj"
 
-msgid "Increases a unit's attack skill."
-msgstr "Az egység támadóereje növekszik."
+msgid ""
+"Increases a unit's attack skill by 3. The effect lasts for 3 rounds of "
+"combat, regardless of spell power."
+msgstr ""
+"3-mal növeli az egység támadóképességét. A hatás 3 körig tart, varázserőtől "
+"függetlenül."
 
 msgid "Animate Dead"
 msgstr "Feltámasztás"
@@ -12524,10 +12565,12 @@ msgstr "Részletes információkat ad az ellenséges hősökről."
 msgid "Summon Boat"
 msgstr "Hajó idézése"
 
+#, fuzzy
 msgid ""
-"Summons the nearest unoccupied, friendly boat to an adjacent shore location. "
-"A friendly boat is one which you just built or were the most recent player "
-"to occupy."
+"Summons the nearest unoccupied and either friendly or neutral boat to an "
+"adjacent shore location. A friendly boat is one which you just built or were "
+"the most recent player to occupy. A neutral boat is one which no player has "
+"occupied yet."
 msgstr ""
 "Megidézi egy közeli partra a legközelebbi használaton kívüli baráti "
 "tulajdonban lévő hajót. Baráti hajó az, amit te építettél, vagy hősöd "
@@ -12751,6 +12794,29 @@ msgstr "A férfi üres fecsegésére a nő így válaszolt: bla-bla-bla..."
 
 msgid "An unknown force is being resurrected..."
 msgstr "Egy ismeretlen erő kelt új életre ..."
+
+#~ msgid "(Rate: %{percent})"
+#~ msgstr "(Arány: %{percent})"
+
+#~ msgid "Increases a unit's attack skill."
+#~ msgstr "Az egység támadóereje növekszik."
+
+#~ msgid "Easy"
+#~ msgstr "Könnyű"
+
+#~ msgid "Hard"
+#~ msgstr "Nehéz"
+
+#, fuzzy
+#~ msgid ""
+#~ "RESURRECTION\n"
+#~ "CAMPAIGN"
+#~ msgstr ""
+#~ "KIEGÉSZÍTŐ\n"
+#~ "HADJÁRAT"
+
+#~ msgid "Create a new map from scratch."
+#~ msgstr "Teljesen új térkép létrehozása."
 
 #~ msgid ""
 #~ "Cell\n"
